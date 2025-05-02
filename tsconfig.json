@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+      "target": "ES6",                            // Output JavaScript version
+      "module": "CommonJS",                       // Node.js module system
+      "rootDir": "./src",                         // Your source files directory
+      "outDir": "./dist",                         // Compiled files go here
+      "strict": true,                             // Enable all strict type-checking
+      "moduleResolution": "node",                 // How modules get resolved
+      "esModuleInterop": true,                    // For importing CommonJS modules like express
+      "forceConsistentCasingInFileNames": true,   // Avoid casing issues
+      "skipLibCheck": true,                       // Skip type checking of .d.ts files
+      "resolveJsonModule": true,
+    },
+    "include": ["src/**/*.ts"],
+    "exclude": ["node_modules"]
+  }
+  

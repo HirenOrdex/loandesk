@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: loandesk-api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongodb
+      - redis
+    env_file:
+      - .env.dev
+    volumes:
+      - ./src:/app/src
+      - ./package.json:/app/package.json
+      - ./tsconfig.json:/app/tsconfig.json
+    networks:
+      - loandesk-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    container_name: loandesk-redis
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+      - redis-data:/data
+    networks:
+      - loandesk-network
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - loandesk-network
+    restart: unless-stopped
+
+networks:
+  loandesk-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+  mongodb-data:
