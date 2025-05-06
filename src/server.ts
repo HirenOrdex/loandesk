@@ -10,6 +10,7 @@ import session from "express-session";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { configurePassport } from "./configs/passportConfig";
 import authRoutes from "./routes/authRoutes";
+import bankerRoutes from "./routes/bankerRoutes";
 
 const port = PORT || 3000;
 
@@ -60,6 +61,7 @@ app.get("/", (req, res) => {
   res.send("Welcome to Keymono Backend");
 });
 app.use("/api/auth", authRoutes);
+app.use("/api", bankerRoutes);
 
 const startServer = async () => {
   try {
