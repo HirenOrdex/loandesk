@@ -11,6 +11,7 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { configurePassport } from "./configs/passportConfig";
 import authRoutes from "./routes/authRoutes";
 import bankerRoutes from "./routes/bankerRoutes";
+import { connectRedis } from "./utils/redisClient";
 
 const port = PORT || 3000;
 
@@ -60,13 +61,13 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.get("/", (req, res) => {
   res.send("Welcome to Keymono Backend");
 });
-app.use("/api/auth", authRoutes);
-app.use("/api", bankerRoutes);
+app.use("/auth", authRoutes);
+app.use("/", bankerRoutes);
 
 const startServer = async () => {
   try {
     await connectToDB(); // Ensure DB is connected before server starts
-
+    await connectRedis();
     app.listen(port, () => {
       console.log(
         `🚀 Keymono server started >> Environment = ${NODE_ENV} >> URL = http://localhost:${port}`

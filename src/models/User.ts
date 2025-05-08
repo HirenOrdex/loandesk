@@ -1,7 +1,7 @@
 // src/models/User.ts
-import { Schema, model, Document, Types } from 'mongoose';
-import bcrypt from 'bcryptjs';
-import { UserDocument } from '../types/userType';
+import { Schema, model, Document, Types } from "mongoose";
+import bcrypt from "bcryptjs";
+import { UserDocument } from "../types/userType";
 
 export interface IUser extends Document {
   // changedPasswordAfter?: Date;
@@ -13,14 +13,14 @@ export interface IUser extends Document {
   password?: string;
   role: string;
   active: boolean;
-  status:string;
+  status: string;
   refreshToken?: string | null;
   loginAttempts: number;
   lastLoginAttempt?: Date;
-  phone?:string;
+  phone?: string;
   // passwordResetToken?: string | null;
   // passwordResetExpires?: Date | undefined | null;
-  passwordChangedAt?:Date;
+  passwordChangedAt?: Date;
   // emailVerificationToken?:string | null;
   correctPassword(candidatePassword: string): Promise<boolean>;
   isPhoneVerified?: boolean;
@@ -34,36 +34,36 @@ const userSchema = new Schema(
     lastName: { type: String, required: true },
     email: {
       type: String,
-      required: [false, 'Email is required'],
-      lowercase: true
+      required: [false, "Email is required"],
+      lowercase: true,
     },
     password: {
       type: String,
-      required: [false, 'Password is required'],
+      required: [false, "Password is required"],
       minlength: 8,
-      select: false
+      select: false,
     },
     status: {
       type: String,
-      enum: ['active', 'inactive','pending','deleted'],
-      default: 'active'
+      enum: ["active", "inactive", "pending", "deleted"],
+      default: "active",
     },
     role: {
       type: String,
-      enum: ['user', 'admin'],
-      default: 'user'
+      enum: ["user", "admin", "banker"],
+      default: "user",
     },
     active: {
       type: Boolean,
-      default: true
+      default: true,
     },
     refreshToken: {
       type: String,
-      select: false
+      select: false,
     },
     loginAttempts: {
       type: Number,
-      default: 0
+      default: 0,
     },
     // passwordResetToken: {
     //   type: String,
@@ -71,15 +71,15 @@ const userSchema = new Schema(
     // },
     isPhoneVerified: {
       type: Boolean,
-      default: false
+      default: false,
     },
     isEmailVerified: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    phone:{
-      type:String,
-      default: false
+    phone: {
+      type: String,
+      default: false,
     },
     // emailVerificationToken:{
     //   type:String,
@@ -99,19 +99,18 @@ const userSchema = new Schema(
     // },
     lastLoginAttempt: {
       type: Date,
-      select: false
+      select: false,
     },
     company_id: {
       type: Schema.Types.ObjectId,
-      ref: 'Company', // This should match the name used in CompanyModel
+      ref: "Company", // This should match the name used in CompanyModel
       required: false,
     },
     streamToken: { type: String },
-    streamUserId: { type: String }
-    
+    streamUserId: { type: String },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 
@@ -119,9 +118,11 @@ const userSchema = new Schema(
  * Method to compare candidate password with user's hashed password
  */
 userSchema.index({ company_id: 1, email: 1 }, { unique: true });
-userSchema.methods.correctPassword = async function (candidatePassword: string): Promise<boolean> {
+userSchema.methods.correctPassword = async function (
+  candidatePassword: string
+): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-const UserModel = model<UserDocument>('User', userSchema);
+const UserModel = model<UserDocument>("User", userSchema);
 export default UserModel;
