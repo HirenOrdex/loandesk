@@ -6,12 +6,11 @@ import {
 import {
   APP_URL,
   NODE_ENV,
-  SMTP_FROM,
+  SMTP_USER,
   SMTP_HOST,
   SMTP_PASS,
   SMTP_PORT,
   SMTP_SECURE,
-  SMTP_USER,
 } from "../configs/envConfigs";
 import { logger } from "../configs/winstonConfig";
 
@@ -20,12 +19,12 @@ const createTransporter = async () => {
     const testAccount = await nodemailer.createTestAccount();
 
     return nodemailer.createTransport({
-      host: testAccount.smtp.host,
-      port: testAccount.smtp.port,
-      secure: testAccount.smtp.secure,
+      host: SMTP_HOST,
+      port: parseInt(SMTP_PORT || "587"),
+      secure: SMTP_SECURE === "true",
       auth: {
-        user: testAccount.user,
-        pass: testAccount.pass,
+        user: SMTP_USER,
+        pass: SMTP_PASS,
       },
     });
   } else {
@@ -67,7 +66,7 @@ export const sendVerificationEmail = async (
     const verificationUrl = createVerificationUrl(token, APP_URL);
 
     await sendEmail({
-      from: SMTP_FROM || '"Support" <support@example.com>',
+      from: SMTP_USER || '"Support" <support@example.com>',
       to: email,
       subject: "Verify Your Email Address",
       text: `Please verify your email by clicking the following link: ${verificationUrl}`,
@@ -97,7 +96,7 @@ export const sendPasswordResetEmail = async (
     const resetUrl = createPasswordResetUrl(token, APP_URL);
 
     await sendEmail({
-      from: SMTP_FROM || '"Support" <support@example.com>',
+      from: SMTP_USER || '"Support" <support@example.com>',
       to: email,
       subject: "Reset Your Password",
       text: `Please reset your password by clicking the following link: ${resetUrl}`,
@@ -125,7 +124,7 @@ export const sendWelcomeEmail = async (
 ): Promise<void> => {
   try {
     await sendEmail({
-      from: SMTP_FROM || '"Support" <support@example.com>',
+      from: SMTP_USER || '"Support" <support@example.com>',
       to: email,
       subject: "Welcome to Our Platform!",
       text: `Hi ${name}, thank you for verifying your email. Your account is now fully active.`,
