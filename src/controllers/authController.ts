@@ -20,7 +20,10 @@ import {
   sendVerificationEmail,
 } from "../services/emailService";
 import UserModel from "../models/User";
-import { log } from "winston";
+import { error, log } from "winston";
+import { Console } from "winston/lib/winston/transports";
+import { UpdateUser } from "../types/auth.type";
+import { IUser } from "../types/userType";
 
 const userRepository = new UserRepository();
 export class AuthController {
@@ -122,16 +125,25 @@ export class AuthController {
         return res.status(401).json({
           success: false,
           data: null,
+          error: "Invalid credentials",
           message: "Invalid credentials",
         });
       }
-
+      if (user.isEmailVerified === false) {
+        return res.status(400).json({
+          success: false,
+          data: null,
+          error: "Email is not verified, please verify your email.",
+          message: "Email is not verified, please verify your email."
+        });
+      }
       // Check if account is locked
       const isLocked = await userRepository.isAccountLocked(user);
       if (isLocked) {
         return res.status(401).json({
           success: false,
           data: null,
+          error: "Account locked. Please try again later or reset your password.",
           message:
             "Account locked. Please try again later or reset your password.",
         });
@@ -140,12 +152,11 @@ export class AuthController {
       // Check password
       const isPasswordValid = await user.correctPassword(password);
       if (!isPasswordValid) {
-        // Increment login attempts
         await userRepository.incrementLoginAttempts(user._id.toString());
-
         return res.status(401).json({
           success: false,
           data: null,
+          error: "Invalid credentials",
           message: "Invalid credentials",
         });
       }
@@ -198,6 +209,7 @@ export class AuthController {
             accessToken,
           },
         },
+        error: null,
         message: `User Login Successfully`,
       });
     } catch (err: unknown) {
@@ -305,6 +317,7 @@ export class AuthController {
         data: {
           accessToken: newAccessToken,
         },
+        error: null,
         message: `Refresh token Successfully`,
       });
     } catch (err: unknown) {
@@ -354,6 +367,7 @@ export class AuthController {
       return res.status(200).json({
         success: true,
         data: null,
+        error: null,
         message: "Logged out successfully",
       });
     } catch (err: unknown) {
@@ -377,10 +391,20 @@ export class AuthController {
       if (!user) {
         return res.status(404).json({
           success: false,
+          data: null,
+          error: "User not found",
           message: "User not found",
         });
       }
 
+      if (user.isEmailVerified === false) {
+        return res.status(400).json({
+          success: false,
+          data: null,
+          error: "Email is not verified, please verify your email.",
+          message: "Email is not verified, please verify your email."
+        });
+      }
       // Generate reset token
       const resetToken = await userRepository.createPasswordResetToken(
         user._id.toString()
@@ -389,14 +413,19 @@ export class AuthController {
       // In a real application, you would send an email with the reset link
       // For this example, we'll just return the token in the response
       sendPasswordResetEmail(email, resetToken);
+      console.log("Password reset token sent to email");
+      logger.info("Password reset token sent to email");
       return res.status(200).json({
         success: true,
+        data: null,
+        error: null,
         message: "Password reset token sent to email",
         resetToken, // In production, don't send this in the response
       });
     } catch (err: unknown) {
       const error = err as IError;
       console.error("Forgot password error:", error);
+      logger.error("Forgot password error:", error);
       return res.status(500).json({
         success: false,
         drta: null,
@@ -429,6 +458,7 @@ export class AuthController {
       return res.status(200).json({
         success: true,
         data: null,
+        error: null,
         message: "Password reset successfully",
       });
     } catch (err: unknown) {
@@ -454,12 +484,14 @@ export class AuthController {
         });
       }
 
+
       // Update user status to active and mark email as verified
       await userRepository.verifyEmail(user._id.toString());
 
       return res.status(200).json({
         success: true,
         data: null,
+        error: null,
         message: "Email verified successfully. Your account is now active.",
       });
     } catch (err: unknown) {
@@ -511,6 +543,7 @@ export class AuthController {
       return res.status(200).json({
         success: true,
         data: null,
+        error: null,
         message: "Verification email sent successfully",
       });
     } catch (err: unknown) {
@@ -626,6 +659,7 @@ export class AuthController {
 
       if (!refreshToken) {
         logger.error("changePassword:-Refresh token missing in cookies.");
+        console.error("changePassword:-Refresh token missing in cookies.");
         return res.status(401).json({
           success: false,
           data: null,
@@ -647,6 +681,16 @@ export class AuthController {
         });
       }
       const userId = decoded?.id;
+      const isAlreadyVerified = await userRepository.isEmailAlreadyVerified(userId.toString());
+
+      if (!isAlreadyVerified) {
+        return res.status(400).json({
+          success: false,
+          data: null,
+          error: "Email is not verified, please verify your email.",
+          message: "Email is not verified, please verify your email."
+        });
+      }
       const { oldPassword, newPassword } = req.body;
       if (!(oldPassword && newPassword)) {
         logger.error("changePassword: old password, and new password are required");
@@ -671,7 +715,7 @@ export class AuthController {
         });
       }
 
-      const isMatch = await bcrypt.compare(oldPassword,updatePassword.password);
+      const isMatch = await bcrypt.compare(oldPassword, updatePassword.password);
       if (!isMatch) {
         logger.error("changePassword:-Old password is incorrect.");
         return res.status(401).json({
