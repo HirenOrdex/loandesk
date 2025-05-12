@@ -30,6 +30,11 @@ router.post(
   // rateLimiter({ windowMs: 60 * 60 * 1000, max: 3 }), // 3 requests per hour
   authController.resendVerificationEmail
 );
+router.post(
+  "/change-password",
+  validateRequest("changePassword"),
+  authController.changePassword
+);
 router.get("/google", authController.googleAuth);
 router.get("/google/callback", authController.googleCallback);
 export default router;

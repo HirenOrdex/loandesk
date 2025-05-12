@@ -19,6 +19,8 @@ import {
   sendPasswordResetEmail,
   sendVerificationEmail,
 } from "../services/emailService";
+import UserModel from "../models/User";
+import { log } from "winston";
 
 const userRepository = new UserRepository();
 export class AuthController {
@@ -616,6 +618,105 @@ export class AuthController {
         });
       }
     })(req, res, next);
+  }
+
+  async changePassword(req: Request, res: Response): Promise<any> {
+    try {
+      const refreshToken = req.cookies.refreshToken;
+
+      if (!refreshToken) {
+        logger.error("changePassword:-Refresh token missing in cookies.");
+        return res.status(401).json({
+          success: false,
+          data: null,
+          error: "Unauthorized: Refresh token missing.",
+          message: "Unauthorized: Refresh token missing.",
+        });
+      }
+      // Verify token and extract userId
+      let decoded: any;
+      try {
+        decoded = verifyRefreshToken(refreshToken); // This should return an object with `id`
+      } catch (err) {
+        logger.error("changePassword:-Invalid refresh token.");
+        return res.status(401).json({
+          success: false,
+          data: null,
+          error: "Invalid or expired refresh token.",
+          message: "Invalid or expired refresh token.",
+        });
+      }
+      const userId = decoded?.id;
+      const { oldPassword, newPassword } = req.body;
+      if (!(oldPassword && newPassword)) {
+        logger.error("changePassword: old password, and new password are required");
+        console.error("changePassword: old password, and new password are required");
+        return res.status(400).json({
+          success: false,
+          data: null,
+          error: "User ID, old password, and new password are required.",
+          message: "User ID, old password, and new password are required.",
+        });
+      }
+
+      // const updatePassword = await UserModel.findById({userId });
+      const updatePassword = await UserModel.findOne({ _id: userId }).select("+password");
+      if (!updatePassword?.password) {
+        logger.error("changePassword:-Password is missing in the user record.");
+        return res.status(500).json({
+          success: false,
+          data: null,
+          error: "Password not found in user record.",
+          message: "Password not found in user record.",
+        });
+      }
+
+      const isMatch = await bcrypt.compare(oldPassword,updatePassword.password);
+      if (!isMatch) {
+        logger.error("changePassword:-Old password is incorrect.");
+        return res.status(401).json({
+          success: false,
+          data: null,
+          error: "Old password is incorrect.",
+          message: "Old password is incorrect.",
+        });
+      } else {
+        const salt = await bcrypt.genSalt(12);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+        const updateUser = await UserModel.findByIdAndUpdate(
+          userId,
+          { password: hashedPassword },
+          { new: true } // returns the updated document
+        );
+
+        if (updateUser) {
+          await redisClient.del(`user_${userId}`);
+          logger.info("changePassword:-Password updated successfully.");
+          return res.status(200).json({
+            success: true,
+            data: null,
+            error: null,
+            message: "Password updated successfully.",
+          });
+        } else {
+          logger.error("changePassword:-Unable to update the password");
+          return res.status(500).json({
+            success: false,
+            data: null,
+            error: "Unable to update the password.",
+            message: "Unable to update the password.",
+          });
+        }
+      }
+    } catch (err: any) {
+      logger.error(err);
+      return res.status(500).json({
+        success: false,
+        data: null,
+        message: `An internal server error occurred.`,
+        error: `changePassword:- An internal server error occurred. ${err.message}`,
+      });
+    }
   }
 }
 

@@ -12,7 +12,7 @@ import { configurePassport } from "./configs/passportConfig";
 import authRoutes from "./routes/authRoutes";
 import bankerRoutes from "./routes/bankerRoutes";
 import { connectRedis } from "./utils/redisClient";
-
+import cookieParser from 'cookie-parser';
 const port = PORT || 3000;
 
 const app = express();
@@ -24,7 +24,7 @@ const corsOptions: cors.CorsOptions = {
   credentials: true,
   exposedHeaders: ["accesstoken", "X-accesstoken"],
 };
-
+app.use(cookieParser());
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

@@ -67,6 +67,14 @@ const authSchemas = {
         "any.required": "Password is required",
       }),
   }),
+  changePassword: Joi.object({
+    oldPassword: Joi.string().required().messages({
+      "any.required": "Old Password is required",
+    }),
+    newPassword: Joi.string().required().messages({
+      "any.required": "New Password is required",
+    }),
+  }),
 };
 
 // Validator middleware
