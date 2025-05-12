@@ -22,7 +22,6 @@ import {
 import UserModel from "../models/User";
 import { error, log } from "winston";
 import { Console } from "winston/lib/winston/transports";
-import { UpdateUser } from "../types/auth.type";
 import { IUser } from "../types/userType";
 
 const userRepository = new UserRepository();
