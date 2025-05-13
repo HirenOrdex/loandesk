@@ -54,7 +54,7 @@ export class AuthController {
         return res.status(409).json({
           success: false,
           data: null,
-          message: "Email already in use",
+          message: "The email address entered is already registered. Please try again with new email or contact the support team.",
         });
       }
       if (password !== confirm_password) {
@@ -189,7 +189,7 @@ export class AuthController {
           // Check if user already exists
           const existingUser = await UserModel.findOne({ email });
           if (existingUser) {
-            return res.status(409).json({ message: "User already exists" });
+            return res.status(409).json({ message: "The email address entered is already registered. Please try again with new email or contact the support team." });
           }
           const roleId = await userRepository.findRoleIdByName("Banker");
 
@@ -252,16 +252,16 @@ export class AuthController {
         return res.status(401).json({
           success: false,
           data: null,
-          error: "Invalid credentials",
-          message: "Invalid credentials",
+          error: "Cannot Process Request. Username does not exists",
+          message: "Cannot Process Request. Username does not exists"
         });
       }
       if (user.isEmailVerified === false) {
         return res.status(400).json({
           success: false,
           data: null,
-          error: "Email is not verified, please verify your email.",
-          message: "Email is not verified, please verify your email.",
+          error: "Account is not verified. Please check your email & complete verification process.",
+          message: "Account is not verified. Please check your email & complete verification process.",
         });
       }
       // Check if account is locked
@@ -270,10 +270,8 @@ export class AuthController {
         return res.status(401).json({
           success: false,
           data: null,
-          error:
-            "Account locked. Please try again later or reset your password.",
-          message:
-            "Account locked. Please try again later or reset your password.",
+          error: "Account locked. Please try again later or reset your password.",
+          message: "Account locked. Please try again later or reset your password.",
         });
       }
 
@@ -284,8 +282,8 @@ export class AuthController {
         return res.status(401).json({
           success: false,
           data: null,
-          error: "Invalid credentials",
-          message: "Invalid credentials",
+          error: "Login Failed. Invalid Username or Password",
+          message: "Login Failed. Invalid Username or Password",
         });
       }
       // send otp
@@ -324,7 +322,7 @@ export class AuthController {
 
         return res.status(200).json({
           success: true,
-          message: "OTP sent to your phone",
+          message: `A text message with a 6-digit verification code was just sent to ${phone}`,
           data: {
             requestId,
             expiresIn: 300,
@@ -538,8 +536,8 @@ export class AuthController {
         return res.status(404).json({
           success: false,
           data: null,
-          error: "User not found",
-          message: "User not found",
+          error: "Cannot Process Request. Username does not exists",
+          message: "Cannot Process Request. Username does not exists",
         });
       }
 
@@ -548,8 +546,8 @@ export class AuthController {
         return res.status(400).json({
           success: false,
           data: null,
-          error: "Email is not verified, please verify your email.",
-          message: "Email is not verified, please verify your email.",
+          error: "Cannot Process Request. User is not activated",
+          message: "Cannot Process Request. User is not activated",
         });
       }
       // Generate reset token
@@ -566,7 +564,7 @@ export class AuthController {
         success: true,
         data: null,
         error: null,
-        message: "Password reset token sent to email",
+        message: "Email has been sent to your registered email Id. Please follow the steps to reset your password",
         resetToken, // In production, don't send this in the response
       });
     } catch (err: unknown) {
@@ -677,8 +675,8 @@ export class AuthController {
         return res.status(404).json({
           success: false,
           data: null,
-          error: "User not found",
-          message: "User not found",
+          error: "Error occured while invite User. Please contact support",
+          message: "Error occured while invite User. Please contact support",
         });
       }
 
@@ -689,8 +687,8 @@ export class AuthController {
         return res.status(400).json({
           success: false,
           data: null,
-          error: "Email already verified",
-          message: "Email already verified",
+          error: "User is already active. Please login to continue. Or use forgot password if you forgot the password. Else please contact support",
+          message: "User is already active. Please login to continue. Or use forgot password if you forgot the password. Else please contact support",
         });
       }
 
@@ -713,7 +711,7 @@ export class AuthController {
         success: true,
         data: null,
         error: null,
-        message: "Verification email sent successfully",
+        message: "Done! We have resent an email with instructions on how to activate your account. Please check your inbox. If you still did not receive an email, please contact us at support@loandesk.com.",
       });
     } catch (err: unknown) {
       const error = err as IError;
@@ -962,7 +960,7 @@ export class AuthController {
         return res.status(400).json({
           success: false,
           data: null,
-          message: "Email and OTP are required",
+          message: "Email and On-Demand Code are required",
         });
       }
       const user = await userRepository.findUserByEmail(email);
@@ -981,7 +979,7 @@ export class AuthController {
         return res.status(400).json({
           success: false,
           data: null,
-          message: "Invalid or expired request",
+          message: "Invalid or expired On-Demand Code",
         });
       }
 
@@ -990,7 +988,7 @@ export class AuthController {
         return res.status(400).json({
           success: false,
           data: null,
-          message: "Invalid OTP",
+          message: "Invalid On-Demand Code",
         });
       }
 
@@ -1049,7 +1047,7 @@ export class AuthController {
               accessToken,
             },
           },
-          message: `User Login Successfully`,
+          message: `Login Successfully`,
         });
       }
     } catch (error) {
