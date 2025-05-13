@@ -1,12 +1,12 @@
 // src/routes/authRoutes.ts
 import { Router } from "express";
 import authController from "../controllers/authController";
-import { validateRequest } from "../validators/authValidator";
+import { validateRegister, validateRequest } from "../validators/authValidator";
 
 const router = Router();
 
 // Public routes
-router.post("/register", authController.register);
+router.post("/register", validateRegister, authController.register);
 router.post("/login", authController.sendLoginOtp);
 router.post("/refresh-token", authController.refreshToken);
 router.post("/logout", authController.logout);

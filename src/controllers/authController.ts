@@ -43,7 +43,7 @@ export class AuthController {
     logger.info(`Coming into function ${functionName}`);
 
     const type = req.query.type;
-    logger.info(`User type: ${type}`);
+    logger.info(`Registering ${type}: ${JSON.stringify(req.body)}`);
 
     try {
       const { email, password, confirm_password } = req.body;
@@ -51,14 +51,18 @@ export class AuthController {
       // Check if user already exists
       const existingUser = await userRepository.findUserByEmail(email);
       if (existingUser) {
+        logger.info(`Email already in use`);
         return res.status(409).json({
           success: false,
           data: null,
-          message: "The email address entered is already registered. Please try again with new email or contact the support team.",
-          error: "The email address entered is already registered. Please try again with new email or contact the support team.",
+          message:
+            "The email address entered is already registered. Please try again with new email or contact the support team.",
+          error:
+            "The email address entered is already registered. Please try again with new email or contact the support team.",
         });
       }
       if (password !== confirm_password) {
+        logger.info(`confirm Password and Password Should be same`);
         return res.status(400).json({
           success: false,
           data: null,
@@ -127,7 +131,7 @@ export class AuthController {
 
           const accessToken = generateAccessToken({
             id: newUser._id.toString(),
-            role: "banker",
+            role: "Banker",
           });
 
           const refreshToken = generateRefreshToken({
@@ -184,22 +188,28 @@ export class AuthController {
 
           // Validate passwords
           if (password !== confirm_password) {
-            return res.status(400).json({ 
+            logger.info(`Passwords do not match`);
+
+            return res.status(400).json({
               success: false,
               data: null,
               message: "Passwords do not match",
-              error: "Passwords do not match" 
+              error: "Passwords do not match",
             });
           }
 
           // Check if user already exists
           const existingUser = await UserModel.findOne({ email });
           if (existingUser) {
-            return res.status(409).json({ 
+            logger.info(`User Already Exists`);
+
+            return res.status(409).json({
               success: false,
               data: null,
-              message: "The email address entered is already registered. Please try again with new email or contact the support team.",
-              error: "The email address entered is already registered. Please try again with new email or contact the support team.",
+              message:
+                "The email address entered is already registered. Please try again with new email or contact the support team.",
+              error:
+                "The email address entered is already registered. Please try again with new email or contact the support team.",
             });
           }
           const roleId = await userRepository.findRoleIdByName("Banker");
@@ -229,18 +239,19 @@ export class AuthController {
             message: "Borrower created successfully",
             user: newUser,
             borrower: newBorrower,
-            error: null
+            error: null,
           });
         } catch (error) {
           console.error("Error creating borrower:", error);
-          return res.status(500).json({ 
+          return res.status(500).json({
             success: false,
             data: null,
             message: "Internal Server Error",
-            error: "Internal Server Error"
+            error: "Internal Server Error",
           });
         }
       }
+      logger.error(`Unsupported user type: ${type}`);
       // FUTURE: Other user types like borrower, admin etc.
       return res.status(400).json({
         success: false,
@@ -263,39 +274,52 @@ export class AuthController {
   async sendLoginOtp(req: Request, res: Response): Promise<any> {
     try {
       const { email, password } = req.body;
+      const functionName = "sendLoginOtp";
+      logger.info(`Coming into Controller ${controllerName}`);
+      logger.info(`Coming into function ${functionName}`);
 
       // Find user
       const user = await userRepository.findUserByEmail(email);
       if (!user) {
+        logger.info(`Invalid credentials`);
         return res.status(401).json({
           success: false,
           data: null,
           error: "Cannot Process Request. Username does not exists",
-          message: "Cannot Process Request. Username does not exists"
+          message: "Cannot Process Request. Username does not exists",
         });
       }
       if (user.isEmailVerified === false) {
+        logger.info(`Email is not verified, please verify your email.`);
         return res.status(400).json({
           success: false,
           data: null,
-          error: "Account is not verified. Please check your email & complete verification process.",
-          message: "Account is not verified. Please check your email & complete verification process.",
+          error:
+            "Account is not verified. Please check your email & complete verification process.",
+          message:
+            "Account is not verified. Please check your email & complete verification process.",
         });
       }
       // Check if account is locked
       const isLocked = await userRepository.isAccountLocked(user);
       if (isLocked) {
+        logger.info(
+          `Account locked. Please try again later or reset your password.`
+        );
         return res.status(401).json({
           success: false,
           data: null,
-          error: "Account locked. Please try again later or reset your password.",
-          message: "Account locked. Please try again later or reset your password.",
+          error:
+            "Account locked. Please try again later or reset your password.",
+          message:
+            "Account locked. Please try again later or reset your password.",
         });
       }
 
       // Check password
       const isPasswordValid = await user.correctPassword(password);
       if (!isPasswordValid) {
+        logger.info(`Invalid credentials Password`);
         await userRepository.incrementLoginAttempts(user._id.toString());
         return res.status(401).json({
           success: false,
@@ -591,7 +615,8 @@ export class AuthController {
         success: true,
         data: null,
         error: null,
-        message: "Email has been sent to your registered email Id. Please follow the steps to reset your password",
+        message:
+          "Email has been sent to your registered email Id. Please follow the steps to reset your password",
         resetToken, // In production, don't send this in the response
       });
     } catch (err: unknown) {
@@ -723,8 +748,10 @@ export class AuthController {
         return res.status(400).json({
           success: false,
           data: null,
-          error: "User is already active. Please login to continue. Or use forgot password if you forgot the password. Else please contact support",
-          message: "User is already active. Please login to continue. Or use forgot password if you forgot the password. Else please contact support",
+          error:
+            "User is already active. Please login to continue. Or use forgot password if you forgot the password. Else please contact support",
+          message:
+            "User is already active. Please login to continue. Or use forgot password if you forgot the password. Else please contact support",
         });
       }
 
@@ -747,7 +774,8 @@ export class AuthController {
         success: true,
         data: null,
         error: null,
-        message: "Done! We have resent an email with instructions on how to activate your account. Please check your inbox. If you still did not receive an email, please contact us at support@loandesk.com.",
+        message:
+          "Done! We have resent an email with instructions on how to activate your account. Please check your inbox. If you still did not receive an email, please contact us at support@loandesk.com.",
       });
     } catch (err: unknown) {
       const error = err as IError;
@@ -762,7 +790,11 @@ export class AuthController {
     }
   }
 
-  async googleAuth(req: Request,res: Response,next: NextFunction): Promise<any> {
+  async googleAuth(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> {
     const functionName = "googleAuth";
     logger.info(`Coming into Controller ${controllerName}`);
     logger.info(`Coming into function ${functionName}`);
@@ -772,7 +804,11 @@ export class AuthController {
   }
 
   // Google OAuth callback
-  async googleCallback(req: Request,res: Response,next: NextFunction): Promise<any> {
+  async googleCallback(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> {
     const functionName = "googleCallback";
     logger.info(`Coming into Controller ${controllerName}`);
     logger.info(`Coming into function ${functionName}`);
@@ -990,10 +1026,15 @@ export class AuthController {
     }
   }
   async login(req: Request, res: Response): Promise<any> {
+    const functionName = "login";
+    logger.info(`Coming into Controller ${controllerName}`);
+    logger.info(`Coming into function ${functionName}`);
+
     try {
       const { email, otp } = req.body;
       console.log("in login ");
       if (!email || !otp) {
+        logger.info(`Email and OTP are required`);
         return res.status(400).json({
           success: false,
           data: null,
@@ -1003,6 +1044,7 @@ export class AuthController {
       }
       const user = await userRepository.findUserByEmail(email);
       if (!user) {
+        logger.info(`INvaild Credentials`);
         return res.status(401).json({
           success: false,
           data: null,
@@ -1095,6 +1137,7 @@ export class AuthController {
       }
     } catch (error) {
       console.error("Error in verifyOtp:", error);
+      logger.error("Error in verifyOtp:", error);
       return res.status(500).json({
         success: false,
         data: null,
