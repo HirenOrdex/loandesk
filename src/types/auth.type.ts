@@ -14,7 +14,7 @@ export interface UpdateUser {
   phone: string;
   createdAt: Date;
   updatedAt: Date;
-  __v: number;
+  __v?: number;
   password?: string; // Optional, only selected explicitly
 }
 

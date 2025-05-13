@@ -228,8 +228,10 @@ export class AuthController {
     try {
       // Get refresh token from cookie
       const refreshToken: string = req.cookies.refreshToken;
+      logger.info("refreshToken: Received refresh token request");
 
       if (!refreshToken) {
+        logger.error("refreshToken: Refresh token not found in cookies.");
         return res.status(401).json({
           success: false,
           data: null,
@@ -255,6 +257,7 @@ export class AuthController {
       // Find user
       const user = await userRepository.findUserById(decoded.id);
       if (!user) {
+        logger.error(`refreshToken: No user found with ID: ${decoded.id}`);
         return res.status(401).json({
           success: false,
           data: null,
@@ -302,6 +305,7 @@ export class AuthController {
         user._id.toString(),
         newRefreshToken
       );
+      logger.info(`refreshToken: Refresh token updated for user ID: ${user._id}`)
 
       // Blacklist old refresh token
       await addTokenToBlacklist(refreshToken, "7d");
@@ -313,9 +317,10 @@ export class AuthController {
         sameSite: "strict",
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
-      logger.info("cookies .....", cookies);
 
+      logger.info("cookies .....", cookies);
       console.log("cookies .....", cookies);
+
       // Send response
       return res.status(200).json({
         success: true,
@@ -327,6 +332,7 @@ export class AuthController {
       });
     } catch (err: unknown) {
       const error = err as IError;
+      logger.error("Refresh token error:", error);
       console.error("Refresh token error:", error);
       return res.status(401).json({
         success: false,
@@ -340,7 +346,7 @@ export class AuthController {
   async logout(req: Request, res: Response): Promise<any> {
     try {
       // Get refresh token from cookie
-      const refreshToken = req.cookies.refreshToken;
+      const refreshToken: string | undefined = req.cookies.refreshToken;
 
       if (refreshToken) {
         try {
@@ -350,17 +356,25 @@ export class AuthController {
           // Invalidate refresh token in database
           await userRepository.updateRefreshToken(decoded.id, null);
           await redisClient.del(`user_${decoded.id.toString()}`);
+          logger.info(`logout: Deleted cached data for user ID: ${decoded.id}`);
 
           // Add refresh token to blacklist
           await addTokenToBlacklist(refreshToken, "7d");
         } catch (error) {
           // Continue logout process even if token verification fails
           console.error("Token verification error during logout:", error);
+          logger.error("Token verification error during logout:", error);
+          return res.status(401).json({
+            success: false,
+            data: null,
+            error: "Token verification error during logout.",
+            message: "Token verification error during logout.",
+          });
         }
       }
 
       // Get access token from Authorization header
-      const authHeader = req.headers.authorization;
+      const authHeader: string | undefined = req.headers.authorization;
       if (authHeader?.startsWith("Bearer ")) {
         const accessToken = authHeader.split(" ")[1];
 
@@ -379,6 +393,7 @@ export class AuthController {
     } catch (err: unknown) {
       const error = err as IError;
       console.error("Logout error:", error);
+      logger.error("Logout error:", error);
       return res.status(500).json({
         success: false,
         data: null,
@@ -394,6 +409,7 @@ export class AuthController {
 
       // Find user
       const user = await userRepository.findUserByEmail(email);
+      logger.error(`forgotPassword: No user found with email: ${email}`);
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -403,7 +419,8 @@ export class AuthController {
         });
       }
 
-      if (user.isEmailVerified === false) {
+      if (!user.isEmailVerified) { 
+        logger.error(`forgotPassword: Email not verified for user: ${email}`);
         return res.status(400).json({
           success: false,
           data: null,
@@ -434,7 +451,7 @@ export class AuthController {
       logger.error("Forgot password error:", error);
       return res.status(500).json({
         success: false,
-        drta: null,
+        data: null,
         message: "Server error",
         error: `error ${error.message}`,
       });
@@ -444,7 +461,7 @@ export class AuthController {
   async resetPassword(req: Request, res: Response): Promise<any> {
     try {
       const { token, password } = req.body;
-
+      logger.info(`resetPassword: Received password reset request with token: ${token}`);
       // Find user with valid reset token
       const user = await userRepository.findUserByResetToken(token);
       if (!user) {
@@ -454,10 +471,10 @@ export class AuthController {
           error: "Invalid or expired token",
           message: "Invalid or expired token",
         });
-      } 
+      }
       // Update password
       await userRepository.updatePassword(user._id.toString(), password);
-
+      logger.info(`resetPassword: Password updated successfully for user ID: ${user._id}`);
       // Invalidate all refresh tokens
       await userRepository.updateRefreshToken(user._id.toString(), null);
 
@@ -475,19 +492,22 @@ export class AuthController {
         data: null,
         message: "Server error",
         error: `error ${error.message}`,
-        
+
       });
     }
   }
   async verifyEmail(req: Request, res: Response): Promise<any> {
     try {
       const { token } = req.params;
-
+      logger.info("verifyEmail: Received request with token:", token);
       // Find user by verification token
       const user = await userRepository.findUserByEmailVerificationToken(token);
       if (!user) {
+        logger.error("verifyEmail: Invalid or expired token");
         return res.status(400).json({
           success: false,
+          data: null,
+          error: "Invalid or expired verification token",
           message: "Invalid or expired verification token",
         });
       }
@@ -495,6 +515,7 @@ export class AuthController {
 
       // Update user status to active and mark email as verified
       await userRepository.verifyEmail(user._id.toString());
+      logger.info(`verifyEmail: Email verified successfully for user ID ${user._id}`);
 
       return res.status(200).json({
         success: true,
@@ -505,6 +526,7 @@ export class AuthController {
     } catch (err: unknown) {
       const error = err as IError;
       console.error("Email verification error:", error);
+      logger.error("Email verification error:", error);
       return res.status(500).json({
         success: false,
         data: null,
@@ -521,17 +543,21 @@ export class AuthController {
       // Find user by email
       const user = await userRepository.findUserByEmail(email);
       if (!user) {
+        logger.error(`resendVerificationEmail: User not found with email ${email}`);
         return res.status(404).json({
           success: false,
           data: null,
+          error: "User not found",
           message: "User not found",
         });
       }
 
       if (user.isEmailVerified) {
+        logger.error(`resendVerificationEmail: Email already verified for user ID ${user._id}`);
         return res.status(400).json({
           success: false,
           data: null,
+          error: "Email already verified",
           message: "Email already verified",
         });
       }
@@ -547,6 +573,7 @@ export class AuthController {
 
       // Send verification email``
       await sendVerificationEmail(email, emailVerificationToken);
+      logger.info(`resendVerificationEmail: Verification email sent to ${email}`);
 
       return res.status(200).json({
         success: true,
@@ -557,6 +584,7 @@ export class AuthController {
     } catch (err: unknown) {
       const error = err as IError;
       console.error("Resend verification email error:", error);
+      logger.error("Resend verification email error:", error);
       return res.status(500).json({
         success: false,
         data: null,
@@ -566,14 +594,14 @@ export class AuthController {
     }
   }
 
-  googleAuth = (req: Request, res: Response, next: NextFunction) => {
+  async googleAuth(req: Request, res: Response, next: NextFunction): Promise<any>{
     passport.authenticate("google", {
       scope: ["profile", "email"],
     })(req, res, next);
   };
 
   // Google OAuth callback
-  googleCallback(req: Request, res: Response, next: NextFunction) {
+  async googleCallback(req: Request, res: Response, next: NextFunction): Promise<any> {
     passport.authenticate("google", async (err: any, profile: any) => {
       if (err || !profile) {
         console.error("OAuth failed:", err);
@@ -681,6 +709,7 @@ export class AuthController {
         decoded = verifyRefreshToken(refreshToken); // This should return an object with `id`
       } catch (err) {
         logger.error("changePassword:-Invalid refresh token.");
+        console.error("changePassword:-Invalid refresh token.");
         return res.status(401).json({
           success: false,
           data: null,
@@ -726,6 +755,7 @@ export class AuthController {
       const isMatch = await bcrypt.compare(oldPassword, updatePassword.password);
       if (!isMatch) {
         logger.error("changePassword:-Old password is incorrect.");
+        console.error("changePassword:-Old password is incorrect.");
         return res.status(401).json({
           success: false,
           data: null,
@@ -743,6 +773,7 @@ export class AuthController {
 
         if (updateUser) {
           await redisClient.del(`user_${userId}`);
+          console.log("changePassword:-User password updated successfully.");
           logger.info("changePassword:-Password updated successfully.");
           return res.status(200).json({
             success: true,
