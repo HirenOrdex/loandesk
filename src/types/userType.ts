@@ -1,6 +1,6 @@
 // types/userType.ts or interfaces/user.interface.ts
 
-import { Document, Types } from 'mongoose';
+import { Document, Types } from "mongoose";
 
 export interface CompanyInfo {
   _id: Types.ObjectId;
@@ -13,14 +13,15 @@ export interface CompanyInfo {
 
 // This is your schema shape
 export interface IUser {
+  _id: Types.ObjectId;
   firstName: string;
-  lastName:string;
+  lastName: string;
   phone: string;
   email: string;
   password: string;
-  role: 'user' | 'admin' | 'superadmin';
+  role: "user" | "admin" | "superadmin";
   active: boolean;
-  status: 'active' | 'inactive' | 'pending' | 'deleted';
+  status: "active" | "inactive" | "pending" | "deleted";
   loginAttempts: number;
   lastFailedLoginAt?: Date;
   isPhoneVerified: boolean;

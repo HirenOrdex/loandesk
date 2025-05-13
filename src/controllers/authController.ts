@@ -19,7 +19,6 @@ import {
   sendPasswordResetEmail,
   sendVerificationEmail,
 } from "../services/emailService";
-import UserModel, { IUser } from "../models/User";
 import { generateOTP, verifyOTP } from "../utils/otpUtils";
 import otpRepository from "../repositories/otpRepository";
 import { BankerRepossitory } from "../repositories/bankerRepository";
@@ -27,10 +26,8 @@ import { IBankerRegistration } from "../models/BankerModel";
 import { IAddress } from "../models/AddressModel";
 import deviceRepository from "../repositories/deviceRepository";
 import { extractDeviceInfo } from "../utils/deviceUtils";
-import { error } from "console";
 import { BorrowerRepository } from "../repositories/borrowerRepository";
 import UserModel from "../models/User";
-import { error, log } from "winston";
 import { Console } from "winston/lib/winston/transports";
 import { IUser } from "../types/userType";
 import { UpdateUser } from "../types/auth.type";
@@ -264,7 +261,7 @@ export class AuthController {
           success: false,
           data: null,
           error: "Email is not verified, please verify your email.",
-          message: "Email is not verified, please verify your email."
+          message: "Email is not verified, please verify your email.",
         });
       }
       // Check if account is locked
@@ -273,7 +270,8 @@ export class AuthController {
         return res.status(401).json({
           success: false,
           data: null,
-          error: "Account locked. Please try again later or reset your password.",
+          error:
+            "Account locked. Please try again later or reset your password.",
           message:
             "Account locked. Please try again later or reset your password.",
         });
@@ -333,9 +331,7 @@ export class AuthController {
             // For development only, remove in production
             otp: NODE_ENV === "development" ? otp : undefined,
           },
-                  message: `User Login Successfully`,
-        error: null,
-
+          error: null,
         });
       }
     } catch (err: unknown) {
@@ -431,7 +427,9 @@ export class AuthController {
         user._id.toString(),
         newRefreshToken
       );
-      logger.info(`refreshToken: Refresh token updated for user ID: ${user._id}`)
+      logger.info(
+        `refreshToken: Refresh token updated for user ID: ${user._id}`
+      );
 
       // Blacklist old refresh token
       await addTokenToBlacklist(refreshToken, "7d");
@@ -545,17 +543,17 @@ export class AuthController {
         });
       }
 
-      if (!user.isEmailVerified) { 
+      if (!user.isEmailVerified) {
         logger.error(`forgotPassword: Email not verified for user: ${email}`);
         return res.status(400).json({
           success: false,
           data: null,
           error: "Email is not verified, please verify your email.",
-          message: "Email is not verified, please verify your email."
+          message: "Email is not verified, please verify your email.",
         });
       }
       // Generate reset token
-      const resetToken:string = await userRepository.createPasswordResetToken(
+      const resetToken: string = await userRepository.createPasswordResetToken(
         user._id.toString()
       );
 
@@ -587,7 +585,9 @@ export class AuthController {
   async resetPassword(req: Request, res: Response): Promise<any> {
     try {
       const { token, password } = req.body;
-      logger.info(`resetPassword: Received password reset request with token: ${token}`);
+      logger.info(
+        `resetPassword: Received password reset request with token: ${token}`
+      );
       // Find user with valid reset token
       const user = await userRepository.findUserByResetToken(token);
       if (!user) {
@@ -600,7 +600,9 @@ export class AuthController {
       }
       // Update password
       await userRepository.updatePassword(user._id.toString(), password);
-      logger.info(`resetPassword: Password updated successfully for user ID: ${user._id}`);
+      logger.info(
+        `resetPassword: Password updated successfully for user ID: ${user._id}`
+      );
       // Invalidate all refresh tokens
       await userRepository.updateRefreshToken(user._id.toString(), null);
 
@@ -618,7 +620,6 @@ export class AuthController {
         data: null,
         message: "Server error",
         error: `error ${error.message}`,
-
       });
     }
   }
@@ -638,10 +639,11 @@ export class AuthController {
         });
       }
 
-
       // Update user status to active and mark email as verified
       await userRepository.verifyEmail(user._id.toString());
-      logger.info(`verifyEmail: Email verified successfully for user ID ${user._id}`);
+      logger.info(
+        `verifyEmail: Email verified successfully for user ID ${user._id}`
+      );
 
       return res.status(200).json({
         success: true,
@@ -669,7 +671,9 @@ export class AuthController {
       // Find user by email
       const user = await userRepository.findUserByEmail(email);
       if (!user) {
-        logger.error(`resendVerificationEmail: User not found with email ${email}`);
+        logger.error(
+          `resendVerificationEmail: User not found with email ${email}`
+        );
         return res.status(404).json({
           success: false,
           data: null,
@@ -679,7 +683,9 @@ export class AuthController {
       }
 
       if (user.isEmailVerified) {
-        logger.error(`resendVerificationEmail: Email already verified for user ID ${user._id}`);
+        logger.error(
+          `resendVerificationEmail: Email already verified for user ID ${user._id}`
+        );
         return res.status(400).json({
           success: false,
           data: null,
@@ -699,7 +705,9 @@ export class AuthController {
 
       // Send verification email``
       await sendVerificationEmail(email, emailVerificationToken);
-      logger.info(`resendVerificationEmail: Verification email sent to ${email}`);
+      logger.info(
+        `resendVerificationEmail: Verification email sent to ${email}`
+      );
 
       return res.status(200).json({
         success: true,
@@ -720,14 +728,22 @@ export class AuthController {
     }
   }
 
-  async googleAuth(req: Request, res: Response, next: NextFunction): Promise<any>{
+  async googleAuth(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> {
     passport.authenticate("google", {
       scope: ["profile", "email"],
     })(req, res, next);
-  };
+  }
 
   // Google OAuth callback
-  async googleCallback(req: Request, res: Response, next: NextFunction): Promise<any> {
+  async googleCallback(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> {
     passport.authenticate("google", async (err: any, profile: any) => {
       if (err || !profile) {
         console.error("OAuth failed:", err);
@@ -842,15 +858,17 @@ export class AuthController {
           message: "Invalid or expired refresh token.",
         });
       }
-      const userId:string = decoded?.id;
-      const isAlreadyVerified = await userRepository.isEmailAlreadyVerified(userId.toString());
+      const userId: string = decoded?.id;
+      const isAlreadyVerified = await userRepository.isEmailAlreadyVerified(
+        userId.toString()
+      );
 
       if (!isAlreadyVerified) {
         return res.status(400).json({
           success: false,
           data: null,
           error: "Email is not verified, please verify your email.",
-          message: "Email is not verified, please verify your email."
+          message: "Email is not verified, please verify your email.",
         });
       }
       const { oldPassword, newPassword } = req.body;
@@ -870,7 +888,9 @@ export class AuthController {
       }
 
       //
-      const updatePassword :UpdateUser|null= await UserModel.findOne({ _id: userId }).select("+password");
+      const updatePassword: UpdateUser | null = await UserModel.findOne({
+        _id: userId,
+      }).select("+password");
 
       if (!updatePassword?.password) {
         logger.error("changePassword:-Password is missing in the user record.");
@@ -898,7 +918,7 @@ export class AuthController {
       } else {
         const salt = await bcrypt.genSalt(12);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
-        const updateUser:UpdateUser|null = await UserModel.findByIdAndUpdate(
+        const updateUser: UpdateUser | null = await UserModel.findByIdAndUpdate(
           userId,
           { password: hashedPassword },
           { new: true } // returns the updated document
