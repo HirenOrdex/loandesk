@@ -1,68 +1,233 @@
+@import "tailwindcss";
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --primary-color: #76bd23;
+  --primary-color-hover: #68b113;
+  --gray: #999;
+  --darkgray: #465155;
+  --border: #ccc;
+  --white: #f5f5f5;
+  --blue: #1170a5;
+  --label: #4c4c4c;
+  --success: #3c763d;
+  --error: #a94442;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+@font-face {
+  font-family: "Open Sans-Regular";
+  src: url("assets/fonts/OpenSans-Regular.eot?v=1.1.0");
+  src: url("assets/fonts/OpenSans-Regular.eot?#iefix&v=1.1.0")
+      format("embedded-opentype"),
+    url("assets/fonts/OpenSans-Regular.woff2?v=1.1.0") format("woff2"),
+    url("assets/fonts/OpenSans-Regular.woff?v=1.1.0") format("woff"),
+    url("assets/fonts/OpenSans-Regular.ttf?v=1.1.0") format("truetype"),
+    url("assets/fonts/OpenSans-Regular.svg?v=1.1.0#Regular") format("svg");
+  font-weight: normal;
+  font-style: normal;
 }
-a:hover {
-  color: #535bf2;
+
+@font-face {
+  font-family: "Open Sans-Semibold";
+  src: url("assets/fonts/OpenSans-Semibold.eot?v=1.1.0");
+  src: url("assets/fonts/OpenSans-Semibold.eot?#iefix&v=1.1.0")
+      format("embedded-opentype"),
+    url("assets/fonts/OpenSans-Semibold.woff2?v=1.1.0") format("woff2"),
+    url("assets/fonts/OpenSans-Semibold.woff?v=1.1.0") format("woff"),
+    url("assets/fonts/OpenSans-Semibold.ttf?v=1.1.0") format("truetype"),
+    url("assets/fonts/OpenSans-Semibold.svg?v=1.1.0#Semibold") format("svg");
+  font-weight: 600;
+  font-style: normal;
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  font-family: "Open Sans-Regular";
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  background-color: var(--white);
+}
+
+::-webkit-scrollbar-thumb {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  background-color: var(--darkgray);
+}
+
+::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  background-color: var(--white);
+}
+
+/* common form element style */
+
+a{
+  cursor: pointer;  /* make cursor pointer on all a tag without using href attribute */
+}
+
+input,
+select,
+textarea {
+  display: block;
+  width: 100%;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  border: 1px solid var(--border);
+  border-radius: 0.25rem;
+  outline: 0;
+  color: var(--label);
+}
+
+input:disabled {
+  background-color: #eceeef;
+  cursor: not-allowed;
+}
+
+input[type="checkbox"],
+[type="radio"] {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--border);
+  color: var(--white);
+}
+
+input:not([type="radio"]) {
+  border-radius: 3px;
+}
+
+input:focus {
+  border-color: var(--label);
+  border-width: 0.5px;
+}
+
+input[type="checkbox"]:checked {
+  accent-color: var(--primary-color);
+}
+
+label {
+  display: inline-block;
+  color: var(--label);
+  margin-bottom: 0.5rem;
 }
 
 h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+  font-family: "Open Sans-Semibold";
+  font-size: 2.5rem;
+  margin-bottom: 0;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+/* common text and buttons */
+.btn-main {
+  padding: 10px 40px;
+  font-weight: bold;
+  border: none;
+  border-radius: 3px;
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  line-height: 1.5;
+  font-size: 1rem;
+  color: var(--white);
+  background-color: var(--primary-color);
+  transition: all 0.3s ease-in-out;
+  border: 2px solid transparent;
+  width: fit-content;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+.btn-main:hover {
+  background-color: var(--primary-color-hover);
+}
+
+.btn-main:focus {
+  background-color: var(--primary-color-hover);
+  border: 2px solid #000;
+}
+
+.custom-link {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.popoverTrigger {
+  color: var(--darkgray) !important;
+  cursor: help;
+}
+
+.text-blue {
+  color: var(--blue);
+}
+
+.text-gray {
+  color: var(--label);
+}
+
+.text-primary {
+  color: var(--primary-color);
+}
+
+.text-white {
+  color: var(--white);
+}
+
+.error-msg {
+  color: #ec0b0bcf;
+}
+
+/* form alerts */
+
+.alert {
+  padding: 8px;
+  border-radius: 5px;
+}
+
+.alert.success {
+  background-color: #dff0d8;
+  border-color: #d6e9c6;
+  color: var(--success);
+}
+
+.alert.error {
+  background-color: #f2dede;
+  border-color: #f2dede;
+  color: var(--error);
+}
+
+/* Multi select dropdown */
+
+.react-dropdown-select {
+  border: 1px solid var(--border);
+  color: var(--label);
+  border-radius: 3px;
+  box-shadow: none;
+}
+
+.react-dropdown-select:hover {
+  border-color: var(--border) !important;
+}
+
+.react-dropdown-select:focus,
+.react-dropdown-select:focus-within {
+  border-color: var(--label) !important;
+  box-shadow: none !important;
+}
+
+.react-dropdown-select-option {
+  background-color: #fff !important;
+  border: 1px solid var(--border);
+  color: var(--darkgray) !important;
+  align-items: center;
+  gap: 5px;
+}
+
+.react-dropdown-select-option-remove {
+  background-color: #ec0b0bcf;
+  color: var(--white) !important;
+  height: 15px !important;
+  width: 15px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  margin: 0 !important;
+  line-height: 1;
 }

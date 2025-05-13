@@ -1,0 +1,27 @@
+.dashboardcard-img {
+  height: 150px;
+  width: 150px;
+}
+
+.dashbordcard {
+  border-radius: 5px;
+  cursor: pointer;
+  box-shadow: -1px 0 7px 0 rgba(85, 94, 99, 0.2);
+  border: 1px solid #d7dfe3 !important;
+  border-radius: 4px !important;
+}
+
+.boxtitle {
+  text-align: left;
+  border-bottom: 1px solid #d7dfe3;
+  font-size: 24px;
+  padding-bottom: 5px;
+  color: var(--label);
+  font-family: "Open Sans-Semibold";
+}
+
+.pluseimgset {
+  width: 150px;
+  height: 150px;
+  position: relative;
+}
