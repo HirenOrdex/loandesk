@@ -239,7 +239,20 @@ export class UserRepository {
       throw error;
     }
   }
-
+  async isEmailAlreadyVerified(userId: string): Promise<boolean> {
+    try {
+      const user = await User.findById(userId, 'isEmailVerified');
+      if (!user) {
+        throw new Error('User not found');
+      }
+  
+      return user.isEmailVerified === true;
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error(`Error checking email verification status: ${err.message}`);
+      throw new Error(`Error checking email verification status: ${err.message}`);
+    }
+  }
   async findAll(): Promise<IUser[]> {
     try {
       return await User.find().select("_id");

@@ -20,7 +20,6 @@ import {
   sendVerificationEmail,
 } from "../services/emailService";
 import UserModel, { IUser } from "../models/User";
-import { log } from "winston";
 import { generateOTP, verifyOTP } from "../utils/otpUtils";
 import otpRepository from "../repositories/otpRepository";
 import { BankerRepossitory } from "../repositories/bankerRepository";
@@ -30,6 +29,11 @@ import deviceRepository from "../repositories/deviceRepository";
 import { extractDeviceInfo } from "../utils/deviceUtils";
 import { error } from "console";
 import { BorrowerRepository } from "../repositories/borrowerRepository";
+import UserModel from "../models/User";
+import { error, log } from "winston";
+import { Console } from "winston/lib/winston/transports";
+import { IUser } from "../types/userType";
+import { UpdateUser } from "../types/auth.type";
 
 const userRepository = new UserRepository();
 const controllerName: string = "authController";
@@ -251,16 +255,25 @@ export class AuthController {
         return res.status(401).json({
           success: false,
           data: null,
+          error: "Invalid credentials",
           message: "Invalid credentials",
         });
       }
-
+      if (user.isEmailVerified === false) {
+        return res.status(400).json({
+          success: false,
+          data: null,
+          error: "Email is not verified, please verify your email.",
+          message: "Email is not verified, please verify your email."
+        });
+      }
       // Check if account is locked
       const isLocked = await userRepository.isAccountLocked(user);
       if (isLocked) {
         return res.status(401).json({
           success: false,
           data: null,
+          error: "Account locked. Please try again later or reset your password.",
           message:
             "Account locked. Please try again later or reset your password.",
         });
@@ -269,12 +282,11 @@ export class AuthController {
       // Check password
       const isPasswordValid = await user.correctPassword(password);
       if (!isPasswordValid) {
-        // Increment login attempts
         await userRepository.incrementLoginAttempts(user._id.toString());
-
         return res.status(401).json({
           success: false,
           data: null,
+          error: "Invalid credentials",
           message: "Invalid credentials",
         });
       }
@@ -321,6 +333,9 @@ export class AuthController {
             // For development only, remove in production
             otp: NODE_ENV === "development" ? otp : undefined,
           },
+                  message: `User Login Successfully`,
+        error: null,
+
         });
       }
     } catch (err: unknown) {
@@ -338,22 +353,26 @@ export class AuthController {
   async refreshToken(req: Request, res: Response): Promise<any> {
     try {
       // Get refresh token from cookie
-      const refreshToken = req.cookies.refreshToken;
+      const refreshToken: string = req.cookies.refreshToken;
+      logger.info("refreshToken: Received refresh token request");
 
       if (!refreshToken) {
+        logger.error("refreshToken: Refresh token not found in cookies.");
         return res.status(401).json({
           success: false,
           data: null,
+          error: "Refresh token not found",
           message: "Refresh token not found",
         });
       }
 
       // Check if token is blacklisted
-      const isBlacklisted = await isTokenBlacklisted(refreshToken);
+      const isBlacklisted: boolean = await isTokenBlacklisted(refreshToken);
       if (isBlacklisted) {
         return res.status(401).json({
           success: false,
           data: null,
+          error: "Invalid refresh token",
           message: "Invalid refresh token",
         });
       }
@@ -364,9 +383,11 @@ export class AuthController {
       // Find user
       const user = await userRepository.findUserById(decoded.id);
       if (!user) {
+        logger.error(`refreshToken: No user found with ID: ${decoded.id}`);
         return res.status(401).json({
           success: false,
           data: null,
+          error: "User not found",
           message: "User not found",
         });
       }
@@ -376,11 +397,12 @@ export class AuthController {
         return res.status(401).json({
           success: false,
           data: null,
+          error: "Invalid refresh token",
           message: "Invalid refresh token",
         });
       }
 
-      const isRefreshTokenValid = await bcrypt.compare(
+      const isRefreshTokenValid: boolean = await bcrypt.compare(
         refreshToken,
         user.refreshToken
       );
@@ -388,6 +410,7 @@ export class AuthController {
         return res.status(401).json({
           success: false,
           data: null,
+          error: "Invalid refresh token",
           message: "Invalid refresh token",
         });
       }
@@ -408,6 +431,7 @@ export class AuthController {
         user._id.toString(),
         newRefreshToken
       );
+      logger.info(`refreshToken: Refresh token updated for user ID: ${user._id}`)
 
       // Blacklist old refresh token
       await addTokenToBlacklist(refreshToken, "7d");
@@ -419,22 +443,26 @@ export class AuthController {
         sameSite: "strict",
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
-      logger.info("cookies .....", cookies);
 
+      logger.info("cookies .....", cookies);
       console.log("cookies .....", cookies);
+
       // Send response
       return res.status(200).json({
         success: true,
         data: {
           accessToken: newAccessToken,
         },
+        error: null,
         message: `Refresh token Successfully`,
       });
     } catch (err: unknown) {
       const error = err as IError;
+      logger.error("Refresh token error:", error);
       console.error("Refresh token error:", error);
       return res.status(401).json({
         success: false,
+        data: null,
         message: "Invalid refresh token",
         error: `error ${error.message}`,
       });
@@ -444,7 +472,7 @@ export class AuthController {
   async logout(req: Request, res: Response): Promise<any> {
     try {
       // Get refresh token from cookie
-      const refreshToken = req.cookies.refreshToken;
+      const refreshToken: string | undefined = req.cookies.refreshToken;
 
       if (refreshToken) {
         try {
@@ -454,17 +482,25 @@ export class AuthController {
           // Invalidate refresh token in database
           await userRepository.updateRefreshToken(decoded.id, null);
           await redisClient.del(`user_${decoded.id.toString()}`);
+          logger.info(`logout: Deleted cached data for user ID: ${decoded.id}`);
 
           // Add refresh token to blacklist
           await addTokenToBlacklist(refreshToken, "7d");
         } catch (error) {
           // Continue logout process even if token verification fails
           console.error("Token verification error during logout:", error);
+          logger.error("Token verification error during logout:", error);
+          return res.status(401).json({
+            success: false,
+            data: null,
+            error: "Token verification error during logout.",
+            message: "Token verification error during logout.",
+          });
         }
       }
 
       // Get access token from Authorization header
-      const authHeader = req.headers.authorization;
+      const authHeader: string | undefined = req.headers.authorization;
       if (authHeader?.startsWith("Bearer ")) {
         const accessToken = authHeader.split(" ")[1];
 
@@ -477,11 +513,13 @@ export class AuthController {
       return res.status(200).json({
         success: true,
         data: null,
+        error: null,
         message: "Logged out successfully",
       });
     } catch (err: unknown) {
       const error = err as IError;
       console.error("Logout error:", error);
+      logger.error("Logout error:", error);
       return res.status(500).json({
         success: false,
         data: null,
@@ -497,32 +535,49 @@ export class AuthController {
 
       // Find user
       const user = await userRepository.findUserByEmail(email);
+      logger.error(`forgotPassword: No user found with email: ${email}`);
       if (!user) {
         return res.status(404).json({
           success: false,
+          data: null,
+          error: "User not found",
           message: "User not found",
         });
       }
 
+      if (!user.isEmailVerified) { 
+        logger.error(`forgotPassword: Email not verified for user: ${email}`);
+        return res.status(400).json({
+          success: false,
+          data: null,
+          error: "Email is not verified, please verify your email.",
+          message: "Email is not verified, please verify your email."
+        });
+      }
       // Generate reset token
-      const resetToken = await userRepository.createPasswordResetToken(
+      const resetToken:string = await userRepository.createPasswordResetToken(
         user._id.toString()
       );
 
       // In a real application, you would send an email with the reset link
       // For this example, we'll just return the token in the response
       sendPasswordResetEmail(email, resetToken);
+      console.log("Password reset token sent to email");
+      logger.info("Password reset token sent to email");
       return res.status(200).json({
         success: true,
+        data: null,
+        error: null,
         message: "Password reset token sent to email",
         resetToken, // In production, don't send this in the response
       });
     } catch (err: unknown) {
       const error = err as IError;
       console.error("Forgot password error:", error);
+      logger.error("Forgot password error:", error);
       return res.status(500).json({
         success: false,
-        drta: null,
+        data: null,
         message: "Server error",
         error: `error ${error.message}`,
       });
@@ -532,26 +587,27 @@ export class AuthController {
   async resetPassword(req: Request, res: Response): Promise<any> {
     try {
       const { token, password } = req.body;
-
+      logger.info(`resetPassword: Received password reset request with token: ${token}`);
       // Find user with valid reset token
       const user = await userRepository.findUserByResetToken(token);
       if (!user) {
         return res.status(400).json({
           success: false,
           data: null,
+          error: "Invalid or expired token",
           message: "Invalid or expired token",
         });
       }
-
       // Update password
       await userRepository.updatePassword(user._id.toString(), password);
-
+      logger.info(`resetPassword: Password updated successfully for user ID: ${user._id}`);
       // Invalidate all refresh tokens
       await userRepository.updateRefreshToken(user._id.toString(), null);
 
       return res.status(200).json({
         success: true,
         data: null,
+        error: null,
         message: "Password reset successfully",
       });
     } catch (err: unknown) {
@@ -559,35 +615,44 @@ export class AuthController {
       console.error("Reset password error:", error);
       return res.status(500).json({
         success: false,
+        data: null,
         message: "Server error",
         error: `error ${error.message}`,
+
       });
     }
   }
   async verifyEmail(req: Request, res: Response): Promise<any> {
     try {
       const { token } = req.params;
-
+      logger.info("verifyEmail: Received request with token:", token);
       // Find user by verification token
       const user = await userRepository.findUserByEmailVerificationToken(token);
       if (!user) {
+        logger.error("verifyEmail: Invalid or expired token");
         return res.status(400).json({
           success: false,
+          data: null,
+          error: "Invalid or expired verification token",
           message: "Invalid or expired verification token",
         });
       }
 
+
       // Update user status to active and mark email as verified
       await userRepository.verifyEmail(user._id.toString());
+      logger.info(`verifyEmail: Email verified successfully for user ID ${user._id}`);
 
       return res.status(200).json({
         success: true,
         data: null,
+        error: null,
         message: "Email verified successfully. Your account is now active.",
       });
     } catch (err: unknown) {
       const error = err as IError;
       console.error("Email verification error:", error);
+      logger.error("Email verification error:", error);
       return res.status(500).json({
         success: false,
         data: null,
@@ -604,17 +669,21 @@ export class AuthController {
       // Find user by email
       const user = await userRepository.findUserByEmail(email);
       if (!user) {
+        logger.error(`resendVerificationEmail: User not found with email ${email}`);
         return res.status(404).json({
           success: false,
           data: null,
+          error: "User not found",
           message: "User not found",
         });
       }
 
       if (user.isEmailVerified) {
+        logger.error(`resendVerificationEmail: Email already verified for user ID ${user._id}`);
         return res.status(400).json({
           success: false,
           data: null,
+          error: "Email already verified",
           message: "Email already verified",
         });
       }
@@ -630,15 +699,18 @@ export class AuthController {
 
       // Send verification email``
       await sendVerificationEmail(email, emailVerificationToken);
+      logger.info(`resendVerificationEmail: Verification email sent to ${email}`);
 
       return res.status(200).json({
         success: true,
         data: null,
+        error: null,
         message: "Verification email sent successfully",
       });
     } catch (err: unknown) {
       const error = err as IError;
       console.error("Resend verification email error:", error);
+      logger.error("Resend verification email error:", error);
       return res.status(500).json({
         success: false,
         data: null,
@@ -648,14 +720,14 @@ export class AuthController {
     }
   }
 
-  googleAuth = (req: Request, res: Response, next: NextFunction) => {
+  async googleAuth(req: Request, res: Response, next: NextFunction): Promise<any>{
     passport.authenticate("google", {
       scope: ["profile", "email"],
     })(req, res, next);
   };
 
   // Google OAuth callback
-  googleCallback(req: Request, res: Response, next: NextFunction) {
+  async googleCallback(req: Request, res: Response, next: NextFunction): Promise<any> {
     passport.authenticate("google", async (err: any, profile: any) => {
       if (err || !profile) {
         console.error("OAuth failed:", err);
@@ -748,6 +820,7 @@ export class AuthController {
 
       if (!refreshToken) {
         logger.error("changePassword:-Refresh token missing in cookies.");
+        console.error("changePassword:-Refresh token missing in cookies.");
         return res.status(401).json({
           success: false,
           data: null,
@@ -761,6 +834,7 @@ export class AuthController {
         decoded = verifyRefreshToken(refreshToken); // This should return an object with `id`
       } catch (err) {
         logger.error("changePassword:-Invalid refresh token.");
+        console.error("changePassword:-Invalid refresh token.");
         return res.status(401).json({
           success: false,
           data: null,
@@ -768,7 +842,17 @@ export class AuthController {
           message: "Invalid or expired refresh token.",
         });
       }
-      const userId = decoded?.id;
+      const userId:string = decoded?.id;
+      const isAlreadyVerified = await userRepository.isEmailAlreadyVerified(userId.toString());
+
+      if (!isAlreadyVerified) {
+        return res.status(400).json({
+          success: false,
+          data: null,
+          error: "Email is not verified, please verify your email.",
+          message: "Email is not verified, please verify your email."
+        });
+      }
       const { oldPassword, newPassword } = req.body;
       if (!(oldPassword && newPassword)) {
         logger.error(
@@ -785,10 +869,9 @@ export class AuthController {
         });
       }
 
-      // const updatePassword = await UserModel.findById({userId });
-      const updatePassword = await UserModel.findOne({ _id: userId }).select(
-        "+password"
-      );
+      //
+      const updatePassword :UpdateUser|null= await UserModel.findOne({ _id: userId }).select("+password");
+
       if (!updatePassword?.password) {
         logger.error("changePassword:-Password is missing in the user record.");
         return res.status(500).json({
@@ -805,6 +888,7 @@ export class AuthController {
       );
       if (!isMatch) {
         logger.error("changePassword:-Old password is incorrect.");
+        console.error("changePassword:-Old password is incorrect.");
         return res.status(401).json({
           success: false,
           data: null,
@@ -814,7 +898,7 @@ export class AuthController {
       } else {
         const salt = await bcrypt.genSalt(12);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
-        const updateUser = await UserModel.findByIdAndUpdate(
+        const updateUser:UpdateUser|null = await UserModel.findByIdAndUpdate(
           userId,
           { password: hashedPassword },
           { new: true } // returns the updated document
@@ -822,6 +906,7 @@ export class AuthController {
 
         if (updateUser) {
           await redisClient.del(`user_${userId}`);
+          console.log("changePassword:-User password updated successfully.");
           logger.info("changePassword:-Password updated successfully.");
           return res.status(200).json({
             success: true,
