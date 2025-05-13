@@ -1,12 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import AlertMessage from '../components/AlertMessage';
 import Select from 'react-dropdown-select';
 import { ICommonRegisterFormInput } from '../types/auth';
 import { useBankerRegisterHandler } from '../hooks/auth/useBankerRegisterHandler';
 import AddressAutocomplete from '../components/AddressAutocomplete';
 import { Controller, useForm } from 'react-hook-form';
 import PasswordInput from '../components/PasswordInput';
+import { InputMask } from '@react-input/mask';
 
 const specialityOptions = [
     { label: 'SBA', value: 'SBA' },
@@ -25,7 +25,7 @@ const BankerRegister: React.FC = () => {
     const {
         register,
         handleSubmit,
-        // setValue,
+        watch,
         control,
         formState: { errors }
     } = useForm<ICommonRegisterFormInput>();
@@ -47,7 +47,6 @@ const BankerRegister: React.FC = () => {
                     <div className="sm:max-w-[67%] mx-auto">
                         <h2 className='register-title pb-14'>Get your loan in 20 mins. Let's get started.</h2>
                         <div className="card border-0 bg-white rounded">
-                            <AlertMessage type="success" />
                             <form className='authentication-form p-6' onSubmit={handleSubmit(onSubmit)}>
                                 {/* General Information */}
                                 <div className='mb-8'>
@@ -86,11 +85,11 @@ const BankerRegister: React.FC = () => {
                                             id="password"
                                             registration={register("password", {
                                                 required: "Password is required",
-                                                // pattern: {
-                                                //     value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
-                                                //     message:
-                                                //         "Password must contain at least 6 characters and include uppercase, lowercase, number, and special character",
-                                                // },
+                                                pattern: {
+                                                    value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
+                                                    message:
+                                                        "Password must contain at least 6 characters and include uppercase, lowercase, number, and special character",
+                                                },
                                             })}
                                             error={errors.password?.message}
                                         />
@@ -108,8 +107,8 @@ const BankerRegister: React.FC = () => {
                                             id="confirmPassword"
                                             registration={register("confirm_password", {
                                                 required: "Confirm password is required",
-                                                // validate: (value) =>
-                                                    // value === watch("password") || "Passwords do not match",
+                                                validate: (value) =>
+                                                    value === watch("password") || "Confirm password does not match the password",
                                             })}
                                             error={errors.confirm_password?.message}
                                         />
@@ -140,34 +139,18 @@ const BankerRegister: React.FC = () => {
                                     </div>
 
                                     <div className="mb-3">
-                                        <label>Contact Phone Number <span className='error-msg'>*</span></label>
-                                        <p className='text-(--darkgray) text-[12px] mb-[5px]'>
-                                            <em className='font-bold'>Information :</em> A text message will be sent for verification.
-                                        </p>
-                                        <Controller
-                                            control={control}
-                                            name="phone"
-                                            rules={{
-                                                required: "Phone is required",
-                                                pattern: {
-                                                    value: /^\+\d{10,15}$/,
-                                                    message: "Enter a valid phone number with country code (e.g. +1234567890)"
-                                                }
-                                            }}
-                                            render={({ field }) => (
-                                                <input
-                                                    {...field}
-                                                    type="tel"
-                                                    inputMode="tel"
-                                                    placeholder="+1234567890"
-                                                    className="your-input-class"
-                                                />
-                                            )}
-                                        />
-
-                                        {errors.phone && <span className='error-msg'>{errors.phone.message}</span>}
+                                        <label htmlFor="phoneNumber" className="mb-2">Contact Phone Number
+                                            <span className='error-msg'>*</span></label>
+                                        <p className='text-(--darkgray) text-[12px] mb-[5px]'><em className='font-bold'>Information :</em> A text message will be sent to user for verfication so it is important to provide correct number.</p>
+                                        <InputMask
+                                            id="phoneNumber"
+                                            mask="(___) ___-____"
+                                            showMask={true}
+                                            inputMode='numeric'
+                                            replacement={{ _: /\d/ }} />
+                                        <span className='error-msg'>Contact Phone Number is required</span>
                                     </div>
-
+                                    
                                     <div className="mb-3">
                                         <label>Title <span className='error-msg'>*</span></label>
                                         <input {...register("title", { required: "Required" })} />
