@@ -363,9 +363,12 @@ export class AuthController {
   }
 
   async refreshToken(req: Request, res: Response): Promise<any> {
+    const functionName = "refreshToken";
+    logger.info(`Coming into Controller ${controllerName}`);
+    logger.info(`Coming into function ${functionName}`);
     try {
       // Get refresh token from cookie
-      const refreshToken: string = req.cookies.refreshToken;
+      const refreshToken: string = req?.cookies?.refreshToken;
       logger.info("refreshToken: Received refresh token request");
 
       if (!refreshToken) {
@@ -393,7 +396,7 @@ export class AuthController {
       const decoded = verifyRefreshToken(refreshToken);
 
       // Find user
-      const user = await userRepository.findUserById(decoded.id);
+      const user = await userRepository?.findUserById(decoded.id);
       if (!user) {
         logger.error(`refreshToken: No user found with ID: ${decoded.id}`);
         return res.status(401).json({
@@ -429,12 +432,12 @@ export class AuthController {
 
       // Generate new tokens
       const newAccessToken = generateAccessToken({
-        id: user._id.toString(),
+        id: user?._id.toString(),
         role: "banker",
       });
 
       const newRefreshToken = generateRefreshToken({
-        id: user._id.toString(),
+        id: user?._id.toString(),
         role: "banker",
       });
 
@@ -484,9 +487,12 @@ export class AuthController {
   }
 
   async logout(req: Request, res: Response): Promise<any> {
+    const functionName = "logout";
+    logger.info(`Coming into Controller ${controllerName}`);
+    logger.info(`Coming into function ${functionName}`);
     try {
       // Get refresh token from cookie
-      const refreshToken: string | undefined = req.cookies.refreshToken;
+      const refreshToken: string | undefined = req?.cookies?.refreshToken;
 
       if (refreshToken) {
         try {
@@ -514,7 +520,7 @@ export class AuthController {
       }
 
       // Get access token from Authorization header
-      const authHeader: string | undefined = req.headers.authorization;
+      const authHeader: string | undefined = req?.headers?.authorization;
       if (authHeader?.startsWith("Bearer ")) {
         const accessToken = authHeader.split(" ")[1];
 
@@ -544,6 +550,9 @@ export class AuthController {
   }
 
   async forgotPassword(req: Request, res: Response): Promise<any> {
+    const functionName = "forgotPassword";
+    logger.info(`Coming into Controller ${controllerName}`);
+    logger.info(`Coming into function ${functionName}`);
     try {
       const { email } = req.body;
 
@@ -599,6 +608,9 @@ export class AuthController {
   }
 
   async resetPassword(req: Request, res: Response): Promise<any> {
+    const functionName = "resetPassword";
+    logger.info(`Coming into Controller ${controllerName}`);
+    logger.info(`Coming into function ${functionName}`);
     try {
       const { token, password } = req.body;
       logger.info(
@@ -640,6 +652,9 @@ export class AuthController {
     }
   }
   async verifyEmail(req: Request, res: Response): Promise<any> {
+    const functionName = "verifyEmail";
+    logger.info(`Coming into Controller ${controllerName}`);
+    logger.info(`Coming into function ${functionName}`);
     try {
       const { token } = req.params;
       logger.info("verifyEmail: Received request with token:", token);
@@ -681,6 +696,9 @@ export class AuthController {
   }
 
   async resendVerificationEmail(req: Request, res: Response): Promise<any> {
+    const functionName = "resendVerificationEmail";
+    logger.info(`Coming into Controller ${controllerName}`);
+    logger.info(`Coming into function ${functionName}`);
     try {
       const { email } = req.body;
 
@@ -744,22 +762,20 @@ export class AuthController {
     }
   }
 
-  async googleAuth(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<any> {
+  async googleAuth(req: Request,res: Response,next: NextFunction): Promise<any> {
+    const functionName = "googleAuth";
+    logger.info(`Coming into Controller ${controllerName}`);
+    logger.info(`Coming into function ${functionName}`);
     passport.authenticate("google", {
       scope: ["profile", "email"],
     })(req, res, next);
   }
 
   // Google OAuth callback
-  async googleCallback(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<any> {
+  async googleCallback(req: Request,res: Response,next: NextFunction): Promise<any> {
+    const functionName = "googleCallback";
+    logger.info(`Coming into Controller ${controllerName}`);
+    logger.info(`Coming into function ${functionName}`);
     passport.authenticate("google", async (err: any, profile: any) => {
       if (err || !profile) {
         console.error("OAuth failed:", err);
@@ -773,7 +789,7 @@ export class AuthController {
       }
 
       try {
-        const email = profile.emails?.[0].value;
+        const email = profile?.emails?.[0].value;
         if (!email) {
           return res.status(401).json({
             success: false,
@@ -788,8 +804,8 @@ export class AuthController {
         if (!user) {
           // Create a new user
           user = await userRepository.createUser({
-            firstName: profile.name?.givenName || "Google",
-            lastName: profile.name?.familyName || "User",
+            firstName: profile?.name?.givenName || "Google",
+            lastName: profile?.name?.familyName || "User",
             email,
             password: "google_oauth_dummy_password", // dummy password
             active: true,
@@ -847,8 +863,11 @@ export class AuthController {
   }
 
   async changePassword(req: Request, res: Response): Promise<any> {
+    const functionName = "changePassword";
+    logger.info(`Coming into Controller ${controllerName}`);
+    logger.info(`Coming into function ${functionName}`);
     try {
-      const refreshToken = req.cookies.refreshToken;
+      const refreshToken = req?.cookies?.refreshToken;
 
       if (!refreshToken) {
         logger.error("changePassword:-Refresh token missing in cookies.");
@@ -918,7 +937,7 @@ export class AuthController {
         });
       }
 
-      const isMatch = await bcrypt.compare(
+      const isMatch = await bcrypt?.compare(
         oldPassword,
         updatePassword.password
       );
