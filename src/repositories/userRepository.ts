@@ -1,12 +1,13 @@
 // src/repositories/userRepository.ts
-import { Model } from 'mongoose';
-import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
-import User, { IUser } from '../models/User';
-import { UserDocument } from '../types/userType';
-import redisClient from '../utils/redisClient';
-import { hashToken } from '../utils/emailUtils';
-import { logger } from '../configs/winstonConfig';
+import { Model, ObjectId, Types } from "mongoose";
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
+import User, { IUser } from "../models/User";
+import { UserDocument } from "../types/userType";
+import redisClient from "../utils/redisClient";
+import { hashToken } from "../utils/emailUtils";
+import { logger } from "../configs/winstonConfig";
+import { RoleModel } from "../models/RoleModel";
 
 export class UserRepository {
   private model: Model<UserDocument>;
@@ -19,7 +20,9 @@ export class UserRepository {
     try {
       return await this.model
         .findOne({ email })
-        .select('+password +refreshToken +passwordResetToken +passwordResetExpires +loginAttempts');
+        .select(
+          "+password +refreshToken +passwordResetToken +passwordResetExpires +loginAttempts"
+        );
     } catch (error) {
       logger.error(`findUserByEmail error: ${error}`);
       throw error;
@@ -44,18 +47,9 @@ export class UserRepository {
     }
   }
 
-  async updateStreamInfo(userId: string, streamUserId: string, streamToken: string): Promise<void> {
-    try {
-      await User.findByIdAndUpdate(userId, { streamUserId, streamToken });
-    } catch (error) {
-      logger.error(`updateStreamInfo error: ${error}`);
-      throw error;
-    }
-  }
-
   async findUserById(id: string): Promise<IUser | null> {
     try {
-      return await this.model.findById(id).select('+refreshToken');
+      return await this.model.findById(id).select("+refreshToken");
     } catch (error) {
       logger.error(`findUserById error: ${error}`);
       throw error;
@@ -65,11 +59,17 @@ export class UserRepository {
   async createUser(
     userData: Pick<
       IUser,
-      'firstName' | 'lastName' | 'email' | 'password' | 'role' | 'active' | 'loginAttempts'
-    >,
+      | "firstName"
+      | "lastName"
+      | "email"
+      | "password"
+      | "roleId"
+      | "active"
+      | "loginAttempts"
+    >
   ): Promise<IUser> {
     try {
-      if (!userData.password) throw new Error('Password is required');
+      if (!userData.password) throw new Error("Password is required");
       const hashedPassword = await bcrypt.hash(userData.password, 12);
       return await this.model.create({ ...userData, password: hashedPassword });
     } catch (error) {
@@ -78,7 +78,10 @@ export class UserRepository {
     }
   }
 
-  async updateRefreshToken(userId: string, refreshToken: string | null): Promise<void> {
+  async updateRefreshToken(
+    userId: string,
+    refreshToken: string | null
+  ): Promise<void> {
     try {
       const update: Partial<IUser> = {};
       if (refreshToken === null) {
@@ -105,7 +108,9 @@ export class UserRepository {
 
   async incrementLoginAttempts(userId: string): Promise<void> {
     try {
-      await this.model.findByIdAndUpdate(userId, { $inc: { loginAttempts: 1 } });
+      await this.model.findByIdAndUpdate(userId, {
+        $inc: { loginAttempts: 1 },
+      });
     } catch (error) {
       logger.error(`incrementLoginAttempts error: ${error}`);
       throw error;
@@ -123,9 +128,14 @@ export class UserRepository {
 
   async createPasswordResetToken(userId: string): Promise<string> {
     try {
-      const resetToken = crypto.randomBytes(32).toString('hex');
-      const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
-      await redisClient.set(`passwordReset:${userId}`, hashedToken, { EX: 10 * 60 });
+      const resetToken = crypto.randomBytes(32).toString("hex");
+      const hashedToken = crypto
+        .createHash("sha256")
+        .update(resetToken)
+        .digest("hex");
+      await redisClient.set(`passwordReset:${userId}`, hashedToken, {
+        EX: 10 * 60,
+      });
       return resetToken;
     } catch (error) {
       logger.error(`createPasswordResetToken error: ${error}`);
@@ -135,13 +145,16 @@ export class UserRepository {
 
   async findUserByResetToken(resetToken: string): Promise<IUser | null> {
     try {
-      const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
-      const keys = await redisClient.keys('passwordReset:*');
+      const hashedToken = crypto
+        .createHash("sha256")
+        .update(resetToken)
+        .digest("hex");
+      const keys = await redisClient.keys("passwordReset:*");
 
       for (const key of keys) {
         const token = await redisClient.get(key);
         if (token === hashedToken) {
-          const userId = key.split(':')[1];
+          const userId = key.split(":")[1];
           return await this.model.findById(userId);
         }
       }
@@ -155,7 +168,10 @@ export class UserRepository {
   async updatePassword(userId: string, password: string): Promise<void> {
     try {
       const hashedPassword = await bcrypt.hash(password, 12);
-      await this.model.findByIdAndUpdate(userId, { password: hashedPassword, loginAttempts: 0 });
+      await this.model.findByIdAndUpdate(userId, {
+        password: hashedPassword,
+        loginAttempts: 0,
+      });
       await redisClient.del(`passwordReset:${userId}`);
     } catch (error) {
       logger.error(`updatePassword error: ${error}`);
@@ -163,10 +179,15 @@ export class UserRepository {
     }
   }
 
-  async updateEmailVerificationToken(userId: string, token: string): Promise<UserDocument | null> {
+  async updateEmailVerificationToken(
+    userId: string,
+    token: string
+  ): Promise<UserDocument | null> {
     try {
       const hashedToken = hashToken(token);
-      await redisClient.set(`emailVerificationWeb:${userId}`, hashedToken, { EX: 24 * 60 * 60 });
+      await redisClient.set(`emailVerificationWeb:${userId}`, hashedToken, {
+        EX: 24 * 60 * 60,
+      });
       return await User.findById(userId);
     } catch (error) {
       logger.error(`updateEmailVerificationToken error: ${error}`);
@@ -174,15 +195,17 @@ export class UserRepository {
     }
   }
 
-  async findUserByEmailVerificationToken(token: string): Promise<UserDocument | null> {
+  async findUserByEmailVerificationToken(
+    token: string
+  ): Promise<UserDocument | null> {
     try {
       const hashedToken = hashToken(token);
-      const keys = await redisClient.keys('emailVerificationWeb:*');
+      const keys = await redisClient.keys("emailVerificationWeb:*");
 
       for (const key of keys) {
         const cachedToken = await redisClient.get(key);
         if (cachedToken === hashedToken) {
-          const userId = key.split(':')[1];
+          const userId = key.split(":")[1];
           return await User.findById(userId);
         }
       }
@@ -197,15 +220,15 @@ export class UserRepository {
     try {
       const user = await User.findByIdAndUpdate(
         userId,
-        { isEmailVerified: true, status: 'active' },
-        { new: true },
+        { isEmailVerified: true, status: "active" },
+        { new: true }
       );
 
       if (!user) return null;
 
       await redisClient.del(`emailVerificationWeb:${userId}`);
 
-      const { sendWelcomeEmail } = require('../../services/emailService');
+      const { sendWelcomeEmail } = require("../../services/emailService");
       sendWelcomeEmail(user.email, user.firstName).catch((err: any) => {
         logger.error(`Failed to send welcome email to ${user.email}: ${err}`);
       });
@@ -232,10 +255,34 @@ export class UserRepository {
   }
   async findAll(): Promise<IUser[]> {
     try {
-      return await User.find().select('_id');
+      return await User.find().select("_id");
     } catch (error) {
       logger.error(`findAll error: ${error}`);
       throw error;
     }
   }
+  findRoleIdByName = async (roleName: string): Promise<any> => {
+    try {
+      const role = await RoleModel.findOne({ rolename: roleName }).lean();
+      if (role?._id) {
+        return role?._id;
+      } else {
+        return `Error finding role by name`;
+      }
+    } catch (error) {
+      console.error(`Error finding role by name: ${roleName}`, error);
+      return `Error finding role by name in db`;
+    }
+  };
+  findRoleIdById = async (roleId: string | Types.ObjectId): Promise<any> => {
+    try {
+      const role = await RoleModel.findById(roleId).lean();
+      if (role) {
+        return role.rolename;
+      }
+    } catch (error) {
+      console.error(`Error finding role by ID: ${roleId}`, error);
+      return `Error finding role by ID: ${roleId}`;
+    }
+  };
 }

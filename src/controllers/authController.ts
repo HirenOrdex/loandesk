@@ -19,17 +19,34 @@ import {
   sendPasswordResetEmail,
   sendVerificationEmail,
 } from "../services/emailService";
+import { generateOTP, verifyOTP } from "../utils/otpUtils";
+import otpRepository from "../repositories/otpRepository";
+import { BankerRepossitory } from "../repositories/bankerRepository";
+import { IBankerRegistration } from "../models/BankerModel";
+import { IAddress } from "../models/AddressModel";
+import deviceRepository from "../repositories/deviceRepository";
+import { extractDeviceInfo } from "../utils/deviceUtils";
+import { BorrowerRepository } from "../repositories/borrowerRepository";
 import UserModel from "../models/User";
-import { error, log } from "winston";
 import { Console } from "winston/lib/winston/transports";
 import { IUser } from "../types/userType";
 import { UpdateUser } from "../types/auth.type";
 
 const userRepository = new UserRepository();
+const controllerName: string = "authController";
+const bankerRepository = new BankerRepossitory();
+const borrowerRepository = new BorrowerRepository();
 export class AuthController {
   async register(req: Request, res: Response): Promise<any> {
+    const functionName = "register";
+    logger.info(`Coming into Controller ${controllerName}`);
+    logger.info(`Coming into function ${functionName}`);
+
+    const type = req.query.type;
+    logger.info(`User type: ${type}`);
+
     try {
-      const { firstName, lastName, email, password } = req.body;
+      const { email, password, confirm_password } = req.body;
 
       // Check if user already exists
       const existingUser = await userRepository.findUserByEmail(email);
@@ -40,82 +57,192 @@ export class AuthController {
           message: "Email already in use",
         });
       }
+      if (password !== confirm_password) {
+        return res.status(400).json({
+          success: false,
+          data: null,
+          message: `confirm Password and Password Should be same`,
+          error: null,
+        });
+      }
+      // BANKER TYPE
+      if (type === "banker") {
+        const {
+          financialInstitutionName,
+          firstName,
+          middleInitial,
+          lastName,
+          phone,
+          title,
+          areaOfSpecialty,
+          address,
+          bankType,
+          assetSize,
+        } = req.body;
 
-      // Create new user
-      const newUser = await userRepository.createUser({
-        firstName,
-        lastName,
-        email,
-        password,
-        role: "user",
-        active: true,
-        loginAttempts: 0,
-      });
+        // Validate required fields
+        if (
+          !financialInstitutionName ||
+          !email ||
+          !password ||
+          !firstName ||
+          !lastName ||
+          !phone ||
+          !address
+        ) {
+          return res.status(400).json({
+            success: false,
+            data: null,
+            message: "Missing required fields",
+            error: "Missing required fields",
+          });
+        }
 
-      // Generate tokens
-      const accessToken = generateAccessToken({
-        id: newUser._id.toString(),
-        role: newUser.role,
-      });
+        try {
+          const hashedPassword = await bankerRepository.hashPassword(password);
+          const roleId = await userRepository.findRoleIdByName("Banker");
+          // Create the banker
+          console.log("roleId", roleId);
+          const { newUser, newBanker, newAddress } =
+            (await bankerRepository.createBanker({
+              financialInstitutionName,
+              email,
+              password: hashedPassword,
+              firstName,
+              middleInitial,
+              lastName,
+              phone,
+              roleId,
+              title,
+              areaOfSpecialty,
+              address,
+              bankType,
+              assetSize,
+            })) as unknown as {
+              newUser: IUser & Document;
+              newBanker: IBankerRegistration & Document;
+              newAddress: (IAddress & Document) | null;
+            };
 
-      const refreshToken = generateRefreshToken({
-        id: newUser._id.toString(),
-      });
-      console.error("accessToken", accessToken);
-      // Store refresh token
-      await userRepository.updateRefreshToken(
-        newUser._id.toString(),
-        refreshToken
-      );
+          const accessToken = generateAccessToken({
+            id: newUser._id.toString(),
+            role: "banker",
+          });
 
-      // Set cookie with refresh token
-      let cookie = res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      });
+          const refreshToken = generateRefreshToken({
+            id: newUser._id.toString(),
+          });
 
-      // uncomment this lines when buy the mailgun sub
-      // const emailVerificationToken = generateEmailVerificationToken();
-      // await userRepository.updateEmailVerificationToken(
-      //   newUser._id.toString(),
-      //   emailVerificationToken
-      // );
-      // await sendVerificationEmail(email, emailVerificationToken);
+          await userRepository.updateRefreshToken(
+            newUser._id.toString(),
+            refreshToken
+          );
 
-      // console.log('cookies ....', cookie);
+          res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+          });
 
-      // logger.info('cookies ....', cookie);
-      // Send response
-      return res.status(201).json({
-        success: true,
-        data: {
-          user: {
-            id: newUser._id,
-            firstName: newUser.firstName,
-            lastName: newUser.lastName,
-            email: newUser.email,
-            role: newUser.role,
-            accessToken,
-          },
-        },
-        message: `User Register Successfully`,
+          const emailVerificationToken = generateEmailVerificationToken();
+          await userRepository.updateEmailVerificationToken(
+            newUser._id.toString(),
+            emailVerificationToken
+          );
+          await sendVerificationEmail(email, emailVerificationToken);
+
+          return res.status(201).json({
+            success: true,
+            message: "Banker created successfully",
+            data: null,
+            error: null,
+          });
+        } catch (error: unknown) {
+          const err = error as Error;
+          logger.error(`Error creating banker: ${err.message}`);
+          return res.status(500).json({
+            success: false,
+            data: null,
+            message: "Internal Server Error",
+            error: err.message,
+          });
+        }
+      } else if (type === "borrower") {
+        try {
+          const {
+            email,
+            password,
+            confirm_password,
+            firstName,
+            lastName,
+            phone,
+            coname,
+            position,
+          } = req.body;
+
+          // Validate passwords
+          if (password !== confirm_password) {
+            return res.status(400).json({ message: "Passwords do not match" });
+          }
+
+          // Check if user already exists
+          const existingUser = await UserModel.findOne({ email });
+          if (existingUser) {
+            return res.status(409).json({ message: "User already exists" });
+          }
+          const roleId = await userRepository.findRoleIdByName("Banker");
+
+          // Create user
+          const hashedPassword = await bcrypt.hash(password, 10);
+          const newUser = await UserModel.create({
+            email,
+            password: hashedPassword,
+            firstName,
+            lastName,
+            phone,
+            roleId: roleId, // Replace or pass dynamically
+            status: "active",
+            loginAttempts: 0,
+          });
+          // Create borrower record
+          const newBorrower = await borrowerRepository.createBorrower({
+            userId: newUser._id,
+            coname,
+            position,
+            createdby: newUser._id,
+          });
+
+          return res.status(201).json({
+            message: "Borrower created successfully",
+            user: newUser,
+            borrower: newBorrower,
+          });
+        } catch (error) {
+          console.error("Error creating borrower:", error);
+          return res.status(500).json({ message: "Internal server error" });
+        }
+      }
+      // FUTURE: Other user types like borrower, admin etc.
+      return res.status(400).json({
+        success: false,
+        data: null,
+        message: `Unsupported user type: ${type}`,
+        error: null,
       });
     } catch (err: unknown) {
       const error = err as IError;
-      console.error("Registration error:", error);
       logger.error("Registration error:", error);
       return res.status(error.statusCode || 500).json({
         success: false,
         data: null,
         message: "Server error",
-        error: `error ${error.message}`,
+        error: error.message,
       });
     }
   }
 
-  async login(req: Request, res: Response): Promise<any> {
+  async sendLoginOtp(req: Request, res: Response): Promise<any> {
     try {
       const { email, password } = req.body;
 
@@ -134,7 +261,7 @@ export class AuthController {
           success: false,
           data: null,
           error: "Email is not verified, please verify your email.",
-          message: "Email is not verified, please verify your email."
+          message: "Email is not verified, please verify your email.",
         });
       }
       // Check if account is locked
@@ -143,7 +270,8 @@ export class AuthController {
         return res.status(401).json({
           success: false,
           data: null,
-          error: "Account locked. Please try again later or reset your password.",
+          error:
+            "Account locked. Please try again later or reset your password.",
           message:
             "Account locked. Please try again later or reset your password.",
         });
@@ -160,58 +288,52 @@ export class AuthController {
           message: "Invalid credentials",
         });
       }
+      // send otp
 
       // Reset login attempts on successful login
       await userRepository.resetLoginAttempts(user._id.toString());
+      const deviceInfo = extractDeviceInfo(req);
+      const phone = user.phone;
+      // Check if user already exists by phone or email
+      if (phone) {
+        const otp = await generateOTP(phone);
+        const requestId = await otpRepository.storeOTP(
+          phone,
+          otp,
+          user.id,
+          email,
+          "login"
+        );
 
-      // Generate tokens
-      const accessToken = generateAccessToken({
-        id: user._id.toString(),
-        role: user.role,
-      });
+        // In production, send the OTP via SMS
+        // For development, we'll log it
+        logger.info(`Generated OTP for  existingUser  ${phone}: ${otp}`);
 
-      const refreshToken = generateRefreshToken({
-        id: user._id.toString(),
-        role: user.role,
-      });
+        // Store device info temporarily
+        await deviceRepository.storeTemporaryDeviceInfo(requestId, deviceInfo);
 
-      // Store refresh token
-      await userRepository.updateRefreshToken(
-        user._id.toString(),
-        refreshToken
-      );
+        // Store registration data temporarily in Redis
+        // await redisClient.set(
+        //   `login_${requestId}`,
+        //   JSON.stringify({
+        //     phone,
+        //     deviceInfo,
+        //   }),
+        //   { EX: 300 }
+        // ); // 5 minutes expiry
 
-      // Set cookie with refresh token
-      let cookie = res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      });
-      await redisClient.set(
-        `user_${user._id.toString()}`,
-        JSON.stringify(user),
-        {
-          EX: 3600, // 1 hour
-        }
-      );
-      // console.log("cookie",cookie)
-      // Send response
-      return res.status(200).json({
-        success: true,
-        data: {
-          user: {
-            id: user._id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-            role: user.role,
-            accessToken,
+        return res.status(200).json({
+          success: true,
+          message: "OTP sent to your phone",
+          data: {
+            requestId,
+            expiresIn: 300,
+            // For development only, remove in production
+            otp: NODE_ENV === "development" ? otp : undefined,
           },
-        },
-        error: null,
-        message: `User Login Successfully`,
-      });
+          error: null,
+        });
+      }
     } catch (err: unknown) {
       const error = err as IError;
       console.error("Login error:", error);
@@ -228,8 +350,10 @@ export class AuthController {
     try {
       // Get refresh token from cookie
       const refreshToken: string = req.cookies.refreshToken;
+      logger.info("refreshToken: Received refresh token request");
 
       if (!refreshToken) {
+        logger.error("refreshToken: Refresh token not found in cookies.");
         return res.status(401).json({
           success: false,
           data: null,
@@ -255,6 +379,7 @@ export class AuthController {
       // Find user
       const user = await userRepository.findUserById(decoded.id);
       if (!user) {
+        logger.error(`refreshToken: No user found with ID: ${decoded.id}`);
         return res.status(401).json({
           success: false,
           data: null,
@@ -289,18 +414,21 @@ export class AuthController {
       // Generate new tokens
       const newAccessToken = generateAccessToken({
         id: user._id.toString(),
-        role: user.role,
+        role: "banker",
       });
 
       const newRefreshToken = generateRefreshToken({
         id: user._id.toString(),
-        role: user.role,
+        role: "banker",
       });
 
       // Update refresh token
       await userRepository.updateRefreshToken(
         user._id.toString(),
         newRefreshToken
+      );
+      logger.info(
+        `refreshToken: Refresh token updated for user ID: ${user._id}`
       );
 
       // Blacklist old refresh token
@@ -313,9 +441,10 @@ export class AuthController {
         sameSite: "strict",
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
-      logger.info("cookies .....", cookies);
 
+      logger.info("cookies .....", cookies);
       console.log("cookies .....", cookies);
+
       // Send response
       return res.status(200).json({
         success: true,
@@ -327,6 +456,7 @@ export class AuthController {
       });
     } catch (err: unknown) {
       const error = err as IError;
+      logger.error("Refresh token error:", error);
       console.error("Refresh token error:", error);
       return res.status(401).json({
         success: false,
@@ -340,7 +470,7 @@ export class AuthController {
   async logout(req: Request, res: Response): Promise<any> {
     try {
       // Get refresh token from cookie
-      const refreshToken = req.cookies.refreshToken;
+      const refreshToken: string | undefined = req.cookies.refreshToken;
 
       if (refreshToken) {
         try {
@@ -350,17 +480,25 @@ export class AuthController {
           // Invalidate refresh token in database
           await userRepository.updateRefreshToken(decoded.id, null);
           await redisClient.del(`user_${decoded.id.toString()}`);
+          logger.info(`logout: Deleted cached data for user ID: ${decoded.id}`);
 
           // Add refresh token to blacklist
           await addTokenToBlacklist(refreshToken, "7d");
         } catch (error) {
           // Continue logout process even if token verification fails
           console.error("Token verification error during logout:", error);
+          logger.error("Token verification error during logout:", error);
+          return res.status(401).json({
+            success: false,
+            data: null,
+            error: "Token verification error during logout.",
+            message: "Token verification error during logout.",
+          });
         }
       }
 
       // Get access token from Authorization header
-      const authHeader = req.headers.authorization;
+      const authHeader: string | undefined = req.headers.authorization;
       if (authHeader?.startsWith("Bearer ")) {
         const accessToken = authHeader.split(" ")[1];
 
@@ -379,6 +517,7 @@ export class AuthController {
     } catch (err: unknown) {
       const error = err as IError;
       console.error("Logout error:", error);
+      logger.error("Logout error:", error);
       return res.status(500).json({
         success: false,
         data: null,
@@ -394,6 +533,7 @@ export class AuthController {
 
       // Find user
       const user = await userRepository.findUserByEmail(email);
+      logger.error(`forgotPassword: No user found with email: ${email}`);
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -403,16 +543,17 @@ export class AuthController {
         });
       }
 
-      if (user.isEmailVerified === false) {
+      if (!user.isEmailVerified) {
+        logger.error(`forgotPassword: Email not verified for user: ${email}`);
         return res.status(400).json({
           success: false,
           data: null,
           error: "Email is not verified, please verify your email.",
-          message: "Email is not verified, please verify your email."
+          message: "Email is not verified, please verify your email.",
         });
       }
       // Generate reset token
-      const resetToken:string = await userRepository.createPasswordResetToken(
+      const resetToken: string = await userRepository.createPasswordResetToken(
         user._id.toString()
       );
 
@@ -434,7 +575,7 @@ export class AuthController {
       logger.error("Forgot password error:", error);
       return res.status(500).json({
         success: false,
-        drta: null,
+        data: null,
         message: "Server error",
         error: `error ${error.message}`,
       });
@@ -444,7 +585,9 @@ export class AuthController {
   async resetPassword(req: Request, res: Response): Promise<any> {
     try {
       const { token, password } = req.body;
-
+      logger.info(
+        `resetPassword: Received password reset request with token: ${token}`
+      );
       // Find user with valid reset token
       const user = await userRepository.findUserByResetToken(token);
       if (!user) {
@@ -454,10 +597,12 @@ export class AuthController {
           error: "Invalid or expired token",
           message: "Invalid or expired token",
         });
-      } 
+      }
       // Update password
       await userRepository.updatePassword(user._id.toString(), password);
-
+      logger.info(
+        `resetPassword: Password updated successfully for user ID: ${user._id}`
+      );
       // Invalidate all refresh tokens
       await userRepository.updateRefreshToken(user._id.toString(), null);
 
@@ -475,26 +620,30 @@ export class AuthController {
         data: null,
         message: "Server error",
         error: `error ${error.message}`,
-        
       });
     }
   }
   async verifyEmail(req: Request, res: Response): Promise<any> {
     try {
       const { token } = req.params;
-
+      logger.info("verifyEmail: Received request with token:", token);
       // Find user by verification token
       const user = await userRepository.findUserByEmailVerificationToken(token);
       if (!user) {
+        logger.error("verifyEmail: Invalid or expired token");
         return res.status(400).json({
           success: false,
+          data: null,
+          error: "Invalid or expired verification token",
           message: "Invalid or expired verification token",
         });
       }
 
-
       // Update user status to active and mark email as verified
       await userRepository.verifyEmail(user._id.toString());
+      logger.info(
+        `verifyEmail: Email verified successfully for user ID ${user._id}`
+      );
 
       return res.status(200).json({
         success: true,
@@ -505,6 +654,7 @@ export class AuthController {
     } catch (err: unknown) {
       const error = err as IError;
       console.error("Email verification error:", error);
+      logger.error("Email verification error:", error);
       return res.status(500).json({
         success: false,
         data: null,
@@ -521,17 +671,25 @@ export class AuthController {
       // Find user by email
       const user = await userRepository.findUserByEmail(email);
       if (!user) {
+        logger.error(
+          `resendVerificationEmail: User not found with email ${email}`
+        );
         return res.status(404).json({
           success: false,
           data: null,
+          error: "User not found",
           message: "User not found",
         });
       }
 
       if (user.isEmailVerified) {
+        logger.error(
+          `resendVerificationEmail: Email already verified for user ID ${user._id}`
+        );
         return res.status(400).json({
           success: false,
           data: null,
+          error: "Email already verified",
           message: "Email already verified",
         });
       }
@@ -547,6 +705,9 @@ export class AuthController {
 
       // Send verification email``
       await sendVerificationEmail(email, emailVerificationToken);
+      logger.info(
+        `resendVerificationEmail: Verification email sent to ${email}`
+      );
 
       return res.status(200).json({
         success: true,
@@ -557,6 +718,7 @@ export class AuthController {
     } catch (err: unknown) {
       const error = err as IError;
       console.error("Resend verification email error:", error);
+      logger.error("Resend verification email error:", error);
       return res.status(500).json({
         success: false,
         data: null,
@@ -566,14 +728,22 @@ export class AuthController {
     }
   }
 
-  googleAuth = (req: Request, res: Response, next: NextFunction) => {
+  async googleAuth(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> {
     passport.authenticate("google", {
       scope: ["profile", "email"],
     })(req, res, next);
-  };
+  }
 
   // Google OAuth callback
-  googleCallback(req: Request, res: Response, next: NextFunction) {
+  async googleCallback(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> {
     passport.authenticate("google", async (err: any, profile: any) => {
       if (err || !profile) {
         console.error("OAuth failed:", err);
@@ -606,7 +776,6 @@ export class AuthController {
             lastName: profile.name?.familyName || "User",
             email,
             password: "google_oauth_dummy_password", // dummy password
-            role: "user",
             active: true,
             loginAttempts: 0,
           });
@@ -617,7 +786,7 @@ export class AuthController {
 
         const accessToken = generateAccessToken({
           id: user._id.toString(),
-          role: user.role,
+          role: "user",
         });
         const refreshToken = generateRefreshToken({ id: user._id.toString() });
 
@@ -681,6 +850,7 @@ export class AuthController {
         decoded = verifyRefreshToken(refreshToken); // This should return an object with `id`
       } catch (err) {
         logger.error("changePassword:-Invalid refresh token.");
+        console.error("changePassword:-Invalid refresh token.");
         return res.status(401).json({
           success: false,
           data: null,
@@ -688,21 +858,27 @@ export class AuthController {
           message: "Invalid or expired refresh token.",
         });
       }
-      const userId:string = decoded?.id;
-      const isAlreadyVerified = await userRepository.isEmailAlreadyVerified(userId.toString());
+      const userId: string = decoded?.id;
+      const isAlreadyVerified = await userRepository.isEmailAlreadyVerified(
+        userId.toString()
+      );
 
       if (!isAlreadyVerified) {
         return res.status(400).json({
           success: false,
           data: null,
           error: "Email is not verified, please verify your email.",
-          message: "Email is not verified, please verify your email."
+          message: "Email is not verified, please verify your email.",
         });
       }
       const { oldPassword, newPassword } = req.body;
       if (!(oldPassword && newPassword)) {
-        logger.error("changePassword: old password, and new password are required");
-        console.error("changePassword: old password, and new password are required");
+        logger.error(
+          "changePassword: old password, and new password are required"
+        );
+        console.error(
+          "changePassword: old password, and new password are required"
+        );
         return res.status(400).json({
           success: false,
           data: null,
@@ -711,8 +887,11 @@ export class AuthController {
         });
       }
 
-      // const updatePassword = await UserModel.findById({userId });
-      const updatePassword :UpdateUser|null= await UserModel.findOne({ _id: userId }).select("+password");
+      //
+      const updatePassword: UpdateUser | null = await UserModel.findOne({
+        _id: userId,
+      }).select("+password");
+
       if (!updatePassword?.password) {
         logger.error("changePassword:-Password is missing in the user record.");
         return res.status(500).json({
@@ -723,9 +902,13 @@ export class AuthController {
         });
       }
 
-      const isMatch = await bcrypt.compare(oldPassword, updatePassword.password);
+      const isMatch = await bcrypt.compare(
+        oldPassword,
+        updatePassword.password
+      );
       if (!isMatch) {
         logger.error("changePassword:-Old password is incorrect.");
+        console.error("changePassword:-Old password is incorrect.");
         return res.status(401).json({
           success: false,
           data: null,
@@ -735,7 +918,7 @@ export class AuthController {
       } else {
         const salt = await bcrypt.genSalt(12);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
-        const updateUser:UpdateUser|null = await UserModel.findByIdAndUpdate(
+        const updateUser: UpdateUser | null = await UserModel.findByIdAndUpdate(
           userId,
           { password: hashedPassword },
           { new: true } // returns the updated document
@@ -743,6 +926,7 @@ export class AuthController {
 
         if (updateUser) {
           await redisClient.del(`user_${userId}`);
+          console.log("changePassword:-User password updated successfully.");
           logger.info("changePassword:-Password updated successfully.");
           return res.status(200).json({
             success: true,
@@ -767,6 +951,113 @@ export class AuthController {
         data: null,
         message: `An internal server error occurred.`,
         error: `changePassword:- An internal server error occurred. ${err.message}`,
+      });
+    }
+  }
+  async login(req: Request, res: Response): Promise<any> {
+    try {
+      const { email, otp } = req.body;
+      console.log("in login ");
+      if (!email || !otp) {
+        return res.status(400).json({
+          success: false,
+          data: null,
+          message: "Email and OTP are required",
+        });
+      }
+      const user = await userRepository.findUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          data: null,
+          message: "Invalid credentials",
+        });
+      }
+
+      const otpData = await otpRepository.getOTP(email.toLowerCase(), "login");
+      console.log("otp ", otpData);
+
+      if (!otpData || otpData.type !== "login") {
+        return res.status(400).json({
+          success: false,
+          data: null,
+          message: "Invalid or expired request",
+        });
+      }
+
+      const isValid = verifyOTP(otp, otpData.otp);
+      if (!isValid) {
+        return res.status(400).json({
+          success: false,
+          data: null,
+          message: "Invalid OTP",
+        });
+      }
+
+      if (!otpData.userId) {
+        return res.status(400).json({
+          success: false,
+          data: null,
+          message: "Reset request expired",
+        });
+      }
+      console.log("roleId");
+      if (user?.roleId) {
+        const role = await userRepository.findRoleIdById(user?.roleId);
+        // Generate tokens
+        const accessToken = generateAccessToken({
+          id: user._id.toString(),
+          role: role,
+        });
+
+        const refreshToken = generateRefreshToken({
+          id: user._id.toString(),
+          role: role,
+        });
+
+        // Store refresh token
+        await userRepository.updateRefreshToken(
+          user._id.toString(),
+          refreshToken
+        );
+
+        // Set cookie with refresh token
+        let cookie = res.cookie("refreshToken", refreshToken, {
+          httpOnly: true,
+          secure: NODE_ENV === "production",
+          sameSite: "strict",
+          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        });
+        await redisClient.set(
+          `user_${user._id.toString()}`,
+          JSON.stringify(user),
+          {
+            EX: 3600, // 1 hour
+          }
+        );
+        // console.log("cookie",cookie)
+        // Send response
+        return res.status(200).json({
+          success: true,
+          data: {
+            user: {
+              id: user._id,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              email: user.email,
+              role: role,
+              accessToken,
+            },
+          },
+          message: `User Login Successfully`,
+        });
+      }
+    } catch (error) {
+      console.error("Error in verifyOtp:", error);
+      return res.status(500).json({
+        success: false,
+        data: null,
+        message: "Internal server error",
       });
     }
   }

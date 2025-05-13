@@ -9,6 +9,7 @@ import { logger } from "../configs/winstonConfig";
 import BankerRegistrationModel from "../models/BankerModel";
 import UserModel from "../models/User";
 import { use } from "passport";
+import { AddressModel } from "../models/AddressModel";
 
 export class BankerRepossitory {
   async createBanker(bankerData: any) {
@@ -18,20 +19,40 @@ export class BankerRepossitory {
         firstName: bankerData.firstName,
         lastName: bankerData.lastName,
         email: bankerData.email,
-        password: bankerData.password, // Don't forget to hash the password before saving in real use!
+        password: bankerData.password, // Ensure this is hashed before passing
         phone: bankerData.phone,
-        role: "user", // Default role, can be changed based on your requirements
-        status: "active", // Or another status based on your app logic
+        roleId: bankerData.roleId,
+        status: "active",
         loginAttempts: 0,
       });
 
-      // Create the banker registration and link it to the newly created user
+      // Create address if present
+      let newAddress = null;
+
+      if (bankerData.address) {
+        const addressInput = Array.isArray(bankerData.address)
+          ? bankerData.address[0]
+          : bankerData.address;
+
+        if (addressInput) {
+          newAddress = await AddressModel.create(addressInput);
+        }
+      }
+
+      console.log("New Address ID:", newAddress?._id);
+
+      // Create the banker record
       const newBanker = await BankerRegistrationModel.create({
-        ...bankerData,
-        userId: newUser._id, // Link the user to the banker registration
+        userId: newUser._id,
+        addressId: newAddress?._id,
+        financialInstitutionName: bankerData?.financialInstitutionName,
+        title: bankerData?.title,
+        areaOfSpecialty: bankerData?.areaOfSpecialty,
+        bankType: bankerData?.bankType,
+        assetSize: bankerData?.assetSize,
       });
 
-      return { id: newBanker._id };
+      return { newUser, newBanker, newAddress };
     } catch (error: unknown) {
       const err = error as Error;
       console.error(`Error creating banker: ${err.message}`);
@@ -39,6 +60,7 @@ export class BankerRepossitory {
       throw new Error(`Error creating banker: ${err.message}`);
     }
   }
+
   async updateBanker(userId: string, updateData: any) {
     try {
       const userData = {
