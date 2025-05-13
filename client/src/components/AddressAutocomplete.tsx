@@ -71,8 +71,6 @@ const AddressAutocomplete = ({ name, value, onChange }: AddressAutocompleteProps
             name={name}
             defaultValue={value}
             placeholder="Enter address"
-            style={{ width: "100%" }}
-            className="form-control"
         />
     );
 };

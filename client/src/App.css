@@ -20,6 +20,7 @@ header.header-container {
 }
 
 /* authentication screens form */
+
 .authentication-form {
   width: 80%;
   margin: 0 auto;
@@ -29,4 +30,84 @@ header.header-container {
   .authentication-form {
     width: 90%;
   }
+}
+
+/* Registration Modal */
+
+.popup-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.popup {
+  background: var(--white);
+  padding: 0;
+  border-radius: 6px;
+  max-width: 500px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.popup-header {
+  padding: 15px 20px;
+  background: var(--white);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+}
+
+.popup-header h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.close-button {
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--gray);
+}
+
+.popup-body {
+  padding: 20px;
+  font-size: 14px;
+  color: var(--darkgray);
+  line-height: 1.5;
+  text-align: justify;
+}
+
+.popup-body a {
+  color: var(--color-blue-500);
+  text-decoration: none;
+}
+
+.popup-footer {
+  padding: 10px 20px;
+  background: var(--white);
+  text-align: right;
+  border-top: 1px solid #ddd;
+}
+
+.ok-button {
+  background: #e0e0e0;
+  border: 2px solid #ccc;
+  padding: 8px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  width: 80px;
+  font-size: 14px;
+}
+
+.ok-button:hover, .ok-button:focus {
+  background: #d5d5d5;
 }
