@@ -8,6 +8,7 @@ import { Controller, useForm } from 'react-hook-form';
 import PasswordInput from '../components/PasswordInput';
 import { InputMask } from '@react-input/mask';
 import RegistrationModal from '../models/RegistrationModal';
+import AlertMessage from '../components/AlertMessage';
 
 const specialityOptions = [
     { label: 'SBA', value: 'SBA' },
@@ -31,7 +32,7 @@ const BankerRegister: React.FC = () => {
         formState: { errors }
     } = useForm<ICommonRegisterFormInput>();
 
-    const { handleBankerRegister, displayPopup, setDisplayPopup } = useBankerRegisterHandler(navigate);
+    const { handleBankerRegister, displayPopup, setDisplayPopup, alert } = useBankerRegisterHandler(navigate);
 
     const onSubmit = (data: ICommonRegisterFormInput) => {
         const type: "banker" | "borrower" = "banker";
@@ -48,6 +49,15 @@ const BankerRegister: React.FC = () => {
                     <div className="sm:max-w-[67%] mx-auto">
                         <h2 className='register-title pb-14'>Get your loan in 20 mins. Let's get started.</h2>
                         <div className="card border-0 bg-white rounded">
+                            {/* alert message */}
+                            {
+                                alert && (
+                                    <AlertMessage
+                                        type={alert.type}
+                                        message={alert.message}
+                                    />
+                                )
+                            }
                             <form className='authentication-form p-6' onSubmit={handleSubmit(onSubmit)}>
                                 {/* General Information */}
                                 <div className='mb-8'>
@@ -140,18 +150,39 @@ const BankerRegister: React.FC = () => {
                                     </div>
 
                                     <div className="mb-3">
-                                        <label htmlFor="phoneNumber" className="mb-2">Contact Phone Number
-                                            <span className='error-msg'>*</span></label>
-                                        <p className='text-(--darkgray) text-[12px] mb-[5px]'><em className='font-bold'>Information :</em> A text message will be sent to user for verfication so it is important to provide correct number.</p>
-                                        <InputMask
-                                            id="phoneNumber"
-                                            mask="(___) ___-____"
-                                            showMask={true}
-                                            inputMode='numeric'
-                                            replacement={{ _: /\d/ }} />
-                                        <span className='error-msg'>Contact Phone Number is required</span>
+                                        <label htmlFor="phoneNumber" className="mb-2">
+                                            Contact Phone Number <span className='error-msg'>*</span>
+                                        </label>
+                                        <p className='text-(--darkgray) text-[12px] mb-[5px]'>
+                                            <em className='font-bold'>Information :</em> A text message will be sent to user for verification so it is important to provide correct number.
+                                        </p>
+                                        <Controller
+                                            name="phone"
+                                            control={control}
+                                            rules={{ required: "Contact Phone Number is required",
+                                                validate: value => {
+                                                    const digitsOnly = value.replace(/\D/g, "");
+                                                    if (digitsOnly.length !== 10) {
+                                                        return "Please enter a valid 10-digit phone number";
+                                                    }
+                                                    return true;
+                                                  }
+                                             }}
+                                            render={({ field }) => (
+                                                <InputMask
+                                                    {...field}
+                                                    id="phoneNumber"
+                                                    mask="(___) ___-____"
+                                                    showMask={true}
+                                                    inputMode='numeric'
+                                                    replacement={{ _: /\d/ }}
+                                                >
+                                                </InputMask>
+                                            )}
+                                        />
+                                        {errors.phone && <span className='error-msg'>{errors.phone.message}</span>}
                                     </div>
-                                    
+
                                     <div className="mb-3">
                                         <label>Title <span className='error-msg'>*</span></label>
                                         <input {...register("title", { required: "Required" })} />

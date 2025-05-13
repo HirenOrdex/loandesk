@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { NavigateFunction } from "react-router-dom";
-import { ICommonRegisterFormInput, IBankerRegisterResponse } from "../../types/auth";
+import { ICommonRegisterFormInput, IBankerRegisterResponse, AlertState } from "../../types/auth";
 import { useRegisterUserMutation } from "../../services/authApi";
+import { isIErrorResponse } from "../useIsIErrorResponse";
 
 type RegisterType = "banker" | "borrower";
 export const useBankerRegisterHandler = (navigate: NavigateFunction) => {
     const [loader, setLoader] = useState(false);
+    const [alert, setAlert] = useState<AlertState | null>(null);
     const [registerBanker] = useRegisterUserMutation();
     const [displayPopup, setDisplayPopup] = useState<boolean>(false);
 
@@ -16,12 +18,21 @@ export const useBankerRegisterHandler = (navigate: NavigateFunction) => {
                 body: data,
                 type,
             }).unwrap();
-            // setCookie("keymonoUserData", JSON.stringify(result?.data?.id), 1);
+            setAlert({
+                type: "success",
+                message: result?.message
+            });
             console.log("Banker registration successful:", result?.data?.id);
             setDisplayPopup(true);
-            navigate("/login"); // Or any other page
+            navigate("/login"); 
         } catch (error) {
             console.error("Registration error:", error);
+            if (isIErrorResponse(error)) {
+                setAlert({
+                    type: "error",
+                    message: error?.data?.message || "Something went wrong. Please try again."
+                });
+            }
         } finally {
             setLoader(false);
         }
@@ -31,6 +42,7 @@ export const useBankerRegisterHandler = (navigate: NavigateFunction) => {
         handleBankerRegister,
         loader,
         displayPopup,
-        setDisplayPopup
+        setDisplayPopup,
+        alert
     };
 };
