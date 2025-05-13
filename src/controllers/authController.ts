@@ -23,6 +23,7 @@ import UserModel from "../models/User";
 import { error, log } from "winston";
 import { Console } from "winston/lib/winston/transports";
 import { IUser } from "../types/userType";
+import { UpdateUser } from "../types/auth.type";
 
 const userRepository = new UserRepository();
 export class AuthController {
@@ -226,22 +227,24 @@ export class AuthController {
   async refreshToken(req: Request, res: Response): Promise<any> {
     try {
       // Get refresh token from cookie
-      const refreshToken = req.cookies.refreshToken;
+      const refreshToken: string = req.cookies.refreshToken;
 
       if (!refreshToken) {
         return res.status(401).json({
           success: false,
           data: null,
+          error: "Refresh token not found",
           message: "Refresh token not found",
         });
       }
 
       // Check if token is blacklisted
-      const isBlacklisted = await isTokenBlacklisted(refreshToken);
+      const isBlacklisted: boolean = await isTokenBlacklisted(refreshToken);
       if (isBlacklisted) {
         return res.status(401).json({
           success: false,
           data: null,
+          error: "Invalid refresh token",
           message: "Invalid refresh token",
         });
       }
@@ -255,6 +258,7 @@ export class AuthController {
         return res.status(401).json({
           success: false,
           data: null,
+          error: "User not found",
           message: "User not found",
         });
       }
@@ -264,11 +268,12 @@ export class AuthController {
         return res.status(401).json({
           success: false,
           data: null,
+          error: "Invalid refresh token",
           message: "Invalid refresh token",
         });
       }
 
-      const isRefreshTokenValid = await bcrypt.compare(
+      const isRefreshTokenValid: boolean = await bcrypt.compare(
         refreshToken,
         user.refreshToken
       );
@@ -276,6 +281,7 @@ export class AuthController {
         return res.status(401).json({
           success: false,
           data: null,
+          error: "Invalid refresh token",
           message: "Invalid refresh token",
         });
       }
@@ -324,6 +330,7 @@ export class AuthController {
       console.error("Refresh token error:", error);
       return res.status(401).json({
         success: false,
+        data: null,
         message: "Invalid refresh token",
         error: `error ${error.message}`,
       });
@@ -405,7 +412,7 @@ export class AuthController {
         });
       }
       // Generate reset token
-      const resetToken = await userRepository.createPasswordResetToken(
+      const resetToken:string = await userRepository.createPasswordResetToken(
         user._id.toString()
       );
 
@@ -444,10 +451,10 @@ export class AuthController {
         return res.status(400).json({
           success: false,
           data: null,
+          error: "Invalid or expired token",
           message: "Invalid or expired token",
         });
-      }
-
+      } 
       // Update password
       await userRepository.updatePassword(user._id.toString(), password);
 
@@ -465,8 +472,10 @@ export class AuthController {
       console.error("Reset password error:", error);
       return res.status(500).json({
         success: false,
+        data: null,
         message: "Server error",
         error: `error ${error.message}`,
+        
       });
     }
   }
@@ -679,7 +688,7 @@ export class AuthController {
           message: "Invalid or expired refresh token.",
         });
       }
-      const userId = decoded?.id;
+      const userId:string = decoded?.id;
       const isAlreadyVerified = await userRepository.isEmailAlreadyVerified(userId.toString());
 
       if (!isAlreadyVerified) {
@@ -703,7 +712,7 @@ export class AuthController {
       }
 
       // const updatePassword = await UserModel.findById({userId });
-      const updatePassword = await UserModel.findOne({ _id: userId }).select("+password");
+      const updatePassword :UpdateUser|null= await UserModel.findOne({ _id: userId }).select("+password");
       if (!updatePassword?.password) {
         logger.error("changePassword:-Password is missing in the user record.");
         return res.status(500).json({
@@ -726,7 +735,7 @@ export class AuthController {
       } else {
         const salt = await bcrypt.genSalt(12);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
-        const updateUser = await UserModel.findByIdAndUpdate(
+        const updateUser:UpdateUser|null = await UserModel.findByIdAndUpdate(
           userId,
           { password: hashedPassword },
           { new: true } // returns the updated document
