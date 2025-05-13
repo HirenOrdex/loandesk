@@ -74,6 +74,7 @@ const Login: React.FC = () => {
                                     <PasswordInput 
                                         name='password'
                                         id='password'
+                                        placeholder='Enter Password'
                                         registration={register('password', { required: 'Password is required' })}
                                         error={errors.password?.message}
                                     />
@@ -105,7 +106,11 @@ const Login: React.FC = () => {
                                             navigate('/bankerregister')
                                         }}
                                     >Banker</a>Or
-                                    <a className='custom-link mx-1'>Borrower</a>
+                                    <a className='custom-link mx-1' 
+                                        onClick={() => { 
+                                            navigate('/borrowerregister') 
+                                        }}
+                                    >Borrower</a>
                                 </p>
                                 <p className='text-center mb-6'>Don't receive an activation email?
                                     <a className='custom-link mx-1'

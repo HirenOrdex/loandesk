@@ -11,7 +11,7 @@ interface PasswordInputProps {
     error?: string
 }
 
-const PasswordInput: React.FC<PasswordInputProps> = ({ id,registration }) => {
+const PasswordInput: React.FC<PasswordInputProps> = ({ id,registration,placeholder }) => {
     
     const [showPassword, setShowPassword] = useState(false);
 
@@ -22,7 +22,7 @@ const PasswordInput: React.FC<PasswordInputProps> = ({ id,registration }) => {
                     type={showPassword ? 'text' : 'password'}
                     id={id}
                     // name={name}
-                    placeholder='Password'
+                    placeholder={placeholder}
                     {...registration}
                 />
                 <button

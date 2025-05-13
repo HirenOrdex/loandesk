@@ -96,7 +96,7 @@ input:not([type="radio"]) {
   border-radius: 3px;
 }
 
-input:focus {
+input:focus, textarea:focus, select:focus {
   border-color: var(--label);
   border-width: 0.5px;
 }

@@ -2,6 +2,7 @@ import React from 'react'
 import AlertMessage from '../components/AlertMessage'
 import Select from 'react-dropdown-select'
 import { InputMask } from '@react-input/mask'
+import PasswordInput from '../components/PasswordInput'
 
 const specialityOptions = [
     { label: 'SBA', value: 'SBA' },
@@ -56,18 +57,18 @@ const BankerRegister: React.FC = () => {
                                     <div className="mb-3">
                                         <label htmlFor="password">Password <span className='error-msg'>*</span></label>
                                         <p className='text-(--darkgray) text-[12px] mb-[5px]'><em className='font-bold'>Information :</em> Password must contain at least 6 character long and contain at least one capital letter, one lowercase letter, one number and one special character.</p>
-                                        <input
-                                            type="password"
-                                            id="password"
-                                            name='password' />
+                                        <PasswordInput
+                                            name='password'
+                                            id='password'
+                                        />
                                         <span className='error-msg'>Password is required</span>
                                     </div>
                                     <div className="mb-3">
                                         <label htmlFor="confirmpassword">Confirm Password <span className='error-msg'>*</span></label>
-                                        <input
-                                            type="password"
-                                            id="confirmpassword"
-                                            name='confirmpassword' />
+                                        <PasswordInput
+                                            name='confirmpassword'
+                                            id='confirmpassword'
+                                        />
                                         <span className='error-msg'>Confirm Password is required</span>
                                     </div>
                                 </div>

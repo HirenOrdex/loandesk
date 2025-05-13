@@ -11,6 +11,7 @@ import { ToastContainer } from 'react-toastify';
 import ProtectedRoute from "./ProtectedRoute";
 import Profile from "../Profile";
 import ChangePassword from "../ChangePassword";
+import BorrowerRegister from "../BorrowerRegister";
 const Routing = () => {
     return (
         <>
@@ -40,6 +41,7 @@ const Routing = () => {
                 <Route element={<Layout />}>
                     <Route path="/login" element={<Login />} />
                     <Route path="/bankerregister" element={<BankerRegister />} />
+                    <Route path="/borrowerregister" element={<BorrowerRegister />} />
                     <Route path="/forgotpassword" element={<ForgotPassword />} />
                     <Route path="/resendemail" element={<ResendActivation />} />
                     <Route path="/twofactorcode" element={<TwoFactorCode />} />

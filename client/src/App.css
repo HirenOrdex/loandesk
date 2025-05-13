@@ -24,3 +24,9 @@ header.header-container {
   width: 80%;
   margin: 0 auto;
 }
+
+@media only screen and (max-width: 540px) {
+  .authentication-form {
+    width: 90%;
+  }
+}
