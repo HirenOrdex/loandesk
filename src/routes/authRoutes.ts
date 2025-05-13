@@ -6,8 +6,8 @@ import { validateRequest } from "../validators/authValidator";
 const router = Router();
 
 // Public routes
-router.post("/register", validateRequest("register"), authController.register);
-router.post("/login", validateRequest("login"), authController.login);
+router.post("/register", authController.register);
+router.post("/login", authController.sendLoginOtp);
 router.post("/refresh-token", authController.refreshToken);
 router.post("/logout", authController.logout);
 router.post(
@@ -20,6 +20,7 @@ router.post(
   validateRequest("resetPassword"),
   authController.resetPassword
 );
+router.post("/verfiy-otp", authController.login);
 router.get(
   "/verfiy-email/:token",
   // rateLimiter({ windowMs: 60 * 60 * 1000, max: 3 }), // 3 requests per hour
