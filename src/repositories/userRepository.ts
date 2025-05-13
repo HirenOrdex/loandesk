@@ -8,6 +8,7 @@ import redisClient from "../utils/redisClient";
 import { hashToken } from "../utils/emailUtils";
 import { logger } from "../configs/winstonConfig";
 import { RoleModel } from "../models/RoleModel";
+import { sendWelcomeEmail } from "../services/emailService";
 
 export class UserRepository {
   private model: Model<UserDocument>;
@@ -228,7 +229,6 @@ export class UserRepository {
 
       await redisClient.del(`emailVerificationWeb:${userId}`);
 
-      const { sendWelcomeEmail } = require("../../services/emailService");
       sendWelcomeEmail(user.email, user.firstName).catch((err: any) => {
         logger.error(`Failed to send welcome email to ${user.email}: ${err}`);
       });
@@ -241,16 +241,18 @@ export class UserRepository {
   }
   async isEmailAlreadyVerified(userId: string): Promise<boolean> {
     try {
-      const user = await User.findById(userId, 'isEmailVerified');
+      const user = await User.findById(userId, "isEmailVerified");
       if (!user) {
-        throw new Error('User not found');
+        throw new Error("User not found");
       }
-  
+
       return user.isEmailVerified === true;
     } catch (error: unknown) {
       const err = error as Error;
       console.error(`Error checking email verification status: ${err.message}`);
-      throw new Error(`Error checking email verification status: ${err.message}`);
+      throw new Error(
+        `Error checking email verification status: ${err.message}`
+      );
     }
   }
   async findAll(): Promise<IUser[]> {
