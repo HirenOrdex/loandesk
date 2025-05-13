@@ -55,6 +55,7 @@ export class AuthController {
           success: false,
           data: null,
           message: "The email address entered is already registered. Please try again with new email or contact the support team.",
+          error: "The email address entered is already registered. Please try again with new email or contact the support team.",
         });
       }
       if (password !== confirm_password) {
@@ -62,7 +63,7 @@ export class AuthController {
           success: false,
           data: null,
           message: `confirm Password and Password Should be same`,
-          error: null,
+          error: `confirm Password and Password Should be same`,
         });
       }
       // BANKER TYPE
@@ -154,8 +155,8 @@ export class AuthController {
 
           return res.status(201).json({
             success: true,
-            message: "Banker created successfully",
             data: null,
+            message: "Banker created successfully",
             error: null,
           });
         } catch (error: unknown) {
@@ -183,13 +184,23 @@ export class AuthController {
 
           // Validate passwords
           if (password !== confirm_password) {
-            return res.status(400).json({ message: "Passwords do not match" });
+            return res.status(400).json({ 
+              success: false,
+              data: null,
+              message: "Passwords do not match",
+              error: "Passwords do not match" 
+            });
           }
 
           // Check if user already exists
           const existingUser = await UserModel.findOne({ email });
           if (existingUser) {
-            return res.status(409).json({ message: "The email address entered is already registered. Please try again with new email or contact the support team." });
+            return res.status(409).json({ 
+              success: false,
+              data: null,
+              message: "The email address entered is already registered. Please try again with new email or contact the support team.",
+              error: "The email address entered is already registered. Please try again with new email or contact the support team.",
+            });
           }
           const roleId = await userRepository.findRoleIdByName("Banker");
 
@@ -214,13 +225,20 @@ export class AuthController {
           });
 
           return res.status(201).json({
+            success: true,
             message: "Borrower created successfully",
             user: newUser,
             borrower: newBorrower,
+            error: null
           });
         } catch (error) {
           console.error("Error creating borrower:", error);
-          return res.status(500).json({ message: "Internal server error" });
+          return res.status(500).json({ 
+            success: false,
+            data: null,
+            message: "Internal Server Error",
+            error: "Internal Server Error"
+          });
         }
       }
       // FUTURE: Other user types like borrower, admin etc.
@@ -961,6 +979,7 @@ export class AuthController {
           success: false,
           data: null,
           message: "Email and On-Demand Code are required",
+          error: "Email and On-Demand Code are required",
         });
       }
       const user = await userRepository.findUserByEmail(email);
@@ -969,6 +988,7 @@ export class AuthController {
           success: false,
           data: null,
           message: "Invalid credentials",
+          error: "Invalid credentials",
         });
       }
 
@@ -980,6 +1000,7 @@ export class AuthController {
           success: false,
           data: null,
           message: "Invalid or expired On-Demand Code",
+          error: "Invalid or expired On-Demand Code",
         });
       }
 
@@ -989,6 +1010,7 @@ export class AuthController {
           success: false,
           data: null,
           message: "Invalid On-Demand Code",
+          error: "Invalid On-Demand Code",
         });
       }
 
@@ -997,6 +1019,7 @@ export class AuthController {
           success: false,
           data: null,
           message: "Reset request expired",
+          error: "Reset request expired",
         });
       }
       console.log("roleId");
@@ -1048,6 +1071,7 @@ export class AuthController {
             },
           },
           message: `Login Successfully`,
+          error: null,
         });
       }
     } catch (error) {
@@ -1056,6 +1080,7 @@ export class AuthController {
         success: false,
         data: null,
         message: "Internal server error",
+        error: "Internal server error",
       });
     }
   }
