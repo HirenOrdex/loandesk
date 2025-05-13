@@ -5,7 +5,7 @@ import { validateBankerRequest } from "../validators/bankerValidator";
 
 const router = Router();
 
-router.post("/bankers", validateBankerRequest, BankerController.createBanker);
+// router.post("/bankers", validateBankerRequest, BankerController.createBanker);
 router.patch(
   "/bankers/:id",
   validateBankerRequest,

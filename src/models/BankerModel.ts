@@ -1,22 +1,22 @@
 // src/models/BankerRegistration.ts
-import { Schema, model, Document } from "mongoose";
+import { Schema, model, Document, Types } from "mongoose";
 
 export interface IBankerRegistration extends Document {
   financialInstitutionName: string;
   title?: string;
   areaOfSpecialty?: string;
-  address: string;
+  addressId: Types.ObjectId;
   bankType?: string;
   assetSize?: string;
   userId?: string;
 }
 
-const bankerRegistrationSchema = new Schema<IBankerRegistration>(
+const bankerSchema = new Schema<IBankerRegistration>(
   {
     financialInstitutionName: { type: String, required: true },
     title: { type: String, required: true },
     areaOfSpecialty: { type: String, required: true },
-    address: { type: String, required: true },
+    addressId: { type: Schema.Types.ObjectId, ref: "Address" },
     bankType: { type: String, required: true },
     assetSize: { type: String, required: true },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true }, // Reference to User model
@@ -26,8 +26,5 @@ const bankerRegistrationSchema = new Schema<IBankerRegistration>(
   }
 );
 
-const BankerRegistrationModel = model<IBankerRegistration>(
-  "BankerRegistration",
-  bankerRegistrationSchema
-);
-export default BankerRegistrationModel;
+const BankerModel = model<IBankerRegistration>("banker", bankerSchema);
+export default BankerModel;

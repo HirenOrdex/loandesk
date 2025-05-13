@@ -1,5 +1,4 @@
 
-import React from 'react';
 import useriumg from '../assets/imgs/useriumg.png';
 import pipeline from '../assets/imgs/pipeline.png';
 import pluse from '../assets/imgs/pluse.png';

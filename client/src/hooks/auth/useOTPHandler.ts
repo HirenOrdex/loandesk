@@ -1,22 +1,31 @@
 import { useState } from "react";
 import { NavigateFunction } from "react-router-dom";
-import { ILoginResponse, IOTPFormInput } from "../../types/auth";
+import { AlertState, ILoginResponse, IOTPFormInput } from "../../types/auth";
 import { useVerifyOTPMutation } from "../../services/authApi";
 import { setCookie } from "../../services/commonServices/cookie";
+import { isIErrorResponse } from "../useIsIErrorResponse";
 
 export const useOTPHandler = (navigate: NavigateFunction) => {
     const [loader, setLoader] = useState(false);
+    const [alert, setAlert] = useState<AlertState | null>(null);
     const [verifyOTP] = useVerifyOTPMutation();
     const handleOTPSubmit = async (data: IOTPFormInput) => {
         setLoader(true);
         try {
-            console.log("data", data)
             const result: ILoginResponse = await verifyOTP(data)?.unwrap();
             setCookie("keymonoUserData", JSON?.stringify(result?.data?.user), 1);
-            console.log("result", result?.data?.user);
+            setAlert({
+                type: "success",
+                message: result?.message
+            });
             navigate("/dashboard");
         } catch (error: unknown) {
-            console.log("error", error)
+            if (isIErrorResponse(error)) {
+                setAlert({
+                    type: "error",
+                    message: error?.data?.message || "Something went wrong. Please try again."
+                });
+            }
         } finally {
             setLoader(false);
         }
@@ -25,5 +34,6 @@ export const useOTPHandler = (navigate: NavigateFunction) => {
     return {
         handleOTPSubmit,
         loader,
+        alert
     };
 };

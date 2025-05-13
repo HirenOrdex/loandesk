@@ -11,7 +11,7 @@ export interface IUser extends Document {
   lastName: string;
   email?: string;
   password?: string;
-  role: string;
+  roleId?: Types.ObjectId;
   active: boolean;
   status: string;
   refreshToken?: string | null;
@@ -21,6 +21,7 @@ export interface IUser extends Document {
   // passwordResetToken?: string | null;
   // passwordResetExpires?: Date | undefined | null;
   passwordChangedAt?: Date;
+
   // emailVerificationToken?:string | null;
   correctPassword(candidatePassword: string): Promise<boolean>;
   isPhoneVerified?: boolean;
@@ -36,6 +37,7 @@ const userSchema = new Schema(
       type: String,
       required: [false, "Email is required"],
       lowercase: true,
+      unique: true,
     },
     password: {
       type: String,
@@ -48,11 +50,7 @@ const userSchema = new Schema(
       enum: ["active", "inactive", "pending", "deleted"],
       default: "active",
     },
-    role: {
-      type: String,
-      enum: ["user", "admin", "banker"],
-      default: "user",
-    },
+    roleId: { type: Schema.Types.ObjectId, ref: "Role" },
     active: {
       type: Boolean,
       default: true,
@@ -101,13 +99,6 @@ const userSchema = new Schema(
       type: Date,
       select: false,
     },
-    company_id: {
-      type: Schema.Types.ObjectId,
-      ref: "Company", // This should match the name used in CompanyModel
-      required: false,
-    },
-    streamToken: { type: String },
-    streamUserId: { type: String },
   },
   {
     timestamps: true,
@@ -117,12 +108,12 @@ const userSchema = new Schema(
 /**
  * Method to compare candidate password with user's hashed password
  */
-userSchema.index({ company_id: 1, email: 1 }, { unique: true });
+userSchema.index({ email: 1 }, { unique: true });
 userSchema.methods.correctPassword = async function (
   candidatePassword: string
 ): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-const UserModel = model<UserDocument>("User", userSchema);
+const UserModel = model<UserDocument>("user", userSchema);
 export default UserModel;

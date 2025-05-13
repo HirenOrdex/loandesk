@@ -1,7 +1,6 @@
 import Cookies from "js-cookie";
 import LZString from "lz-string";
 import { handleUserLogout } from "./utilities";
-import { AppDispatch } from "../../redux/store";
 
 export const setCookie = (
     name: string,
@@ -19,7 +18,7 @@ export const setCookie = (
   
 export const getCookie = (
     name: string,
-    dispatch?: AppDispatch,
+    dispatch?: any,
     showToast: boolean = false
   ): string | null => {
     const handleLogoutData = handleUserLogout(dispatch,showToast);
