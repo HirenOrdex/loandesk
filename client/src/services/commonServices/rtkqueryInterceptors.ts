@@ -1,5 +1,6 @@
 import { AppDispatch } from "../../redux/store";
 import ToastComponent from "./ToastComponent";
+import { handleUserLogout } from "./utilities";
 
 export const errorHandlingInterceptors = (status: number, errorMessage: string,dispatch:AppDispatch) => {
   switch (status) {
@@ -21,7 +22,7 @@ export const errorHandlingInterceptors = (status: number, errorMessage: string,d
       break;
     case 440:
         console.error(errorMessage)
-        // handleUserLogout(dispatch, "")();
+        handleUserLogout(dispatch)();
         break;
     default:
       ToastComponent(errorMessage || 'Something went wrong', 'error');

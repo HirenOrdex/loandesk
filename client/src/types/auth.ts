@@ -121,3 +121,16 @@ export interface IBankerRegisterResponse {
     };
     error: any; // or `null` specifically if no other type is expected
 }
+
+export interface AlertState {
+    type: "success" | "error";
+    message: string;
+}
+
+export interface IUserLogin {
+    email: string | null,
+    password: string | null,
+    accessToken:string|null,
+    userId:string | null,
+    refreshToken : string | null,
+}

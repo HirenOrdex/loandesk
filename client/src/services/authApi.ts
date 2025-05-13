@@ -1,10 +1,10 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
-import { baseQueryWithErrorHandler } from './commonServices/baseQueryWithErrorHandler';
+import { baseQuery } from './commonServices/baseQueryWithErrorHandler';
 import { IBankerRegisterResponse, ICommonRegisterFormInput, IForgotFormInput, IForgotResponse, ILoginFormInput, ILoginResponse, IOTPFormInput } from '../types/auth';
 
 export const authApi = createApi({
   reducerPath: 'authApi',
-  baseQuery: baseQueryWithErrorHandler,
+  baseQuery: baseQuery,
   endpoints: (builder) => ({
     login: builder.mutation<ILoginResponse, ILoginFormInput>({
       query: (data) => ({

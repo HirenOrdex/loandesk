@@ -1,21 +1,29 @@
 import { useState } from "react";
 import { NavigateFunction } from "react-router-dom";
-import { ILoginFormInput, ILoginResponse } from "../../types/auth";
+import { AlertState, ILoginFormInput, ILoginResponse } from "../../types/auth";
 import { useLoginMutation } from "../../services/authApi";
+import { isIErrorResponse } from "../useIsIErrorResponse";
 
 export const useLoginHandler = (navigate: NavigateFunction) => {
     const [loader, setLoader] = useState(false);
+    const [alert, setAlert] = useState<AlertState | null>(null);
     const [login] = useLoginMutation();
     const handleLogin = async (data: ILoginFormInput) => {
         setLoader(true);
         try {
-            console.log("data", data)
             const result: ILoginResponse = await login(data)?.unwrap();
-            // setCookie("keymonoUserData", JSON?.stringify(result?.data?.user), 1);
-            console.log("result", result?.data);
-            navigate("/twofactorcode",{ state: { email: result?.data?.requestId } });
+            setAlert({
+                type: "success",
+                message: result?.message
+            });
+            navigate("/twofactorcode", { state: { email: result?.data?.requestId } });
         } catch (error: unknown) {
-            console.log("error", error)
+            if (isIErrorResponse(error)) {
+                setAlert({
+                    type: "error",
+                    message: error?.data?.message || "Something went wrong. Please try again."
+                });
+            }
         } finally {
             setLoader(false);
         }
@@ -24,5 +32,6 @@ export const useLoginHandler = (navigate: NavigateFunction) => {
     return {
         handleLogin,
         loader,
+        alert
     };
 };

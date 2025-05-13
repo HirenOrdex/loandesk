@@ -16,6 +16,7 @@ const TwoFactorCode: React.FC = () => {
     } = useForm<IOTPFormInput>();
     const {
         handleOTPSubmit,
+        alert
     } = useOTPHandler(navigate);
 
     const onSubmit = (data: IOTPFormInput) => {
@@ -37,7 +38,14 @@ const TwoFactorCode: React.FC = () => {
                     <div className="sm:max-w-[67%] mx-auto">
                         <h2 className='register-title pb-14'>Get your Sign In in 5 mins. Let's get started.</h2>
                         <div className="card border-0 bg-white rounded">
-                            <AlertMessage type="success" />
+                            {
+                                alert && (
+                                    <AlertMessage
+                                        type={alert.type}
+                                        message={alert.message}
+                                    />
+                                )
+                            }
                             <form className='authentication-form p-6'>
                                 <div className="mb-3">
                                     <label htmlFor="email" className="mb-2">Email address <span className='error-msg'>*</span></label>

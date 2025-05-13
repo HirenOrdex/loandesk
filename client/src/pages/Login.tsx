@@ -7,6 +7,7 @@ import { useLoginHandler } from '../hooks/auth/useLoginHandler'
 import { getCookie } from '../services/commonServices/cookie'
 import { useDispatch } from 'react-redux'
 import PasswordInput from '../components/PasswordInput'
+import AlertMessage from '../components/AlertMessage'
 
 const Login: React.FC = () => {
     const navigate = useNavigate()
@@ -18,10 +19,11 @@ const Login: React.FC = () => {
     } = useForm<ILoginFormInput>();
     const {
         handleLogin,
-        loader,
+        alert
     } = useLoginHandler(navigate);
     const userData = getCookie("keymonoUserData", dispatch)
     console.log("userData", userData)
+    console.log("alert", alert)
     const onSubmit = (data: ILoginFormInput) => handleLogin(data);
     return (
         <>
@@ -34,7 +36,14 @@ const Login: React.FC = () => {
                         <h2 className='register-title pb-14'>Get your Sign In in 5 mins. Let's get started.</h2>
                         <div className="card border-0 bg-white rounded">
                             {/* alert message */}
-                            {/* <AlertMessage type="success" /> */}
+                            {
+                                alert && (
+                                    <AlertMessage
+                                        type={alert.type}
+                                        message={alert.message}
+                                    /> 
+                                )
+                            }
                             {/* continue with google */}
                             <div className='w-[80%] px-6 pt-10 mx-auto flex flex-col'>
                                 <button
@@ -67,7 +76,6 @@ const Login: React.FC = () => {
                                     {errors?.email && (
                                         <span className='error-msg'>{errors?.email?.message}</span>
                                     )}
-                                    {/* <span className='error-msg'>Email is not empty</span> */}
                                 </div>
                                 <div className="mb-3">
                                     <label htmlFor="password">Password</label>
