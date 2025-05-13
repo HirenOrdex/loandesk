@@ -7,6 +7,7 @@ type RegisterType = "banker" | "borrower";
 export const useBankerRegisterHandler = (navigate: NavigateFunction) => {
     const [loader, setLoader] = useState(false);
     const [registerBanker] = useRegisterUserMutation();
+    const [displayPopup, setDisplayPopup] = useState<boolean>(false);
 
     const handleBankerRegister = async (data: ICommonRegisterFormInput, type: RegisterType) => {
         setLoader(true);
@@ -17,7 +18,8 @@ export const useBankerRegisterHandler = (navigate: NavigateFunction) => {
             }).unwrap();
             // setCookie("keymonoUserData", JSON.stringify(result?.data?.id), 1);
             console.log("Banker registration successful:", result?.data?.id);
-            navigate("/dashboard"); // Or any other page
+            setDisplayPopup(true);
+            navigate("/login"); // Or any other page
         } catch (error) {
             console.error("Registration error:", error);
         } finally {
@@ -28,5 +30,7 @@ export const useBankerRegisterHandler = (navigate: NavigateFunction) => {
     return {
         handleBankerRegister,
         loader,
+        displayPopup,
+        setDisplayPopup
     };
 };

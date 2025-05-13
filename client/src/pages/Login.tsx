@@ -96,7 +96,7 @@ const Login: React.FC = () => {
                                             Remember Me
                                         </label>
                                     </div>
-                                    <a className='custom-link'
+                                    <a className='custom-link mx-1'
                                         onClick={() => {
                                             navigate('/forgotpassword')
                                         }}
@@ -109,8 +109,7 @@ const Login: React.FC = () => {
                                 </div>
                                 <p className='text-center mb-8'>Don't have an account? Sign up as
                                 <a
-                                        href="#"
-                                        className="custom-link"
+                                        className="custom-link mx-1"
                                         onClick={(e) => {
                                             e.preventDefault();
                                             navigate('/register?type=banker');
@@ -120,8 +119,7 @@ const Login: React.FC = () => {
                                     </a>
                                     Or
                                     <a
-                                        href="#"
-                                        className="custom-link"
+                                        className="custom-link mx-1"
                                         onClick={(e) => {
                                             e.preventDefault();
                                             navigate('/register?type=borrower');

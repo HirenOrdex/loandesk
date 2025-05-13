@@ -7,6 +7,7 @@ import AddressAutocomplete from '../components/AddressAutocomplete';
 import { Controller, useForm } from 'react-hook-form';
 import PasswordInput from '../components/PasswordInput';
 import { InputMask } from '@react-input/mask';
+import RegistrationModal from '../models/RegistrationModal';
 
 const specialityOptions = [
     { label: 'SBA', value: 'SBA' },
@@ -30,7 +31,7 @@ const BankerRegister: React.FC = () => {
         formState: { errors }
     } = useForm<ICommonRegisterFormInput>();
 
-    const { handleBankerRegister } = useBankerRegisterHandler(navigate);
+    const { handleBankerRegister, displayPopup, setDisplayPopup } = useBankerRegisterHandler(navigate);
 
     const onSubmit = (data: ICommonRegisterFormInput) => {
         const type: "banker" | "borrower" = "banker";
@@ -231,6 +232,10 @@ const BankerRegister: React.FC = () => {
                     </div>
                 </div>
             </main>
+
+            {displayPopup && (
+                <RegistrationModal/>
+            )}
         </>
     );
 };
