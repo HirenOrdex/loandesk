@@ -71,7 +71,7 @@ const Login: React.FC = () => {
                                 </div>
                                 <div className="mb-3">
                                     <label htmlFor="password">Password</label>
-                                    <PasswordInput 
+                                    <PasswordInput
                                         name='password'
                                         id='password'
                                         registration={register('password', { required: 'Password is required' })}
@@ -100,12 +100,27 @@ const Login: React.FC = () => {
                                     >SIGN IN</button>
                                 </div>
                                 <p className='text-center mb-8'>Don't have an account? Sign up as
-                                    <a className='custom-link mx-1'
-                                        onClick={() => {
-                                            navigate('/bankerregister')
+                                <a
+                                        href="#"
+                                        className="custom-link"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            navigate('/register?type=banker');
                                         }}
-                                    >Banker</a>Or
-                                    <a className='custom-link mx-1'>Borrower</a>
+                                    >
+                                        Banker
+                                    </a>
+                                    Or
+                                    <a
+                                        href="#"
+                                        className="custom-link"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            navigate('/register?type=borrower');
+                                        }}
+                                    >
+                                        Borrower
+                                    </a>
                                 </p>
                                 <p className='text-center mb-6'>Don't receive an activation email?
                                     <a className='custom-link mx-1'

@@ -58,3 +58,66 @@ export interface IOTPFormInput {
     email: string;
     otp: string
 }
+
+export interface IForgotResponse {
+    success: boolean;
+    error: string;
+    message: string;
+}
+
+export interface IForgotFormInput {
+    email: string;
+}
+
+export interface IAddress {
+    address1: string | null;
+    address2: string | null;
+    city: string;
+    state: string;
+    zip: string | null;
+    country: string;
+    longitude: string;
+    latitude: string;
+    fulladdress: string;
+    suiteno: string;
+}
+
+export interface ICommonRegisterFormInput {
+    financialInstitutionName: string;
+    email: string;
+    password: string;
+    confirm_password: string;
+    firstName: string;
+    middleInitial?: string;
+    lastName: string;
+    phone: string;
+    title: string;
+    areaOfSpecialty?: string;
+    address: IAddress[]; // 👈 changed from string to array of address objects
+    bankType: string;
+    assetSize: string;
+}
+
+// export interface IBankerRegisterFormInput {
+//     financialInstitutionName: string;
+//     email: string;
+//     password: string;
+//     firstName: string;
+//     middleInitial?: string;
+//     lastName: string;
+//     phone: string;
+//     title: string;
+//     areaOfSpecialty?: string;
+//     address: string;
+//     bankType: string;
+//     assetSize: string;
+// }
+
+export interface IBankerRegisterResponse {
+    success: boolean;
+    message: string;
+    data: {
+        id: string;
+    };
+    error: any; // or `null` specifically if no other type is expected
+}

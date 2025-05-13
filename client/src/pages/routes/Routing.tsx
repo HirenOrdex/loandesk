@@ -39,7 +39,7 @@ const Routing = () => {
 
                 <Route element={<Layout />}>
                     <Route path="/login" element={<Login />} />
-                    <Route path="/bankerregister" element={<BankerRegister />} />
+                    <Route path="/register" element={<BankerRegister />} />
                     <Route path="/forgotpassword" element={<ForgotPassword />} />
                     <Route path="/resendemail" element={<ResendActivation />} />
                     <Route path="/twofactorcode" element={<TwoFactorCode />} />
