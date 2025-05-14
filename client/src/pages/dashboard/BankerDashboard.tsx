@@ -1,15 +1,13 @@
+import useriumg from '../../assets/imgs/useriumg.png';
+import pipeline from '../../assets/imgs/pipeline.png';
+import pluse from '../../assets/imgs/pluse.png';
+import findmatch from "../../assets/imgs/find-a-match.png";
+import interviewcalendar from "../../assets/imgs/calendar-icon.png";
+import matchpreference from "../../assets/imgs/match-preference.png";
+import crawler from "../../assets/imgs/crawler.png"
+import '../../assets/css/banker-dashboard.css';  // For component-specific CSS
 
-import useriumg from '../assets/imgs/useriumg.png';
-import pipeline from '../assets/imgs/pipeline.png';
-import pluse from '../assets/imgs/pluse.png';
-import findmatch from "../assets/imgs/find-a-match.png";
-import interviewcalendar from "../assets/imgs/calendar-icon.png";
-import matchpreference from "../assets/imgs/match-preference.png";
-import crawler from "../assets/imgs/crawler.png"
-import '../assets/css/Dashboard.css';  // For component-specific CSS
-
-
-const Dashboard = () => {
+const BankerDashboard = () => {
     const cardData = [
         { title: 'New Deal', image: useriumg, extraImage: pluse },
         { title: 'Find A Match', image: findmatch },
@@ -55,4 +53,4 @@ const Dashboard = () => {
     );
 };
 
-export default Dashboard;
+export default BankerDashboard;

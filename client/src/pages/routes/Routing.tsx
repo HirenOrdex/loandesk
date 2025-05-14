@@ -3,7 +3,7 @@ import Layout from '../Layout';
 import Login from '../Login';
 import ForgotPassword from '../ForgotPassword';
 import ProtectedLayout from './ProtectedLayout';
-import Dashboard from '../Dashboard';
+import BankerDashboard from '../dashboard/BankerDashboard';
 import TwoFactorCode from '../TwoFactorCode';
 import ResendActivation from '../ResendActivation';
 import BankerRegister from '../BankerRegister';
@@ -33,7 +33,7 @@ const Routing = () => {
                 <Route path="/" element={<Navigate to="/login" />} />
                 <Route element={<ProtectedRoute />}>
                     <Route element={<ProtectedLayout />}>
-                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/dashboard" element={<BankerDashboard />} />
                         <Route path="/profile" element={<Profile />} />
                         <Route path="/changepassword" element={<ChangePassword />} />
                     </Route>
