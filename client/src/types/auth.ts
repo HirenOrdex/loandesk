@@ -99,7 +99,7 @@ export interface IBankerRegisterFormInput {
     lastName: string;
     phone: string;
     title: string;
-    areaOfSpecialty?: string;
+    areaOfSpecialty: string;
     address: IAddress[]; 
     bankType: string;
     assetSize: string;
@@ -138,8 +138,16 @@ export interface IBorrowerRegisterResponse {
         email: string;
         name: string;
     };
-    error: any; // or `null` specifically if no other type is expected
+    error: any; 
 }
+
+export interface ILogoutResponse {
+    success: boolean;
+    data: null;
+    error: string | null;
+    message: string;
+}
+  
 
 export interface AlertState {
     type: "success" | "error";

@@ -41,7 +41,7 @@ const BorrowerRegister: React.FC = () => {
         formState: { errors }
     } = useForm<IBorrowerRegisterFormInput>();
 
-    const { handleBorrowerRegister, displayPopup, alert } = useBorrowerRegisterHandler(navigate);
+    const { handleBorrowerRegister, displayPopup, alert, loader } = useBorrowerRegisterHandler(navigate);
     const position = watch("position");
     const [captchaQuestion, setCaptchaQuestion] = useState('');
     const [captchaAnswer, setCaptchaAnswer] = useState<number | null>(null);
@@ -95,6 +95,7 @@ const BorrowerRegister: React.FC = () => {
 
     return (
         <>
+            {loader ? <div className='loader'></div> : null}
             <header className='header-container'>
                 <img src={logo} alt="NetRM logo" className='mx-auto my-10'/>
             </header>

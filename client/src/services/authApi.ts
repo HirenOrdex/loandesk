@@ -1,6 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQuery } from './commonServices/baseQueryWithErrorHandler';
-import { IBankerRegisterFormInput, IBankerRegisterResponse, IBorrowerRegisterFormInput, IBorrowerRegisterResponse, IForgotFormInput, IForgotResponse, ILoginFormInput, ILoginResponse, IOTPFormInput, IResendOTPFormInput, IResetPasswordFormInput } from '../types/auth';
+import { IBankerRegisterFormInput, IBankerRegisterResponse, IBorrowerRegisterFormInput, IBorrowerRegisterResponse, IForgotFormInput, IForgotResponse, ILoginFormInput, ILoginResponse, ILogoutResponse, IOTPFormInput, IResendOTPFormInput, IResetPasswordFormInput } from '../types/auth';
 
 export const authApi = createApi({
   reducerPath: 'authApi',
@@ -68,6 +68,13 @@ export const authApi = createApi({
         method: "GET"
       }),
     }),
+    logout: builder.mutation<ILogoutResponse, void>({
+      query: () => ({
+        url: "/auth/logout",
+        method: "POST",
+      }),
+    }),
+    
   }),
 });
 
@@ -81,4 +88,5 @@ export const {
   useRegisterBorrowerMutation,
   useVerifyEmailMutation,
   useResetPasswordMutation,
+  useLogoutMutation
 } = authApi;
