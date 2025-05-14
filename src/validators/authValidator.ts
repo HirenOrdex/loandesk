@@ -148,7 +148,7 @@ export const validateRequest = (
 
 export const validateRegister = (
   req: Request,
-  res: Response,
+  res: any,
   next: NextFunction
 ) => {
   const type = req.query.type;

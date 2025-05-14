@@ -376,7 +376,8 @@ export class AuthController {
       }
     } catch (err: unknown) {
       const error = err as IError;
-      console.error("Login error:", error);
+      console.error("Send OTP error:", error);
+      logger.error("Send OTP  error:", error);
       return res.status(500).json({
         success: false,
         data: null,
@@ -1143,6 +1144,109 @@ export class AuthController {
         data: null,
         message: "Internal server error",
         error: "Internal server error",
+      });
+    }
+  }
+  async resendLoginOtp(req: Request, res: Response): Promise<any> {
+    try {
+      const { email } = req.body;
+      const functionName = "resendLoginOtp";
+      logger.info(`Coming into Controller ${controllerName}`);
+      logger.info(`Coming into function ${functionName}`);
+
+      // Find user
+      const user = await userRepository.findUserByEmail(email);
+      if (!user) {
+        logger.info(`Invalid credentials`);
+        return res.status(401).json({
+          success: false,
+          data: null,
+          error: "Cannot Process Request. Username does not exists",
+          message: "Cannot Process Request. Username does not exists",
+        });
+      }
+      if (user.isEmailVerified === false) {
+        logger.info(`Email is not verified, please verify your email.`);
+        return res.status(400).json({
+          success: false,
+          data: null,
+          error:
+            "Account is not verified. Please check your email & complete verification process.",
+          message:
+            "Account is not verified. Please check your email & complete verification process.",
+        });
+      }
+      // Check if account is locked
+      const isLocked = await userRepository.isAccountLocked(user);
+      if (isLocked) {
+        logger.info(
+          `Account locked. Please try again later or reset your password.`
+        );
+        return res.status(401).json({
+          success: false,
+          data: null,
+          error:
+            "Account locked. Please try again later or reset your password.",
+          message:
+            "Account locked. Please try again later or reset your password.",
+        });
+      }
+
+      // send otp
+
+      // Reset login attempts on successful login
+      await userRepository.resetLoginAttempts(user._id.toString());
+      const deviceInfo = extractDeviceInfo(req);
+      const phone = user.phone;
+      // Check if user already exists by phone or email
+      if (phone) {
+        const otp = await generateOTP(phone);
+        const requestId = await otpRepository.storeOTP(
+          phone,
+          otp,
+          user.id,
+          email,
+          "login"
+        );
+
+        // In production, send the OTP via SMS
+        // For development, we'll log it
+        logger.info(`Generated OTP for  existingUser  ${phone}: ${otp}`);
+
+        // Store device info temporarily
+        await deviceRepository.storeTemporaryDeviceInfo(requestId, deviceInfo);
+
+        // Store registration data temporarily in Redis
+        // await redisClient.set(
+        //   `login_${requestId}`,
+        //   JSON.stringify({
+        //     phone,
+        //     deviceInfo,
+        //   }),
+        //   { EX: 300 }
+        // ); // 5 minutes expiry
+
+        return res.status(200).json({
+          success: true,
+          message: `A text message with a 6-digit verification code was just sent to ${phone}`,
+          data: {
+            requestId,
+            expiresIn: 300,
+            // For development only, remove in production
+            otp: NODE_ENV === "development" ? otp : undefined,
+          },
+          error: null,
+        });
+      }
+    } catch (err: unknown) {
+      const error = err as IError;
+      logger.error("reSend OTP error:", error);
+      console.error("reSend OTP error:", error);
+      return res.status(500).json({
+        success: false,
+        data: null,
+        message: "Server error",
+        error: `error ${error.message}`,
       });
     }
   }

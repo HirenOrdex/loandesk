@@ -38,4 +38,5 @@ router.post(
 );
 router.get("/google", authController.googleAuth);
 router.get("/google/callback", authController.googleCallback);
+router.post("/resend-otp", authController.resendLoginOtp);
 export default router;
