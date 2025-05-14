@@ -5,7 +5,7 @@ export interface IBorrower extends Document {
   coname: string;
   position: string;
   picture: string;
-  createdby: Types.ObjectId;
+  createdBy: Types.ObjectId;
   updatedby: Types.ObjectId;
 }
 
@@ -15,7 +15,7 @@ const BorrowerSchema: Schema = new Schema<IBorrower>(
     coname: { type: String, required: true },
     position: { type: String, required: true },
     picture: { type: String, required: false },
-    createdby: { type: Schema.Types.ObjectId, ref: "User" },
+    createdBy: { type: Schema.Types.ObjectId, ref: "User" },
     updatedby: { type: Schema.Types.ObjectId, ref: "User" },
   },
   {

@@ -30,6 +30,8 @@ export interface IUser {
   company?: CompanyInfo | null;
   createdAt: Date;
   updatedAt: Date;
+  createdBy: Types.ObjectId;
+  updatedby: Types.ObjectId;
 }
 
 // This is what Mongoose returns

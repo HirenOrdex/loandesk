@@ -8,6 +8,8 @@ export interface IBankerRegistration extends Document {
   addressId: Types.ObjectId;
   bankType?: string;
   assetSize?: string;
+  createdBy: Types.ObjectId;
+  updatedby: Types.ObjectId;
   userId?: string;
 }
 
@@ -19,7 +21,9 @@ const bankerSchema = new Schema<IBankerRegistration>(
     addressId: { type: Schema.Types.ObjectId, ref: "Address" },
     bankType: { type: String, required: true },
     assetSize: { type: String, required: true },
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true }, // Reference to User model
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    createdBy: { type: Schema.Types.ObjectId, ref: "User" },
+    updatedby: { type: Schema.Types.ObjectId, ref: "User" }, // Reference to User model
   },
   {
     timestamps: true,

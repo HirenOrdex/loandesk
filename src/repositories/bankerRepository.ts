@@ -35,7 +35,11 @@ export class BankerRepossitory {
           : bankerData.address;
 
         if (addressInput) {
-          newAddress = await AddressModel.create(addressInput);
+          const addressWithCreator = {
+            ...addressInput,
+            createdBy: newUser._id,
+          };
+          newAddress = await AddressModel.create(addressWithCreator);
         }
       }
 
@@ -50,6 +54,7 @@ export class BankerRepossitory {
         areaOfSpecialty: bankerData?.areaOfSpecialty,
         bankType: bankerData?.bankType,
         assetSize: bankerData?.assetSize,
+        createdBy: newUser?._id,
       });
 
       return { newUser, newBanker, newAddress };
