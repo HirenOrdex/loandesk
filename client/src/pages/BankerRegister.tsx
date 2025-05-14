@@ -62,15 +62,16 @@ const BankerRegister: React.FC = () => {
                                 {/* General Information */}
                                 <div className='mb-8'>
                                     <div className="mb-3">
-                                        <label>Name of Financial Institution <span className='error-msg'>*</span></label>
-                                        <input {...register("financialInstitutionName", { required: "Required" })} />
+                                        <label htmlFor="financialInstitute">Name of Financial Institution <span className='error-msg'>*</span></label>
+                                        <input id="financialInstitute" {...register("financialInstitutionName", { required: "Required" })} />
                                         {errors.financialInstitutionName && <span className='error-msg'>{errors.financialInstitutionName.message}</span>}
                                     </div>
 
                                     <div className="mb-3">
-                                        <label>Email Address <span className='error-msg'>*</span></label>
+                                        <label htmlFor="email">Email Address <span className='error-msg'>*</span></label>
                                         <input
                                             type="email"
+                                            id='email'
                                             {...register("email", {
                                                 required: "Email is required",
                                                 pattern: {
@@ -81,8 +82,6 @@ const BankerRegister: React.FC = () => {
                                         />
                                         {errors.email && <span className='error-msg'>{errors.email.message}</span>}
                                     </div>
-
-                                </div>
 
                                     <div className="mb-3">
                                         <label htmlFor="password">
@@ -127,30 +126,30 @@ const BankerRegister: React.FC = () => {
                                             <span className="error-msg">{errors.confirm_password.message}</span>
                                         )}
                                     </div>
-
+                                </div>
 
                                 {/* Contact Information */}
                                 <div className='mb-8'>
                                     <h2 className='text-3xl text-(--darkgray) mb-3'>Contact Information</h2>
                                     <div className="mb-3">
-                                        <label>Banker's First Name <span className='error-msg'>*</span></label>
-                                        <input {...register("firstName", { required: "Required" })} />
+                                        <label htmlFor="firstName">Banker's First Name <span className='error-msg'>*</span></label>
+                                        <input id='firstName' {...register("firstName", { required: "Required" })} />
                                         {errors.firstName && <span className='error-msg'>{errors.firstName.message}</span>}
                                     </div>
 
                                     <div className="mb-3">
-                                        <label>Banker's Middle Initial</label>
-                                        <input {...register("middleInitial")} />
+                                        <label htmlFor="middleName">Banker's Middle Initial</label>
+                                        <input id='middleName' {...register("middleInitial")} />
                                     </div>
 
                                     <div className="mb-3">
-                                        <label>Banker's Last Name <span className='error-msg'>*</span></label>
-                                        <input {...register("lastName", { required: "Required" })} />
+                                        <label htmlFor="lastName">Banker's Last Name <span className='error-msg'>*</span></label>
+                                        <input id='lastName' {...register("lastName", { required: "Required" })} />
                                         {errors.lastName && <span className='error-msg'>{errors.lastName.message}</span>}
                                     </div>
 
                                     <div className="mb-3">
-                                        <label htmlFor="phoneNumber" className="mb-2">
+                                        <label htmlFor="phoneNumber">
                                             Contact Phone Number <span className='error-msg'>*</span>
                                         </label>
                                         <p className='text-(--darkgray) text-[12px] mb-[5px]'>
@@ -159,15 +158,16 @@ const BankerRegister: React.FC = () => {
                                         <Controller
                                             name="phone"
                                             control={control}
-                                            rules={{ required: "Contact Phone Number is required",
+                                            rules={{
+                                                required: "Contact Phone Number is required",
                                                 validate: value => {
                                                     const digitsOnly = value.replace(/\D/g, "");
                                                     if (digitsOnly.length !== 10) {
                                                         return "Please enter a valid 10-digit phone number";
                                                     }
                                                     return true;
-                                                  }
-                                             }}
+                                                }
+                                            }}
                                             render={({ field }) => (
                                                 <InputMask
                                                     {...field}
@@ -184,13 +184,13 @@ const BankerRegister: React.FC = () => {
                                     </div>
 
                                     <div className="mb-3">
-                                        <label>Title <span className='error-msg'>*</span></label>
-                                        <input {...register("title", { required: "Required" })} />
+                                        <label htmlFor="title">Title <span className='error-msg'>*</span></label>
+                                        <input id='title' {...register("title", { required: "Required" })} />
                                         {errors.title && <span className='error-msg'>{errors.title.message}</span>}
                                     </div>
 
                                     <div className="mb-3">
-                                        <label>Area of Specialty</label>
+                                        <label htmlFor="areaOfSpeciality">Area of Specialty</label>
                                         <Controller
                                             control={control}
                                             name="areaOfSpecialty"
@@ -209,15 +209,20 @@ const BankerRegister: React.FC = () => {
                                             )}
                                         />
                                     </div>
+                                </div>
 
+                                {/* Financial Institute info */}
+                                <div className='mb-8'>
+                                    <h2 className='text-3xl text-(--darkgray) mb-3'>Financial Institute Address</h2>
                                     <div className="mb-3">
-                                        <label className="block mb-1">Address <span className="text-red-500">*</span></label>
+                                        <label htmlFor="address" className="block mb-1">Address <span className="text-red-500">*</span></label>
                                         <Controller
                                             name="address"
                                             control={control}
                                             rules={{ required: "Address is required" }}
                                             render={({ field }) => (
                                                 <AddressAutocomplete
+                                                    id="address"
                                                     {...field}
                                                     value={field.value?.[0]?.fulladdress || ""} // Pass only the formatted address string
                                                 />
@@ -227,11 +232,14 @@ const BankerRegister: React.FC = () => {
                                             <span className="text-red-500 text-sm">{errors.address.message}</span>
                                         )}
                                     </div>
+                                </div>
 
-
+                                {/* Additional Info */}
+                                <div>
+                                    <h2 className='text-3xl text-(--darkgray) mb-3'>Additional Info</h2>
                                     <div className="mb-3">
-                                        <label>Bank Type <span className='error-msg'>*</span></label>
-                                        <select {...register("bankType", { required: "Required" })}>
+                                        <label htmlFor="bankType">Bank Type <span className='error-msg'>*</span></label>
+                                        <select id='bankType' {...register("bankType", { required: "Required" })}>
                                             <option value="">Select Bank Type</option>
                                             <option value="Commercial">Commercial</option>
                                             <option value="Retail">Retail</option>
@@ -241,8 +249,8 @@ const BankerRegister: React.FC = () => {
                                     </div>
 
                                     <div className="mb-3">
-                                        <label>Asset Size <span className='error-msg'>*</span></label>
-                                        <select {...register("assetSize", { required: "Required" })}>
+                                        <label htmlFor="assetSize">Asset Size <span className='error-msg'>*</span></label>
+                                        <select id='assetSize' {...register("assetSize", { required: "Required" })}>
                                             <option value="">Select Asset Size</option>
                                             <option value="Small">Small</option>
                                             <option value="Medium">Medium</option>
@@ -256,7 +264,7 @@ const BankerRegister: React.FC = () => {
                                     {loader ? 'Submitting...' : 'Register as Banker'}
                                 </button> */}
                                 <div className='flex'>
-                                    <button type='submit' className='btn-main my-12 mx-auto'>SIGN IN</button>
+                                    <button type='submit' className='btn-main my-5 mx-auto'>SIGN IN</button>
                                 </div>
                             </form>
                         </div>
@@ -265,7 +273,7 @@ const BankerRegister: React.FC = () => {
             </main>
 
             {displayPopup && (
-                <RegistrationModal/>
+                <RegistrationModal />
             )}
         </>
     );

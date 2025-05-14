@@ -12,9 +12,10 @@ interface AddressAutocompleteProps {
     name: string;
     value?: string;
     onChange: (value: IAddress[]) => void;
+    id?: string
 }
 
-const AddressAutocomplete = ({ name, value, onChange }: AddressAutocompleteProps) => {
+const AddressAutocomplete = ({ name, value, onChange, id }: AddressAutocompleteProps) => {
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -70,6 +71,7 @@ const AddressAutocomplete = ({ name, value, onChange }: AddressAutocompleteProps
             ref={inputRef}
             name={name}
             defaultValue={value}
+            id={id}
             placeholder="Enter address"
         />
     );
