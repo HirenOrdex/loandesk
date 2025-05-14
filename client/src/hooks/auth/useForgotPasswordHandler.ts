@@ -1,17 +1,16 @@
 import { useState } from "react";
-import { AlertState, ILoginResponse, IResendEmailFormInput } from "../../types/auth";
+import { AlertState, IForgotFormInput, IForgotResponse } from "../../types/auth";
+import { useForgotpasswordMutation } from "../../services/authApi";
 import { isIErrorResponse } from "../useIsIErrorResponse";
-import { useResendEmailMutation } from "../../services/authApi";
 
-export const useResendEmail = () => {
+export const useForgotPasswordHandler = () => {
     const [loader, setLoader] = useState(false);
     const [alert, setAlert] = useState<AlertState | null>(null);
-    const [resendEmail] = useResendEmailMutation();
-    const handleResendEmail = async (data: IResendEmailFormInput) => {
+    const [forgotPassword] = useForgotpasswordMutation();
+    const handleForgotPassword = async (data: IForgotFormInput) => {
         setLoader(true);
         try {
-            console.log("data", data)
-            const result: ILoginResponse = await resendEmail(data)?.unwrap();
+            const result: IForgotResponse = await forgotPassword(data)?.unwrap();
             if ('data' in result) {
                 setAlert({
                     type: "success",
@@ -19,7 +18,6 @@ export const useResendEmail = () => {
                 });
             }
         } catch (error: unknown) {
-            // console.log("error", error)
             if (isIErrorResponse(error)) {
                 setAlert({
                     type: "error",
@@ -32,7 +30,7 @@ export const useResendEmail = () => {
     };
 
     return {
-        handleResendEmail,
+        handleForgotPassword,
         loader,
         alert
     };

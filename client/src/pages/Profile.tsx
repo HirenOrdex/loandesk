@@ -1,5 +1,5 @@
 import { InputMask } from '@react-input/mask'
-import React, { useRef, useState } from 'react'
+import React, { useRef } from 'react'
 import AlertMessage from '../components/AlertMessage'
 import { FaPencil } from 'react-icons/fa6'
 import defaultAvatar from '../assets/imgs/default-profile.png'

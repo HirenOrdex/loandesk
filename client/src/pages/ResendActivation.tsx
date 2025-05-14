@@ -10,14 +10,12 @@ const ResendActivation: React.FC = () => {
     const {
         register,
         handleSubmit,
-        watch,
         formState: { errors },
     } = useForm<IResendEmailFormInput>();
     const {
         handleResendEmail,
-        loader,
         alert
-    } = useResendEmail(navigate);
+    } = useResendEmail();
     const onSubmit = (data: IResendEmailFormInput) => handleResendEmail(data);
     return (
         <>

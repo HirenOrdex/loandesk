@@ -61,6 +61,11 @@ export interface IOTPFormInput {
 export interface IResendOTPFormInput {
     email: string;
 }
+export interface IResetPasswordFormInput {
+    password: string;
+    token:string;
+    confirmPassword?: string;
+}
 export interface IForgotResponse {
     success: boolean;
     error: string;

@@ -13,6 +13,7 @@ import Profile from "../Profile";
 import ChangePassword from "../ChangePassword";
 import BorrowerRegister from "../BorrowerRegister";
 import RegisterVerifyEmail from "../RegisterVerifyEmail";
+import ResetPassword from "../ResetPassword";
 const Routing = () => {
     return (
         <>
@@ -46,6 +47,7 @@ const Routing = () => {
                     <Route path="/forgotpassword" element={<ForgotPassword />} />
                     <Route path="/resendemail" element={<ResendActivation />} />
                     <Route path="/twofactorcode" element={<TwoFactorCode />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
                 </Route>
                 <Route path="/verify-email/:token" element={<RegisterVerifyEmail />} />
             </Routes>

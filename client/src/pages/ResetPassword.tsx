@@ -1,7 +1,30 @@
 import React from 'react'
 import PasswordInput from '../components/PasswordInput'
+import { useForm } from 'react-hook-form'
+import { IResetPasswordFormInput } from '../types/auth'
+import { useResetPasswordHandler } from '../hooks/auth/useResetPasswordHandler'
+import { useNavigate } from 'react-router-dom'
+import AlertMessage from '../components/AlertMessage'
 
 const ResetPassword: React.FC = () => {
+    const {
+        register,
+        handleSubmit,
+        watch,
+        formState: { errors }
+    } = useForm<IResetPasswordFormInput>()
+    const newPassword = watch('password')
+    const navigate = useNavigate()
+    const {
+        handleResetPassword,
+        alert
+    } = useResetPasswordHandler(navigate);
+
+    const onSubmit = (data: IResetPasswordFormInput) => {
+        console.log('Form Submitted:', data)
+        handleResetPassword(data)
+    }
+
     return (
         <>
             <header className='header-container'>
@@ -12,6 +35,14 @@ const ResetPassword: React.FC = () => {
                     <div className="sm:max-w-[67%] mx-auto">
                         <h2 className='register-title pb-14'>Can't remember your password?</h2>
                         <div className="card border-0 bg-white rounded">
+                            {
+                                alert && (
+                                    <AlertMessage
+                                        type={alert?.type}
+                                        message={alert?.message}
+                                    />
+                                )
+                            }
                             <div className='text-center pt-10 w-[75%] mx-auto'>
                                 <h2 className='text-[30px] font-semibold text-(--darkgray) mb-4'>RESET PASSWORD</h2>
                             </div>
@@ -26,8 +57,21 @@ const ResetPassword: React.FC = () => {
                                     <PasswordInput
                                         name="password"
                                         id="password"
+                                        registration={register('password', {
+                                            required: 'Password is required',
+                                            minLength: {
+                                                value: 6,
+                                                message: 'Password must be at least 6 characters'
+                                            },
+                                            pattern: {
+                                                value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{6,}$/,
+                                                message:
+                                                    'Password must contain uppercase, lowercase, number, and special character',
+                                            },
+                                        })}
+                                        error={errors?.password?.message}
                                     />
-                                    <span className="error-msg">Password is required</span>
+                                    {errors?.password && <span className="error-msg">{errors?.password?.message}</span>}
                                 </div>
                                 <div className="mb-3">
                                     <label htmlFor="confirmPassword">
@@ -36,11 +80,19 @@ const ResetPassword: React.FC = () => {
                                     <PasswordInput
                                         name="confirmPassword"
                                         id="confirmPassword"
+                                        registration={register('confirmPassword', {
+                                            required: 'Confirm password is required',
+                                            validate: value =>
+                                                value === newPassword || 'Passwords do not match'
+                                        })}
+                                        error={errors?.confirmPassword?.message}
                                     />
-                                    <span className="error-msg">Confirm Password is required</span>
+                                    {errors?.confirmPassword && <span className="error-msg">{errors?.confirmPassword?.message}</span>}
                                 </div>
                                 <div className='flex flex-col'>
-                                    <button type='submit' className='btn-main my-8 mx-auto'>UPDATE</button>
+                                    <button type='submit' className='btn-main my-8 mx-auto'
+                                        onClick={handleSubmit(onSubmit)}
+                                    >UPDATE</button>
                                 </div>
                             </form>
                         </div>

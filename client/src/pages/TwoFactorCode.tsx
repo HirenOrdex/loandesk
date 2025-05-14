@@ -1,7 +1,7 @@
 import React from 'react'
 import AlertMessage from '../components/AlertMessage'
 import { useLocation, useNavigate } from 'react-router-dom';
-import { IOTPFormInput, IResendOTPFormInput } from '../types/auth';
+import { IOTPFormInput } from '../types/auth';
 import { useForm } from 'react-hook-form';
 import { useOTPHandler } from '../hooks/auth/useOTPHandler';
 
