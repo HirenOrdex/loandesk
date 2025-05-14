@@ -39,8 +39,7 @@ const borrowerRepository = new BorrowerRepository();
 export class AuthController {
   async register(req: Request, res: Response): Promise<any> {
     const functionName = "register";
-    logger.info(`Coming into Controller ${controllerName}`);
-    logger.info(`Coming into function ${functionName}`);
+    logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
 
     const type = req?.query?.type;
     logger.info(`Registering ${type}: ${JSON.stringify(req?.body)}`);
@@ -51,7 +50,7 @@ export class AuthController {
       // Check if user already exists
       const existingUser = await userRepository.findUserByEmail(email);
       if (existingUser) {
-        logger.info(`Email already in use`);
+        logger.info(`Email :${email}:already in use`);
         return res.status(409).json({
           success: false,
           data: null,
@@ -62,7 +61,7 @@ export class AuthController {
         });
       }
       if (password !== confirm_password) {
-        logger.info(`confirm Password and Password Should be same`);
+        logger.info(`Email :${email}: confirm Password and Password Should be same`);
         return res.status(400).json({
           success: false,
           data: null,
@@ -169,7 +168,7 @@ export class AuthController {
           });
         } catch (error: unknown) {
           const err = error as Error;
-          logger.error(`Error creating banker: ${err.message}`);
+          logger.error(`Email : ${email}:Error creating banker: ${err.message}`);
           return res.status(500).json({
             success: false,
             data: null,
@@ -194,7 +193,7 @@ export class AuthController {
 
           // Validate passwords
           if (password !== confirm_password) {
-            logger.info(`Passwords do not match`);
+            logger.info(`Email : ${email}:Passwords do not match`);
 
             return res.status(400).json({
               success: false,
@@ -207,7 +206,7 @@ export class AuthController {
           // Check if user already exists
           const existingUser = await UserModel.findOne({ email });
           if (existingUser) {
-            logger.info(`User Already Exists`);
+            logger.info(`Email: ${email}: User Already Exists`);
 
             return res.status(409).json({
               success: false,
@@ -259,6 +258,7 @@ export class AuthController {
           });
         } catch (error) {
           console.error("Error creating borrower:", error);
+          logger.error(`Email: ${email}: Error creating borrower:`, error);
           return res.status(500).json({
             success: false,
             data: null,
@@ -267,7 +267,7 @@ export class AuthController {
           });
         }
       } else {
-        logger.error(`Unsupported user type: ${type}`);
+        logger.error(`Email: ${email}: Unsupported user type: ${type}`);
         // FUTURE: Other user types like borrower, admin etc.
         return res.status(400).json({
           success: false,
@@ -278,7 +278,7 @@ export class AuthController {
       }
     } catch (err: unknown) {
       const error = err as IError;
-      logger.error("Registration error:", error);
+      logger.error(`Email: ${req.body.email}: Registration error:`, error);
       return res.status(error.statusCode || 500).json({
         success: false,
         data: null,
@@ -292,13 +292,12 @@ export class AuthController {
     try {
       const { email, password } = req?.body;
       const functionName = "sendLoginOtp";
-      logger.info(`Coming into Controller ${controllerName}`);
-      logger.info(`Coming into function ${functionName}`);
+      logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
 
       // Find user
       const user = await userRepository.findUserByEmail(email);
       if (!user) {
-        logger.info(`Invalid credentials`);
+        logger.info(`Email: ${email}: Invalid credentials`);
         return res.status(401).json({
           success: false,
           data: null,
@@ -307,7 +306,7 @@ export class AuthController {
         });
       }
       if (user?.isEmailVerified === false) {
-        logger.info(`Email is not verified, please verify your email.`);
+        logger.info(`Email: ${email}: Email is not verified, please verify your email.`);
         return res.status(400).json({
           success: false,
           data: null,
@@ -321,7 +320,7 @@ export class AuthController {
       const isLocked = await userRepository.isAccountLocked(user);
       if (isLocked) {
         logger.info(
-          `Account locked. Please try again later or reset your password.`
+          `Email: ${email}: Account locked. Please try again later or reset your password.`
         );
         return res.status(401).json({
           success: false,
@@ -336,7 +335,7 @@ export class AuthController {
       // Check password
       const isPasswordValid = await user.correctPassword(password);
       if (!isPasswordValid) {
-        logger.info(`Invalid credentials Password`);
+        logger.info(`Email: ${email}: Invalid credentials Password`);
         await userRepository.incrementLoginAttempts(user?._id.toString());
         return res.status(401).json({
           success: false,
@@ -364,7 +363,7 @@ export class AuthController {
 
         // In production, send the OTP via SMS
         // For development, we'll log it
-        logger.info(`Generated OTP for  existingUser  ${phone}: ${otp}`);
+        logger.info(`Email: ${email}: Generated OTP for  existingUser  ${phone}: ${otp}`);
 
         // Store device info temporarily
         await deviceRepository.storeTemporaryDeviceInfo(requestId, deviceInfo);
@@ -394,7 +393,7 @@ export class AuthController {
     } catch (err: unknown) {
       const error = err as IError;
       console.error("Send OTP error:", error);
-      logger.error("Send OTP  error:", error);
+      logger.error(`Email :${req.body.email}: Send OTP  error:`, error);
       return res.status(500).json({
         success: false,
         data: null,
@@ -406,8 +405,7 @@ export class AuthController {
 
   async refreshToken(req: Request, res: Response): Promise<any> {
     const functionName = "refreshToken";
-    logger.info(`Coming into Controller ${controllerName}`);
-    logger.info(`Coming into function ${functionName}`);
+    logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
     try {
       // Get refresh token from cookie
       const refreshToken: string = req?.cookies?.refreshToken;
@@ -530,8 +528,7 @@ export class AuthController {
 
   async logout(req: Request, res: Response): Promise<any> {
     const functionName = "logout";
-    logger.info(`Coming into Controller ${controllerName}`);
-    logger.info(`Coming into function ${functionName}`);
+    logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
     try {
       // Get refresh token from cookie
       const refreshToken: string | undefined = req?.cookies?.refreshToken;
@@ -593,14 +590,13 @@ export class AuthController {
 
   async forgotPassword(req: Request, res: Response): Promise<any> {
     const functionName = "forgotPassword";
-    logger.info(`Coming into Controller ${controllerName}`);
-    logger.info(`Coming into function ${functionName}`);
+    logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
     try {
       const { email } = req?.body;
 
       // Find user
       const user = await userRepository.findUserByEmail(email);
-      logger.error(`forgotPassword: No user found with email: ${email}`);
+      logger.error(`Email: ${email}: forgotPassword: No user found `);
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -611,7 +607,7 @@ export class AuthController {
       }
 
       if (!user?.isEmailVerified) {
-        logger.error(`forgotPassword: Email not verified for user: ${email}`);
+        logger.error(`Email: ${email}: forgotPassword: Email not verified`);
         return res.status(400).json({
           success: false,
           data: null,
@@ -628,7 +624,7 @@ export class AuthController {
       // For this example, we'll just return the token in the response
       sendPasswordResetEmail(email, resetToken);
       console.log("Password reset token sent to email");
-      logger.info("Password reset token sent to email");
+      logger.info(`Email: ${email}: Password reset token sent to email`);
       return res.status(200).json({
         success: true,
         data: null,
@@ -640,7 +636,7 @@ export class AuthController {
     } catch (err: unknown) {
       const error = err as IError;
       console.error("Forgot password error:", error);
-      logger.error("Forgot password error:", error);
+      logger.error(`Email: ${req.body.email}: Forgot password error:`, error);
       return res.status(500).json({
         success: false,
         data: null,
@@ -652,8 +648,7 @@ export class AuthController {
 
   async resetPassword(req: Request, res: Response): Promise<any> {
     const functionName = "resetPassword";
-    logger.info(`Coming into Controller ${controllerName}`);
-    logger.info(`Coming into function ${functionName}`);
+    logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
     try {
       const { token, password } = req?.body;
       logger.info(
@@ -696,8 +691,7 @@ export class AuthController {
   }
   async verifyEmail(req: Request, res: Response): Promise<any> {
     const functionName = "verifyEmail";
-    logger.info(`Coming into Controller ${controllerName}`);
-    logger.info(`Coming into function ${functionName}`);
+    logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
     try {
       const { token } = req?.params;
       logger.info("verifyEmail: Received request with token:", token);
@@ -728,7 +722,7 @@ export class AuthController {
       // Update user status to active and mark email as verified
       await userRepository.verifyEmail(user?._id.toString());
       logger.info(
-        `verifyEmail: Email verified successfully for user ID ${user?._id}`
+        `Email: ${user?.email}: verifyEmail: Email verified successfully `
       );
 
       return res.status(200).json({
@@ -752,8 +746,7 @@ export class AuthController {
 
   async resendVerificationEmail(req: Request, res: Response): Promise<any> {
     const functionName = "resendVerificationEmail";
-    logger.info(`Coming into Controller ${controllerName}`);
-    logger.info(`Coming into function ${functionName}`);
+    logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
     try {
       const { email } = req?.body;
 
@@ -761,7 +754,7 @@ export class AuthController {
       const user = await userRepository.findUserByEmail(email);
       if (!user) {
         logger.error(
-          `resendVerificationEmail: User not found with email ${email}`
+          `Email: ${email}: resendVerificationEmail: User not found `
         );
         return res.status(404).json({
           success: false,
@@ -773,7 +766,7 @@ export class AuthController {
 
       if (user.isEmailVerified) {
         logger.error(
-          `resendVerificationEmail: Email already verified for user ID ${user._id}`
+          `Email: ${email}: resendVerificationEmail: Email already verified `
         );
         return res.status(400).json({
           success: false,
@@ -797,7 +790,7 @@ export class AuthController {
       // Send verification email``
       await sendVerificationEmail(email, emailVerificationToken);
       logger.info(
-        `resendVerificationEmail: Verification email sent to ${email}`
+        `Email: ${email}: resendVerificationEmail: Verification email sent to ${email}`
       );
 
       return res.status(200).json({
@@ -810,7 +803,7 @@ export class AuthController {
     } catch (err: unknown) {
       const error = err as IError;
       console.error("Resend verification email error:", error);
-      logger.error("Resend verification email error:", error);
+      logger.error(`Email: ${req.body.email}: Resend verification email error:`, error);
       return res.status(500).json({
         success: false,
         data: null,
@@ -826,8 +819,7 @@ export class AuthController {
     next: NextFunction
   ): Promise<any> {
     const functionName = "googleAuth";
-    logger.info(`Coming into Controller ${controllerName}`);
-    logger.info(`Coming into function ${functionName}`);
+    logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
     passport.authenticate("google", {
       scope: ["profile", "email"],
     })(req, res, next);
@@ -840,8 +832,7 @@ export class AuthController {
     next: NextFunction
   ): Promise<any> {
     const functionName = "googleCallback";
-    logger.info(`Coming into Controller ${controllerName}`);
-    logger.info(`Coming into function ${functionName}`);
+    logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
     passport.authenticate("google", async (err: any, profile: any) => {
       if (err || !profile) {
         console.error("OAuth failed:", err);
@@ -930,8 +921,7 @@ export class AuthController {
 
   async changePassword(req: Request, res: Response): Promise<any> {
     const functionName = "changePassword";
-    logger.info(`Coming into Controller ${controllerName}`);
-    logger.info(`Coming into function ${functionName}`);
+    logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
     try {
       const refreshToken = req?.cookies?.refreshToken;
 
@@ -1061,14 +1051,13 @@ export class AuthController {
   }
   async login(req: Request, res: Response): Promise<any> {
     const functionName = "login";
-    logger.info(`Coming into Controller ${controllerName}`);
-    logger.info(`Coming into function ${functionName}`);
+    logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
 
     try {
       const { email, otp } = req?.body;
       console.log("in login ");
       if (!email || !otp) {
-        logger.info(`Email and OTP are required`);
+        logger.info(`Email: ${email}: Email and OTP are required`);
         return res.status(400).json({
           success: false,
           data: null,
@@ -1078,7 +1067,7 @@ export class AuthController {
       }
       const user = await userRepository.findUserByEmail(email);
       if (!user) {
-        logger.info(`INvaild Credentials`);
+        logger.info(`Email: ${email}: INvaild Credentials`);
         return res.status(401).json({
           success: false,
           data: null,
@@ -1172,7 +1161,7 @@ export class AuthController {
     } catch (err: unknown) {
       const error = err as IError;
       console.error("Error in verifyOtp:", error);
-      logger.error("Error in verifyOtp:", error);
+      logger.error(`Email: ${req.body.email}: Error in verifyOtp:`, error);
       return res.status(500).json({
         success: false,
         data: null,
