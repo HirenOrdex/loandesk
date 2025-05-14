@@ -13,12 +13,14 @@ export const useBankerRegisterHandler = () => {
         setLoader(true);
         try {
             const result: IBankerRegisterResponse = await registerBanker(data).unwrap();
-            setAlert({
-                type: "success",
-                message: result?.message
-            });
+            if ('data' in result) {
+                setAlert({
+                    type: "success",
+                    message: result?.message
+                });
             console.log("Banker registration successful:", result?.data);
             setDisplayPopup(true);
+            }
         } catch (error) {
             console.error("Registration error:", error);
             if (isIErrorResponse(error)) {

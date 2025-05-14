@@ -14,13 +14,15 @@ export const useBorrowerRegisterHandler = (navigate: NavigateFunction) => {
         setLoader(true);
         try {
             const result: IBorrowerRegisterResponse = await registerBorrower(data).unwrap();
-            setAlert({
-                type: "success",
-                message: result?.message
-            });
+            if ('data' in result) {
+                setAlert({
+                    type: "success",
+                    message: result?.message
+                });
             console.log("Borrower registration successful:", result?.data);
             setDisplayPopup(true);
             navigate("/login");
+            }
         } catch (error) {
             console.error("Registration error:", error);
             if (isIErrorResponse(error)) {

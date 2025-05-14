@@ -8,6 +8,7 @@ import messageicon from "../../assets/imgs/email.png";
 import "../../assets/css/header.css"; // Import the CSS file
 import { CiMenuBurger } from "react-icons/ci";
 import { useNavigate } from "react-router-dom";
+import { useLogoutHandler } from "../../hooks/auth/useLogoutHandler";
 
 const Header: React.FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false); // for sidebar's hamburger menu
@@ -26,6 +27,8 @@ const Header: React.FC = () => {
 
     const toggleDropdown = () => setMenuOpen(!menuOpen);
     const closeDropdown = () => setMenuOpen(false);
+
+    const { handleLogout } = useLogoutHandler(navigate);
 
     return (
         <>
@@ -120,7 +123,7 @@ const Header: React.FC = () => {
                                         </a>
                                     </li>
                                     <li>
-                                        <a className="block px-4 py-2" onClick={closeDropdown}>
+                                        <a className="block px-4 py-2" onClick={handleLogout}>
                                             Logout
                                         </a>
                                     </li>

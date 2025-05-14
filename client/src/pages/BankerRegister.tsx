@@ -30,7 +30,7 @@ const BankerRegister: React.FC = () => {
         formState: { errors }
     } = useForm<IBankerRegisterFormInput>();
 
-    const { handleBankerRegister, displayPopup, alert } = useBankerRegisterHandler();
+    const { handleBankerRegister, displayPopup, alert, loader } = useBankerRegisterHandler();
 
     const onSubmit = (data: IBankerRegisterFormInput) => {
         handleBankerRegister(data);
@@ -38,6 +38,7 @@ const BankerRegister: React.FC = () => {
 
     return (
         <>
+            {loader ? <div className='loader'></div> : null}
             <header className='header-container'>
                 <h1 className='text-blue text-center'>Banker</h1>
             </header>
@@ -60,7 +61,7 @@ const BankerRegister: React.FC = () => {
                                 <div className='mb-8'>
                                     <div className="mb-3">
                                         <label htmlFor="financialInstitute">Name of Financial Institution <span className='error-msg'>*</span></label>
-                                        <input id="financialInstitute" {...register("financialInstitutionName", { required: "Required" })} />
+                                        <input id="financialInstitute" {...register("financialInstitutionName", { required: "Name of Financial Institution is required" })} />
                                         {errors.financialInstitutionName && <span className='error-msg'>{errors.financialInstitutionName.message}</span>}
                                     </div>
 
@@ -187,10 +188,11 @@ const BankerRegister: React.FC = () => {
                                     </div>
 
                                     <div className="mb-3">
-                                        <label htmlFor="areaOfSpeciality">Area of Specialty</label>
+                                        <label htmlFor="areaOfSpeciality">Area of Specialty</label> <span className='error-msg'>*</span>
                                         <Controller
                                             control={control}
                                             name="areaOfSpecialty"
+                                            rules={{ required: "Area of Specialty is required" }}
                                             render={({ field }) => (
                                                 <Select
                                                     multi
@@ -208,6 +210,7 @@ const BankerRegister: React.FC = () => {
                                                 />
                                             )}
                                         />
+                                        {errors.areaOfSpecialty && <span className='error-msg'>{errors.areaOfSpecialty.message}</span>}
                                     </div>
                                 </div>
 
@@ -261,7 +264,7 @@ const BankerRegister: React.FC = () => {
                                 </div>
 
                                 <div className='flex'>
-                                    <button type='submit' className='btn-main my-5 mx-auto'>SIGN IN</button>
+                                    <button type='submit' className='btn-main my-5 mx-auto'>Sign Up</button>
                                 </div>
                             </form>
                         </div>
