@@ -93,8 +93,6 @@ const BorrowerRegister: React.FC = () => {
         }
     };
 
-    // const [selectedPosition, setSelectedPosition] = useState("");
-
     return (
         <>
             <header className='header-container'>
@@ -154,7 +152,7 @@ const BorrowerRegister: React.FC = () => {
                                 </div>
 
                                 <div className="mb-3">
-                                    <label htmlFor="confirmpassword">Confirm Password <span className='error-msg'>*</span></label>
+                                    <label htmlFor="confirmPassword">Confirm Password <span className='error-msg'>*</span></label>
                                     <PasswordInput
                                         name="confirmPassword"
                                         id="confirmPassword"
@@ -206,7 +204,6 @@ const BorrowerRegister: React.FC = () => {
                                     <input
                                         type="text"
                                         id="companyName"
-                                        // name='companyName'
                                         {...register("coname", { required: "Company name is required" })}
                                     />
                                     {errors.coname && <span className='error-msg'>{errors.coname.message}</span>}
@@ -216,10 +213,7 @@ const BorrowerRegister: React.FC = () => {
                                     <label htmlFor="position" className="mb-2">Position
                                         <span className='error-msg'>*</span></label>
                                     <select 
-                                        // name="position"
                                         id="position"
-                                        // value={selectedPosition}
-                                        // onChange={e => setSelectedPosition(e.target.value)}>
                                         {...register("position", { required: "Position is required" })}>
                                         {
                                             positions.map((pos, index) => (
@@ -239,7 +233,6 @@ const BorrowerRegister: React.FC = () => {
                                             <input
                                                 type="text"
                                                 id="otherPosition"
-                                                // name='otherPosition'
                                                 {...register("other_position", { required: "Other Position is required" })}
                                             />
                                             {errors.other_position && <span className='error-msg'>{errors.other_position.message}</span>}
@@ -282,16 +275,8 @@ const BorrowerRegister: React.FC = () => {
                                 <div className="mb-3">
                                     <label htmlFor="captchaCode" className="mb-2">Please enter Verification Code: <span className='error-msg'>*</span></label>
                                     <div className='flex flex-wrap'>
-                                        {/* <span className='lg:mt-[6px] me-5 text-(--label)'>07 * 02 =</span> */}
                                         <span className='lg:mt-[6px] me-5 text-(--label)'>{captchaQuestion}</span>
                                         <div className='w-100 grow'>
-                                            {/* <input
-                                                type="text"
-                                                id="captchaCode"
-                                                name='captchaCode'
-                                                inputMode='numeric'
-                                            />
-                                            <span className='error-msg'>Please Enter Correct Captcha</span> */}
                                             <input
                                                 type="text"
                                                 id="captchaCode"
