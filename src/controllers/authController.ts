@@ -766,8 +766,8 @@ export class AuthController {
         return res.status(404).json({
           success: false,
           data: null,
-          error: "Error occured while invite User. Please contact support",
-          message: "Error occured while invite User. Please contact support",
+          error: "Cannot Process Request. Username/Email does not exist. Please sign up or contact support",
+          message: "Cannot Process Request. Username/Email does not exist. Please sign up or contact support",
         });
       }
 
