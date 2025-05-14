@@ -188,6 +188,8 @@ export class AuthController {
             phone,
             coname,
             position,
+            other_position,
+            captchaCode
           } = req?.body;
 
           // Validate passwords
@@ -235,6 +237,7 @@ export class AuthController {
             userId: newUser?._id,
             coname,
             position,
+            other_position,
             createdBy: newUser?._id,
           });
           const emailVerificationToken = generateEmailVerificationToken();
