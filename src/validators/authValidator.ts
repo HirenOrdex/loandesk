@@ -122,6 +122,13 @@ export const bankerSchema = Joi.object({
 export const borrowerSchema = Joi.object({
   ...baseUserSchema,
   position: Joi.string().required(),
+  other_position: Joi.alternatives()
+  .conditional('position', {
+    is: 'other',
+    then: Joi.string().required().label('Other Position'),
+    otherwise: Joi.string().allow(null,'').optional(),
+  }),
+  captchaCode: Joi.string(),
   coname: Joi.string().required(),
 });
 
