@@ -54,7 +54,7 @@ export const hashToken = (token: string): string => {
  */
 export const createVerificationUrl = (token: string, baseUrl: string): string => {
   try {
-    return `${baseUrl}/api/auth/verify-email/${token}`;
+    return `${baseUrl}/verify-email/${token}`;
   } catch (err: unknown) {
     const error = err as IError;
     logger.error(`Error creating verification URL: ${error.message}`);
