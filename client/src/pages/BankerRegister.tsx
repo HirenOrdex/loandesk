@@ -199,12 +199,15 @@ const BankerRegister: React.FC = () => {
                                                     multi
                                                     placeholder="Select Area of Specialty"
                                                     options={specialityOptions}
+                                                    keepSelectedInList={false}
                                                     values={specialityOptions.filter(option =>
                                                         (field?.value?.split(', ') ?? []).includes(option.value)
                                                     )}
                                                     onChange={(values) =>
                                                         field.onChange(values.map(v => v.value).join(', '))
                                                     }
+                                                    onSelect={() => { }}
+                                                    onDeselect={() => { }}
                                                 />
                                             )}
                                         />
