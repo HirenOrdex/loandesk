@@ -39,7 +39,7 @@ const ForgotPassword: React.FC = () => {
                             <p className='py-10 mx-14'>Enter your email address below and we'll send you password reset instruction.</p>
                             <form className='authentication-form p-6'>
                                 <div className="mb-3">
-                                    <label htmlFor="email" className="mb-2">Contact Email <span className='error-msg'>*</span></label>
+                                    <label htmlFor="email" className="mb-2">Contact Email <span className='error-star'>*</span></label>
                                     <input
                                         type="email"
                                         className=""

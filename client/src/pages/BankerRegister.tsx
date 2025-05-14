@@ -60,13 +60,13 @@ const BankerRegister: React.FC = () => {
                                 {/* General Information */}
                                 <div className='mb-8'>
                                     <div className="mb-3">
-                                        <label htmlFor="financialInstitute">Name of Financial Institution <span className='error-msg'>*</span></label>
+                                        <label htmlFor="financialInstitute">Name of Financial Institution <span className='error-star'>*</span></label>
                                         <input id="financialInstitute" {...register("financialInstitutionName", { required: "Name of Financial Institution is required" })} />
                                         {errors.financialInstitutionName && <span className='error-msg'>{errors.financialInstitutionName.message}</span>}
                                     </div>
 
                                     <div className="mb-3">
-                                        <label htmlFor="email">Email Address <span className='error-msg'>*</span></label>
+                                        <label htmlFor="email">Email Address <span className='error-star'>*</span></label>
                                         <input
                                             type="email"
                                             id='email'
@@ -83,7 +83,7 @@ const BankerRegister: React.FC = () => {
 
                                     <div className="mb-3">
                                         <label htmlFor="password">
-                                            Password <span className="error-msg">*</span>
+                                            Password <span className="error-star">*</span>
                                         </label>
                                         <p className="text-[--darkgray] text-[12px] mb-[5px]">
                                             <em className="font-bold">Information :</em> Password must contain at least 6 characters and include uppercase, lowercase, number, and special character.
@@ -108,7 +108,7 @@ const BankerRegister: React.FC = () => {
 
                                     <div className="mb-3">
                                         <label htmlFor="confirmPassword">
-                                            Confirm Password <span className="error-msg">*</span>
+                                            Confirm Password <span className="error-star">*</span>
                                         </label>
                                         <PasswordInput
                                             name="confirmPassword"
@@ -130,7 +130,7 @@ const BankerRegister: React.FC = () => {
                                 <div className='mb-8'>
                                     <h2 className='text-3xl text-(--darkgray) mb-3'>Contact Information</h2>
                                     <div className="mb-3">
-                                        <label htmlFor="firstName">Banker's First Name <span className='error-msg'>*</span></label>
+                                        <label htmlFor="firstName">Banker's First Name <span className='error-star'>*</span></label>
                                         <input id='firstName' {...register("firstName", { required: "Banker's First Name is required" })} />
                                         {errors.firstName && <span className='error-msg'>{errors.firstName.message}</span>}
                                     </div>
@@ -141,14 +141,14 @@ const BankerRegister: React.FC = () => {
                                     </div>
 
                                     <div className="mb-3">
-                                        <label htmlFor="lastName">Banker's Last Name <span className='error-msg'>*</span></label>
+                                        <label htmlFor="lastName">Banker's Last Name <span className='error-star'>*</span></label>
                                         <input id='lastName' {...register("lastName", { required: "Banker's Last Name is required" })} />
                                         {errors.lastName && <span className='error-msg'>{errors.lastName.message}</span>}
                                     </div>
 
                                     <div className="mb-3">
                                         <label htmlFor="phoneNumber">
-                                            Contact Phone Number <span className='error-msg'>*</span>
+                                            Contact Phone Number <span className='error-star'>*</span>
                                         </label>
                                         <p className='text-(--darkgray) text-[12px] mb-[5px]'>
                                             <em className='font-bold'>Information :</em> A text message will be sent to user for verification so it is important to provide correct number.
@@ -182,7 +182,7 @@ const BankerRegister: React.FC = () => {
                                     </div>
 
                                     <div className="mb-3">
-                                        <label htmlFor="title">Title <span className='error-msg'>*</span></label>
+                                        <label htmlFor="title">Title <span className='error-star'>*</span></label>
                                         <input id='title' {...register("title", { required: "Title is required" })} />
                                         {errors.title && <span className='error-msg'>{errors.title.message}</span>}
                                     </div>
@@ -218,7 +218,7 @@ const BankerRegister: React.FC = () => {
                                 <div className='mb-8'>
                                     <h2 className='text-3xl text-(--darkgray) mb-3'>Financial Institute Address</h2>
                                     <div className="mb-3">
-                                        <label htmlFor="address" className="block mb-1">Address <span className="text-red-500">*</span></label>
+                                        <label htmlFor="address" className="block mb-1">Address <span className="error-star">*</span></label>
                                         <Controller
                                             name="address"
                                             control={control}
@@ -232,7 +232,7 @@ const BankerRegister: React.FC = () => {
                                             )}
                                         />
                                         {errors.address && (
-                                            <span className="text-red-500 text-sm">{errors.address.message}</span>
+                                            <span className="error-msg">{errors.address.message}</span>
                                         )}
                                     </div>
                                 </div>
@@ -241,7 +241,7 @@ const BankerRegister: React.FC = () => {
                                 <div>
                                     <h2 className='text-3xl text-(--darkgray) mb-3'>Additional Info</h2>
                                     <div className="mb-3">
-                                        <label htmlFor="bankType">Bank Type <span className='error-msg'>*</span></label>
+                                        <label htmlFor="bankType">Bank Type <span className='error-star'>*</span></label>
                                         <select id='bankType' {...register("bankType", { required: "Bank type is required" })}>
                                             <option value="">Select Bank Type</option>
                                             <option value="Commercial">Commercial</option>
@@ -252,7 +252,7 @@ const BankerRegister: React.FC = () => {
                                     </div>
 
                                     <div className="mb-3">
-                                        <label htmlFor="assetSize">Asset Size <span className='error-msg'>*</span></label>
+                                        <label htmlFor="assetSize">Asset Size <span className='error-star'>*</span></label>
                                         <select id='assetSize' {...register("assetSize", { required: "Asset Size is required" })}>
                                             <option value="">Select Asset Size</option>
                                             <option value="Small">Small</option>

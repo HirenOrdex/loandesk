@@ -104,7 +104,7 @@ const Profile: React.FC = () => {
                 <div className='grid grid-cols-1 md:grid-cols-3 md:gap-8'>
                     <div className="mb-3">
                         <label htmlFor="firstName" className="mb-2">First Name
-                            <span className='error-msg'>*</span></label>
+                            <span className='error-star'>*</span></label>
                         <input
                             type="text"
                             id="firstName"
@@ -123,7 +123,7 @@ const Profile: React.FC = () => {
                     </div>
                     <div className="mb-3">
                         <label htmlFor="lastName" className="mb-2">Last Name
-                            <span className='error-msg'>*</span></label>
+                            <span className='error-star'>*</span></label>
                         <input
                             type="text"
                             id="lastName"
@@ -138,7 +138,7 @@ const Profile: React.FC = () => {
                 <div className='grid grid-cols-1 md:grid-cols-2 md:gap-8'>
                     <div className="mb-3">
                         <label htmlFor="cellPhone" className="mb-2">Cell Phone
-                            <span className='error-msg'>*</span></label>
+                            <span className='error-star'>*</span></label>
                         <InputMask
                             id="cellPhone"
                             mask="(___) ___-____"
@@ -168,7 +168,7 @@ const Profile: React.FC = () => {
                 {/* address */}
                 <div className="mb-3">
                     <label htmlFor="address" className="mb-2">Address
-                        <span className='error-msg'>*</span></label>
+                        <span className='error-star'>*</span></label>
                     <input
                         type="text"
                         id="address"
@@ -192,7 +192,7 @@ const Profile: React.FC = () => {
 
                 {/* email 1 */}
                 <div className="mb-3">
-                    <label htmlFor="email1" className="mb-2">Email 1 <span className='error-msg'>*</span></label>
+                    <label htmlFor="email1" className="mb-2">Email 1 <span className='error-star'>*</span></label>
                     <input
                         type="email"
                         id="email1"

@@ -25,7 +25,7 @@ const ChangePassword: React.FC = () => {
         <div className='max-w-[90%] md:max-w-[30%] mx-auto my-10'>
             <form>
                 <div className="mb-3">
-                    <label htmlFor="currentPassword">Current Password <span className='error-msg'>*</span></label>
+                    <label htmlFor="currentPassword">Current Password <span className='error-star'>*</span></label>
                     <PasswordInput
                         name='currentPassword'
                         id='currentPassword'
@@ -36,7 +36,7 @@ const ChangePassword: React.FC = () => {
                     {errors.currentPassword && <span className="error-msg">{errors.currentPassword.message}</span>}
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="newPassword">New Password <span className='error-msg'>*</span></label>
+                    <label htmlFor="newPassword">New Password <span className='error-star'>*</span></label>
                     <PasswordInput
                         name='newPassword'
                         id='newPassword'
@@ -53,7 +53,7 @@ const ChangePassword: React.FC = () => {
                     {errors.newPassword && <span className="error-msg">{errors.newPassword.message}</span>}
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="confirmPassword">Confirm Password <span className='error-msg'>*</span></label>
+                    <label htmlFor="confirmPassword">Confirm Password <span className='error-star'>*</span></label>
                     <PasswordInput
                         name='confirmPassword'
                         id='confirmPassword'

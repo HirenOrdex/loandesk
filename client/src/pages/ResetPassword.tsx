@@ -49,7 +49,7 @@ const ResetPassword: React.FC = () => {
                             <form className='authentication-form sm:!w-[75%] p-6'>
                                 <div className="mb-3">
                                     <label htmlFor="password">
-                                        Password <span className="error-msg">*</span>
+                                        Password <span className="error-star">*</span>
                                     </label>
                                     <p className="text-[--darkgray] text-[12px] mb-[5px]">
                                         <em className="font-bold">Information :</em> Password must contain at least 6 characters and include uppercase, lowercase, number, and special character.
@@ -75,7 +75,7 @@ const ResetPassword: React.FC = () => {
                                 </div>
                                 <div className="mb-3">
                                     <label htmlFor="confirmPassword">
-                                        Confirm Password <span className="error-msg">*</span>
+                                        Confirm Password <span className="error-star">*</span>
                                     </label>
                                     <PasswordInput
                                         name="confirmPassword"

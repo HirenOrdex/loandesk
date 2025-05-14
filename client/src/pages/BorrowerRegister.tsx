@@ -116,7 +116,7 @@ const BorrowerRegister: React.FC = () => {
 
                             <form className='authentication-form p-6' onSubmit={handleSubmit(onSubmit)}>
                                 <div className="mb-3">
-                                    <label htmlFor="email" className="mb-2">Email Address <span className='error-msg'>*</span></label>
+                                    <label htmlFor="email" className="mb-2">Email Address <span className='error-star'>*</span></label>
                                     <input
                                         type="email"
                                         id="email"
@@ -132,7 +132,7 @@ const BorrowerRegister: React.FC = () => {
                                 </div>
 
                                 <div className="mb-3">
-                                    <label htmlFor="password">Password <span className='error-msg'>*</span></label>
+                                    <label htmlFor="password">Password <span className='error-star'>*</span></label>
                                     <p className='text-(--darkgray) text-[12px] mb-[5px]'><em className='font-bold'>Information :</em> Password must contain at least 6 character long and contain at least one capital letter, one lowercase letter, one number and one special character.</p>
                                     <PasswordInput
                                         name="password"
@@ -153,7 +153,7 @@ const BorrowerRegister: React.FC = () => {
                                 </div>
 
                                 <div className="mb-3">
-                                    <label htmlFor="confirmPassword">Confirm Password <span className='error-msg'>*</span></label>
+                                    <label htmlFor="confirmPassword">Confirm Password <span className='error-star'>*</span></label>
                                     <PasswordInput
                                         name="confirmPassword"
                                         id="confirmPassword"
@@ -172,7 +172,7 @@ const BorrowerRegister: React.FC = () => {
                                 <div className='grid grid-cols-1 md:grid-cols-3 md:gap-8 mb-3'>
                                     <div className="mb-3">
                                         <label htmlFor="firstName" className="mb-2">First Name
-                                            <span className='error-msg'>*</span></label>
+                                            <span className='error-star'>*</span></label>
                                         <input
                                             type="text"
                                             id="firstName"
@@ -190,7 +190,7 @@ const BorrowerRegister: React.FC = () => {
                                     </div>
                                     <div className="mb-3">
                                         <label htmlFor="lastName" className="mb-2">Last Name
-                                            <span className='error-msg'>*</span></label>
+                                            <span className='error-star'>*</span></label>
                                         <input
                                             type="text"
                                             id="lastName"
@@ -201,7 +201,7 @@ const BorrowerRegister: React.FC = () => {
                                 </div>
 
                                 <div className="mb-3">
-                                    <label htmlFor="companyName" className="mb-2">Company Name <span className='error-msg'>*</span></label>
+                                    <label htmlFor="companyName" className="mb-2">Company Name <span className='error-star'>*</span></label>
                                     <input
                                         type="text"
                                         id="companyName"
@@ -212,7 +212,7 @@ const BorrowerRegister: React.FC = () => {
 
                                 <div className="mb-3">
                                     <label htmlFor="position" className="mb-2">Position
-                                        <span className='error-msg'>*</span></label>
+                                        <span className='error-star'>*</span></label>
                                     <select 
                                         id="position"
                                         {...register("position", { required: "Position is required" })}>
@@ -230,7 +230,7 @@ const BorrowerRegister: React.FC = () => {
                                 {
                                     position === 'other' && (
                                         <div className="mb-3">
-                                            <label htmlFor="otherPosition" className="mb-2">Other Position <span className='error-msg'>*</span></label>
+                                            <label htmlFor="otherPosition" className="mb-2">Other Position <span className='error-star'>*</span></label>
                                             <input
                                                 type="text"
                                                 id="otherPosition"
@@ -243,7 +243,7 @@ const BorrowerRegister: React.FC = () => {
 
                                 <div className="mb-3">
                                     <label htmlFor="phoneNumber" className="mb-2">Contact Phone Number
-                                        <span className='error-msg'>*</span></label>
+                                        <span className='error-star'>*</span></label>
                                     <p className='text-(--darkgray) text-[12px] mb-[5px]'><em className='font-bold'>Information :</em> A text message will be sent to user for verfication so it is important to provide correct number.</p>
                                     <Controller
                                         name="phone"
@@ -274,7 +274,7 @@ const BorrowerRegister: React.FC = () => {
                                 </div>
 
                                 <div className="mb-3">
-                                    <label htmlFor="captchaCode" className="mb-2">Please enter Verification Code: <span className='error-msg'>*</span></label>
+                                    <label htmlFor="captchaCode" className="mb-2">Please enter Verification Code: <span className='error-star'>*</span></label>
                                     <div className='flex flex-wrap'>
                                         <span className='lg:mt-[6px] me-5 text-(--label)'>{captchaQuestion}</span>
                                         <div className='w-100 grow'>

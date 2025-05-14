@@ -53,7 +53,7 @@ const TwoFactorCode: React.FC = () => {
                             }
                             <form className='authentication-form p-6'>
                                 <div className="mb-3">
-                                    <label htmlFor="email" className="mb-2">Email address <span className='error-msg'>*</span></label>
+                                    <label htmlFor="email" className="mb-2">Email address <span className='error-star'>*</span></label>
                                     <input
                                         type="email"
                                         className=""

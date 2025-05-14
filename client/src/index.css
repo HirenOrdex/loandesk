@@ -172,6 +172,11 @@ h1 {
 
 .error-msg {
   color: #ec0b0bcf;
+  font-size: 14px;
+}
+
+.error-star{
+  color: #ec0b0bcf;
 }
 
 /* form alerts */
