@@ -30,7 +30,7 @@ const PasswordInput: React.FC<PasswordInputProps> = ({ id,registration,placehold
                     className="absolute inset-y-0 right-0 px-3 flex items-center cursor-pointer text-(--label) text-xl"
                     onClick={() => setShowPassword(!showPassword)}>
                     {
-                        showPassword ? <FaEyeSlash /> : <FaEye />
+                        showPassword ? <FaEye /> : <FaEyeSlash />
                     }
                 </button>
             </div>
