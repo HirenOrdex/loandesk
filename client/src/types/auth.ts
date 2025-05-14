@@ -84,7 +84,7 @@ export interface IAddress {
     suiteno: string;
 }
 
-export interface ICommonRegisterFormInput {
+export interface IBankerRegisterFormInput {
     financialInstitutionName: string;
     email: string;
     password: string;
@@ -95,31 +95,43 @@ export interface ICommonRegisterFormInput {
     phone: string;
     title: string;
     areaOfSpecialty?: string;
-    address: IAddress[]; // 👈 changed from string to array of address objects
+    address: IAddress[]; 
     bankType: string;
     assetSize: string;
 }
 
-// export interface IBankerRegisterFormInput {
-//     financialInstitutionName: string;
-//     email: string;
-//     password: string;
-//     firstName: string;
-//     middleInitial?: string;
-//     lastName: string;
-//     phone: string;
-//     title: string;
-//     areaOfSpecialty?: string;
-//     address: string;
-//     bankType: string;
-//     assetSize: string;
-// }
+export interface IBorrowerRegisterFormInput {
+    email: string;
+    password: string;
+    confirm_password: string;
+    firstName: string;
+    middleInitial?: string;
+    lastName: string;
+    phone: string;
+    position: string;
+    other_position?: string;
+    coname: string;
+    captchaCode: string;
+}
 
 export interface IBankerRegisterResponse {
     success: boolean;
     message: string;
     data: {
         id: string;
+        email: string;
+        name: string;
+    };
+    error: any; 
+}
+
+export interface IBorrowerRegisterResponse {
+    success: boolean;
+    message: string;
+    data: {
+        id: string;
+        email: string;
+        name: string;
     };
     error: any; // or `null` specifically if no other type is expected
 }

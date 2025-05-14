@@ -1,24 +1,24 @@
 import { useState } from "react";
 import { NavigateFunction } from "react-router-dom";
-import { IBankerRegisterResponse, AlertState, IBankerRegisterFormInput } from "../../types/auth";
+import { AlertState, IBorrowerRegisterFormInput, IBorrowerRegisterResponse } from "../../types/auth";
 import { isIErrorResponse } from "../useIsIErrorResponse";
-import { useRegisterBankerMutation } from "../../services/authApi";
+import { useRegisterBorrowerMutation } from "../../services/authApi";
 
-export const useBankerRegisterHandler = (navigate: NavigateFunction) => {
+export const useBorrowerRegisterHandler = (navigate: NavigateFunction) => {
     const [loader, setLoader] = useState(false);
     const [alert, setAlert] = useState<AlertState | null>(null);
-    const [registerBanker] = useRegisterBankerMutation();
+    const [registerBorrower] = useRegisterBorrowerMutation();
     const [displayPopup, setDisplayPopup] = useState<boolean>(false);
 
-    const handleBankerRegister = async (data: IBankerRegisterFormInput) => {
+    const handleBorrowerRegister = async (data: IBorrowerRegisterFormInput) => {
         setLoader(true);
         try {
-            const result: IBankerRegisterResponse = await registerBanker(data).unwrap();
+            const result: IBorrowerRegisterResponse = await registerBorrower(data).unwrap();
             setAlert({
                 type: "success",
                 message: result?.message
             });
-            console.log("Banker registration successful:", result?.data);
+            console.log("Borrower registration successful:", result?.data);
             setDisplayPopup(true);
             navigate("/login");
         } catch (error) {
@@ -35,7 +35,7 @@ export const useBankerRegisterHandler = (navigate: NavigateFunction) => {
     };
 
     return {
-        handleBankerRegister,
+        handleBorrowerRegister,
         loader,
         displayPopup,
         alert

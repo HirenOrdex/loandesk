@@ -113,7 +113,7 @@ const Login: React.FC = () => {
                                         className="custom-link mx-1"
                                         onClick={(e) => {
                                             e.preventDefault();
-                                            navigate('/register?type=banker');
+                                            navigate('/register');
                                         }}
                                     >
                                         Banker
@@ -123,7 +123,7 @@ const Login: React.FC = () => {
                                         className="custom-link mx-1"
                                         onClick={(e) => {
                                             e.preventDefault();
-                                            navigate('/register?type=borrower');
+                                            navigate('/borrower-register');
                                         }}
                                     >
                                         Borrower

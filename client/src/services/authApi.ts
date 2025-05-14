@@ -1,6 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQuery } from './commonServices/baseQueryWithErrorHandler';
-import { IBankerRegisterResponse, ICommonRegisterFormInput, IForgotFormInput, IForgotResponse, ILoginFormInput, ILoginResponse, IOTPFormInput, IResendOTPFormInput } from '../types/auth';
+import { IBankerRegisterFormInput, IBankerRegisterResponse, IBorrowerRegisterFormInput, IBorrowerRegisterResponse, IForgotFormInput, IForgotResponse, ILoginFormInput, ILoginResponse, IOTPFormInput, IResendOTPFormInput } from '../types/auth';
 
 export const authApi = createApi({
   reducerPath: 'authApi',
@@ -41,11 +41,18 @@ export const authApi = createApi({
         body: data,
       }),
     }),
-    registerUser: builder.mutation<IBankerRegisterResponse, { body: ICommonRegisterFormInput; type: "banker" | "borrower" }>({
-      query: ({ body, type }) => ({
-        url: `/auth/register?type=${type}`,
+    registerBanker: builder.mutation<IBankerRegisterResponse, IBankerRegisterFormInput>({
+      query: (data) => ({
+        url: "/auth/register?type=banker",
         method: "POST",
-        body,
+        body: data,
+      }),
+    }),
+    registerBorrower: builder.mutation<IBorrowerRegisterResponse, IBorrowerRegisterFormInput>({
+      query: (data) => ({
+        url: "/auth/register?type=borrower",
+        method: "POST",
+        body: data,
       }),
     }),
   }),
@@ -54,7 +61,8 @@ export const authApi = createApi({
 export const { useLoginMutation,
   useVerifyOTPMutation,
   useForgotpasswordMutation,
-  useRegisterUserMutation,
   useResendEmailMutation,
-  useResendOTPMutation
+  useResendOTPMutation,
+  useRegisterBankerMutation,
+  useRegisterBorrowerMutation
 } = authApi;

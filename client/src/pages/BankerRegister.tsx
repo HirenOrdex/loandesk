@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Select from 'react-dropdown-select';
-import { ICommonRegisterFormInput } from '../types/auth';
 import { useBankerRegisterHandler } from '../hooks/auth/useBankerRegisterHandler';
 import AddressAutocomplete from '../components/AddressAutocomplete';
 import { Controller, useForm } from 'react-hook-form';
@@ -9,6 +8,7 @@ import PasswordInput from '../components/PasswordInput';
 import { InputMask } from '@react-input/mask';
 import RegistrationModal from '../models/RegistrationModal';
 import AlertMessage from '../components/AlertMessage';
+import { IBankerRegisterFormInput } from '../types/auth';
 
 const specialityOptions = [
     { label: 'SBA', value: 'SBA' },
@@ -30,13 +30,12 @@ const BankerRegister: React.FC = () => {
         watch,
         control,
         formState: { errors }
-    } = useForm<ICommonRegisterFormInput>();
+    } = useForm<IBankerRegisterFormInput>();
 
     const { handleBankerRegister, displayPopup, alert } = useBankerRegisterHandler(navigate);
 
-    const onSubmit = (data: ICommonRegisterFormInput) => {
-        const type: "banker" | "borrower" = "banker";
-        handleBankerRegister(data, type);
+    const onSubmit = (data: IBankerRegisterFormInput) => {
+        handleBankerRegister(data);
     };
 
     return (
@@ -133,7 +132,7 @@ const BankerRegister: React.FC = () => {
                                     <h2 className='text-3xl text-(--darkgray) mb-3'>Contact Information</h2>
                                     <div className="mb-3">
                                         <label htmlFor="firstName">Banker's First Name <span className='error-msg'>*</span></label>
-                                        <input id='firstName' {...register("firstName", { required: "Required" })} />
+                                        <input id='firstName' {...register("firstName", { required: "Banker's First Name is required" })} />
                                         {errors.firstName && <span className='error-msg'>{errors.firstName.message}</span>}
                                     </div>
 
@@ -144,7 +143,7 @@ const BankerRegister: React.FC = () => {
 
                                     <div className="mb-3">
                                         <label htmlFor="lastName">Banker's Last Name <span className='error-msg'>*</span></label>
-                                        <input id='lastName' {...register("lastName", { required: "Required" })} />
+                                        <input id='lastName' {...register("lastName", { required: "Banker's Last Name is required" })} />
                                         {errors.lastName && <span className='error-msg'>{errors.lastName.message}</span>}
                                     </div>
 
@@ -185,7 +184,7 @@ const BankerRegister: React.FC = () => {
 
                                     <div className="mb-3">
                                         <label htmlFor="title">Title <span className='error-msg'>*</span></label>
-                                        <input id='title' {...register("title", { required: "Required" })} />
+                                        <input id='title' {...register("title", { required: "Title is required" })} />
                                         {errors.title && <span className='error-msg'>{errors.title.message}</span>}
                                     </div>
 
@@ -227,7 +226,7 @@ const BankerRegister: React.FC = () => {
                                                 <AddressAutocomplete
                                                     id="address"
                                                     {...field}
-                                                    value={field.value?.[0]?.fulladdress || ""} // Pass only the formatted address string
+                                                    value={field.value?.[0]?.fulladdress || ""}
                                                 />
                                             )}
                                         />
@@ -242,7 +241,7 @@ const BankerRegister: React.FC = () => {
                                     <h2 className='text-3xl text-(--darkgray) mb-3'>Additional Info</h2>
                                     <div className="mb-3">
                                         <label htmlFor="bankType">Bank Type <span className='error-msg'>*</span></label>
-                                        <select id='bankType' {...register("bankType", { required: "Required" })}>
+                                        <select id='bankType' {...register("bankType", { required: "Bank type is required" })}>
                                             <option value="">Select Bank Type</option>
                                             <option value="Commercial">Commercial</option>
                                             <option value="Retail">Retail</option>
@@ -253,7 +252,7 @@ const BankerRegister: React.FC = () => {
 
                                     <div className="mb-3">
                                         <label htmlFor="assetSize">Asset Size <span className='error-msg'>*</span></label>
-                                        <select id='assetSize' {...register("assetSize", { required: "Required" })}>
+                                        <select id='assetSize' {...register("assetSize", { required: "Asset Size is required" })}>
                                             <option value="">Select Asset Size</option>
                                             <option value="Small">Small</option>
                                             <option value="Medium">Medium</option>
@@ -263,9 +262,6 @@ const BankerRegister: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {/* <button type="submit" className="btn-main w-full">
-                                    {loader ? 'Submitting...' : 'Register as Banker'}
-                                </button> */}
                                 <div className='flex'>
                                     <button type='submit' className='btn-main my-5 mx-auto'>SIGN IN</button>
                                 </div>
