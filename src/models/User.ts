@@ -5,8 +5,7 @@ import { UserDocument } from "../types/userType";
 
 export interface IUser extends Document {
   // changedPasswordAfter?: Date;
-  company_id?: Types.ObjectId;
-  _id: any;
+  _id: Types.ObjectId;
   firstName: string;
   lastName: string;
   email?: string;
@@ -21,7 +20,8 @@ export interface IUser extends Document {
   // passwordResetToken?: string | null;
   // passwordResetExpires?: Date | undefined | null;
   passwordChangedAt?: Date;
-
+  createdBy: Types.ObjectId;
+  updatedby: Types.ObjectId;
   // emailVerificationToken?:string | null;
   correctPassword(candidatePassword: string): Promise<boolean>;
   isPhoneVerified?: boolean;
@@ -99,6 +99,8 @@ const userSchema = new Schema(
       type: Date,
       select: false,
     },
+    createdBy: { type: Schema.Types.ObjectId, ref: "User" },
+    updatedby: { type: Schema.Types.ObjectId, ref: "User" },
   },
   {
     timestamps: true,
@@ -108,7 +110,7 @@ const userSchema = new Schema(
 /**
  * Method to compare candidate password with user's hashed password
  */
-userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ email: 1 });
 userSchema.methods.correctPassword = async function (
   candidatePassword: string
 ): Promise<boolean> {

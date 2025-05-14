@@ -42,11 +42,11 @@ export class AuthController {
     logger.info(`Coming into Controller ${controllerName}`);
     logger.info(`Coming into function ${functionName}`);
 
-    const type = req.query.type;
-    logger.info(`Registering ${type}: ${JSON.stringify(req.body)}`);
+    const type = req?.query?.type;
+    logger.info(`Registering ${type}: ${JSON.stringify(req?.body)}`);
 
     try {
-      const { email, password, confirm_password } = req.body;
+      const { email, password, confirm_password } = req?.body;
 
       // Check if user already exists
       const existingUser = await userRepository.findUserByEmail(email);
@@ -83,7 +83,7 @@ export class AuthController {
           address,
           bankType,
           assetSize,
-        } = req.body;
+        } = req?.body;
 
         // Validate required fields
         if (
@@ -130,16 +130,16 @@ export class AuthController {
             };
 
           const accessToken = generateAccessToken({
-            id: newUser._id.toString(),
+            id: newUser?._id.toString(),
             role: "Banker",
           });
 
           const refreshToken = generateRefreshToken({
-            id: newUser._id.toString(),
+            id: newUser?._id.toString(),
           });
 
           await userRepository.updateRefreshToken(
-            newUser._id.toString(),
+            newUser?._id.toString(),
             refreshToken
           );
 
@@ -152,14 +152,18 @@ export class AuthController {
 
           const emailVerificationToken = generateEmailVerificationToken();
           await userRepository.updateEmailVerificationToken(
-            newUser._id.toString(),
+            newUser?._id.toString(),
             emailVerificationToken
           );
           await sendVerificationEmail(email, emailVerificationToken);
 
           return res.status(201).json({
             success: true,
-            data: null,
+            data: {
+              id: newUser?._id,
+              email: newUser?.email,
+              name: newUser?.firstName,
+            },
             message: "Banker created successfully",
             error: null,
           });
@@ -170,7 +174,7 @@ export class AuthController {
             success: false,
             data: null,
             message: "Internal Server Error",
-            error: err.message,
+            error: err?.message,
           });
         }
       } else if (type === "borrower") {
@@ -184,7 +188,7 @@ export class AuthController {
             phone,
             coname,
             position,
-          } = req.body;
+          } = req?.body;
 
           // Validate passwords
           if (password !== confirm_password) {
@@ -228,17 +232,20 @@ export class AuthController {
           });
           // Create borrower record
           const newBorrower = await borrowerRepository.createBorrower({
-            userId: newUser._id,
+            userId: newUser?._id,
             coname,
             position,
-            createdby: newUser._id,
+            createdBy: newUser?._id,
           });
 
           return res.status(201).json({
             success: true,
             message: "Borrower created successfully",
-            user: newUser,
-            borrower: newBorrower,
+            data: {
+              id: newUser?._id,
+              email: newUser?.email,
+              name: newUser?.firstName,
+            },
             error: null,
           });
         } catch (error) {
@@ -250,15 +257,16 @@ export class AuthController {
             error: "Internal Server Error",
           });
         }
+      } else {
+        logger.error(`Unsupported user type: ${type}`);
+        // FUTURE: Other user types like borrower, admin etc.
+        return res.status(400).json({
+          success: false,
+          data: null,
+          message: `Unsupported user type: ${type}`,
+          error: null,
+        });
       }
-      logger.error(`Unsupported user type: ${type}`);
-      // FUTURE: Other user types like borrower, admin etc.
-      return res.status(400).json({
-        success: false,
-        data: null,
-        message: `Unsupported user type: ${type}`,
-        error: null,
-      });
     } catch (err: unknown) {
       const error = err as IError;
       logger.error("Registration error:", error);
@@ -273,7 +281,7 @@ export class AuthController {
 
   async sendLoginOtp(req: Request, res: Response): Promise<any> {
     try {
-      const { email, password } = req.body;
+      const { email, password } = req?.body;
       const functionName = "sendLoginOtp";
       logger.info(`Coming into Controller ${controllerName}`);
       logger.info(`Coming into function ${functionName}`);
@@ -289,7 +297,7 @@ export class AuthController {
           message: "Cannot Process Request. Username does not exists",
         });
       }
-      if (user.isEmailVerified === false) {
+      if (user?.isEmailVerified === false) {
         logger.info(`Email is not verified, please verify your email.`);
         return res.status(400).json({
           success: false,
@@ -320,7 +328,7 @@ export class AuthController {
       const isPasswordValid = await user.correctPassword(password);
       if (!isPasswordValid) {
         logger.info(`Invalid credentials Password`);
-        await userRepository.incrementLoginAttempts(user._id.toString());
+        await userRepository.incrementLoginAttempts(user?._id.toString());
         return res.status(401).json({
           success: false,
           data: null,
@@ -331,9 +339,9 @@ export class AuthController {
       // send otp
 
       // Reset login attempts on successful login
-      await userRepository.resetLoginAttempts(user._id.toString());
+      await userRepository.resetLoginAttempts(user?._id.toString());
       const deviceInfo = extractDeviceInfo(req);
-      const phone = user.phone;
+      const phone = user?.phone;
       // Check if user already exists by phone or email
       if (phone) {
         const otp = await generateOTP(phone);
@@ -382,7 +390,7 @@ export class AuthController {
         success: false,
         data: null,
         message: "Server error",
-        error: `error ${error.message}`,
+        error: `error ${error?.message}`,
       });
     }
   }
@@ -433,7 +441,7 @@ export class AuthController {
       }
 
       // Verify stored refresh token
-      if (!user.refreshToken) {
+      if (!user?.refreshToken) {
         return res.status(401).json({
           success: false,
           data: null,
@@ -444,7 +452,7 @@ export class AuthController {
 
       const isRefreshTokenValid: boolean = await bcrypt.compare(
         refreshToken,
-        user.refreshToken
+        user?.refreshToken
       );
       if (!isRefreshTokenValid) {
         return res.status(401).json({
@@ -458,7 +466,7 @@ export class AuthController {
       // Generate new tokens
       const newAccessToken = generateAccessToken({
         id: user?._id.toString(),
-        role: "banker",
+        role: "Banker",
       });
 
       const newRefreshToken = generateRefreshToken({
@@ -579,7 +587,7 @@ export class AuthController {
     logger.info(`Coming into Controller ${controllerName}`);
     logger.info(`Coming into function ${functionName}`);
     try {
-      const { email } = req.body;
+      const { email } = req?.body;
 
       // Find user
       const user = await userRepository.findUserByEmail(email);
@@ -593,7 +601,7 @@ export class AuthController {
         });
       }
 
-      if (!user.isEmailVerified) {
+      if (!user?.isEmailVerified) {
         logger.error(`forgotPassword: Email not verified for user: ${email}`);
         return res.status(400).json({
           success: false,
@@ -604,7 +612,7 @@ export class AuthController {
       }
       // Generate reset token
       const resetToken: string = await userRepository.createPasswordResetToken(
-        user._id.toString()
+        user?._id.toString()
       );
 
       // In a real application, you would send an email with the reset link
@@ -638,7 +646,7 @@ export class AuthController {
     logger.info(`Coming into Controller ${controllerName}`);
     logger.info(`Coming into function ${functionName}`);
     try {
-      const { token, password } = req.body;
+      const { token, password } = req?.body;
       logger.info(
         `resetPassword: Received password reset request with token: ${token}`
       );
@@ -653,12 +661,12 @@ export class AuthController {
         });
       }
       // Update password
-      await userRepository.updatePassword(user._id.toString(), password);
+      await userRepository.updatePassword(user?._id.toString(), password);
       logger.info(
-        `resetPassword: Password updated successfully for user ID: ${user._id}`
+        `resetPassword: Password updated successfully for user ID: ${user?._id}`
       );
       // Invalidate all refresh tokens
-      await userRepository.updateRefreshToken(user._id.toString(), null);
+      await userRepository.updateRefreshToken(user?._id.toString(), null);
 
       return res.status(200).json({
         success: true,
@@ -682,7 +690,7 @@ export class AuthController {
     logger.info(`Coming into Controller ${controllerName}`);
     logger.info(`Coming into function ${functionName}`);
     try {
-      const { token } = req.params;
+      const { token } = req?.params;
       logger.info("verifyEmail: Received request with token:", token);
       // Find user by verification token
       const user = await userRepository.findUserByEmailVerificationToken(token);
@@ -697,9 +705,9 @@ export class AuthController {
       }
 
       // Update user status to active and mark email as verified
-      await userRepository.verifyEmail(user._id.toString());
+      await userRepository.verifyEmail(user?._id.toString());
       logger.info(
-        `verifyEmail: Email verified successfully for user ID ${user._id}`
+        `verifyEmail: Email verified successfully for user ID ${user?._id}`
       );
 
       return res.status(200).json({
@@ -726,7 +734,7 @@ export class AuthController {
     logger.info(`Coming into Controller ${controllerName}`);
     logger.info(`Coming into function ${functionName}`);
     try {
-      const { email } = req.body;
+      const { email } = req?.body;
 
       // Find user by email
       const user = await userRepository.findUserByEmail(email);
@@ -761,7 +769,7 @@ export class AuthController {
 
       // Update user's verification token
       await userRepository.updateEmailVerificationToken(
-        user._id.toString(),
+        user?._id.toString(),
         emailVerificationToken
       );
 
@@ -867,7 +875,7 @@ export class AuthController {
         // Set refresh token in cookie
         res.cookie("refreshToken", refreshToken, {
           httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
+          secure: NODE_ENV === "production",
           sameSite: "strict",
           maxAge: 7 * 24 * 60 * 60 * 1000,
         });
@@ -976,7 +984,7 @@ export class AuthController {
 
       const isMatch = await bcrypt?.compare(
         oldPassword,
-        updatePassword.password
+        updatePassword?.password
       );
       if (!isMatch) {
         logger.error("changePassword:-Old password is incorrect.");
@@ -992,7 +1000,11 @@ export class AuthController {
         const hashedPassword = await bcrypt.hash(newPassword, salt);
         const updateUser: UpdateUser | null = await UserModel.findByIdAndUpdate(
           userId,
-          { password: hashedPassword },
+          {
+            password: hashedPassword,
+            passwordChangedAt: new Date(),
+            updatedBy: userId,
+          },
           { new: true } // returns the updated document
         );
 
@@ -1022,7 +1034,7 @@ export class AuthController {
         success: false,
         data: null,
         message: `An internal server error occurred.`,
-        error: `changePassword:- An internal server error occurred. ${err.message}`,
+        error: `changePassword:- An internal server error occurred. ${err?.message}`,
       });
     }
   }
@@ -1032,7 +1044,7 @@ export class AuthController {
     logger.info(`Coming into function ${functionName}`);
 
     try {
-      const { email, otp } = req.body;
+      const { email, otp } = req?.body;
       console.log("in login ");
       if (!email || !otp) {
         logger.info(`Email and OTP are required`);
@@ -1124,10 +1136,10 @@ export class AuthController {
           success: true,
           data: {
             user: {
-              id: user._id,
-              firstName: user.firstName,
-              lastName: user.lastName,
-              email: user.email,
+              id: user?._id,
+              firstName: user?.firstName,
+              lastName: user?.lastName,
+              email: user?.email,
               role: role,
               accessToken,
             },
@@ -1136,14 +1148,15 @@ export class AuthController {
           error: null,
         });
       }
-    } catch (error) {
+    } catch (err: unknown) {
+      const error = err as IError;
       console.error("Error in verifyOtp:", error);
       logger.error("Error in verifyOtp:", error);
       return res.status(500).json({
         success: false,
         data: null,
         message: "Internal server error",
-        error: "Internal server error",
+        error: `error ${error.message}`,
       });
     }
   }
@@ -1228,7 +1241,7 @@ export class AuthController {
 
         return res.status(200).json({
           success: true,
-          message: `A text message with a 6-digit verification code was just sent to ${phone}`,
+          message: `on-Demand Code re-sent successfully`,
           data: {
             requestId,
             expiresIn: 300,

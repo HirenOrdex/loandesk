@@ -13,7 +13,7 @@ export interface IAddress extends Document {
   fulladdress: string;
   suiteno: string;
   active: string;
-  createdby: Types.ObjectId;
+  createdBy: Types.ObjectId;
   updatedby: Types.ObjectId;
 }
 
@@ -31,7 +31,7 @@ const AddressSchema: Schema = new Schema<IAddress>(
     fulladdress: String,
     suiteno: String,
     active: String,
-    createdby: { type: Schema.Types.ObjectId, ref: "User" },
+    createdBy: { type: Schema.Types.ObjectId, ref: "User" },
     updatedby: { type: Schema.Types.ObjectId, ref: "User" },
   },
   {

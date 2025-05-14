@@ -84,7 +84,7 @@ export class UserRepository {
     refreshToken: string | null
   ): Promise<void> {
     try {
-      const update: Partial<IUser> = {};
+      const update: Partial<IUser> = { lastLoginAttempt: new Date() };
       if (refreshToken === null) {
         update.refreshToken = undefined;
       } else {
@@ -172,6 +172,8 @@ export class UserRepository {
       await this.model.findByIdAndUpdate(userId, {
         password: hashedPassword,
         loginAttempts: 0,
+        passwordChangedAt: new Date(),
+        updatedBy: userId,
       });
       await redisClient.del(`passwordReset:${userId}`);
     } catch (error) {
