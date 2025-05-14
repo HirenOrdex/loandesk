@@ -237,6 +237,12 @@ export class AuthController {
             position,
             createdBy: newUser?._id,
           });
+          const emailVerificationToken = generateEmailVerificationToken();
+          await userRepository.updateEmailVerificationToken(
+            newUser?._id.toString(),
+            emailVerificationToken
+          );
+          await sendVerificationEmail(email, emailVerificationToken);
 
           return res.status(201).json({
             success: true,
@@ -703,7 +709,19 @@ export class AuthController {
           message: "Invalid or expired verification token",
         });
       }
+      const userId = user?._id;
+      const isAlreadyVerified = await userRepository.isEmailAlreadyVerified(
+        userId.toString()
+      );
 
+      if (isAlreadyVerified) {
+        return res.status(400).json({
+          success: false,
+          data: null,
+          error: "Email already verified.",
+          message: "Email already verified.",
+        });
+      }
       // Update user status to active and mark email as verified
       await userRepository.verifyEmail(user?._id.toString());
       logger.info(

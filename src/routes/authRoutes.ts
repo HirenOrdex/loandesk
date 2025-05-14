@@ -40,7 +40,6 @@ router.get("/google", authController.googleAuth);
 router.get("/google/callback", authController.googleCallback);
 router.post("/resend-otp", authController.resendLoginOtp);
 export default router;
-
 /**
  * @openapi
  * /auth/login:
@@ -50,17 +49,33 @@ export default router;
  *       - name: Content-Type
  *         in: header
  *         required: true
+ *         example: application/json
+ *         schema:
+ *           type: string
  *     requestBody:
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *             required:
+ *               - email
+ *               - password
+ *           example:
+ *             email: hir3@abcbank.com
+ *             password: StrongP@ssw0rd!
  *     responses:
  *       200:
  *         description:
  *         content:
  *           application/json:
  *             schema:
+ *               type: object
+ *               properties:
  */
 // POST /auth/login implementation
 
@@ -73,12 +88,17 @@ export default router;
  *       - name: Authorization
  *         in: header
  *         required: true
+ *         example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZjRhOTMwMzVjMTQ3Njg2NTNkZmM4ZCIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzQ0MDg3MzQ0LCJleHAiOjE3NDQxNzM3NDR9.kbOG2os4LYH0yt2CYYEihmBaaFjgOql9SZGSBwMdiuY
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description:
  *         content:
  *           application/json:
  *             schema:
+ *               type: object
+ *               properties:
  */
 // POST /auth/logout implementation
 
@@ -91,17 +111,32 @@ export default router;
  *       - name: type
  *         in: query
  *         required: false
+ *         example: borrower
+ *         schema:
+ *           type: string
  *     requestBody:
  *       content:
  *         application/json:
  *           schema:
  *             type: string
+ *           example:
+ *             email: hir134@abcbank.com
+ *             password: StrongP@ssw0rd!
+ *             confirm_password: StrongP@ssw0rd!
+ *             firstName: John
+ *             middleInitial: D
+ *             lastName: Doe
+ *             phone: +1234567890
+ *             position: xyz
+ *             coname: abc
  *     responses:
  *       200:
  *         description:
  *         content:
  *           application/json:
  *             schema:
+ *               type: object
+ *               properties:
  */
 // POST /auth/register/ implementation
 
@@ -114,12 +149,17 @@ export default router;
  *       - name: token
  *         in: path
  *         required: true
+ *         example: a91c2a6a350c2508d2c52120e60052122888d1e61cebf74ae1162fa84481bdb9
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description:
  *         content:
  *           application/json:
  *             schema:
+ *               type: object
+ *               properties:
  */
 // GET /auth/verfiy-email/{token} implementation
 
@@ -132,17 +172,29 @@ export default router;
  *       - name: Content-Type
  *         in: header
  *         required: true
+ *         example: application/json
+ *         schema:
+ *           type: string
  *     requestBody:
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *             required:
+ *               - email
+ *           example:
+ *             email: hiren.lalani.ordex@gmail.com
  *     responses:
  *       200:
  *         description:
  *         content:
  *           application/json:
  *             schema:
+ *               type: object
+ *               properties:
  */
 // POST /auth/forgot-password implementation
 
@@ -155,17 +207,33 @@ export default router;
  *       - name: Content-Type
  *         in: header
  *         required: true
+ *         example: application/json
+ *         schema:
+ *           type: string
  *     requestBody:
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             properties:
+ *               token:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *             required:
+ *               - token
+ *               - password
+ *           example:
+ *             password: Ordex@123
+ *             token: 471179
  *     responses:
  *       200:
  *         description:
  *         content:
  *           application/json:
  *             schema:
+ *               type: object
+ *               properties:
  */
 // POST /auth/reset-password implementation
 
@@ -178,17 +246,29 @@ export default router;
  *       - name: Content-Type
  *         in: header
  *         required: true
+ *         example: application/json
+ *         schema:
+ *           type: string
  *     requestBody:
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *             required:
+ *               - email
+ *           example:
+ *             email: hiren.lalani.ordex@gmail.com
  *     responses:
  *       200:
  *         description:
  *         content:
  *           application/json:
  *             schema:
+ *               type: object
+ *               properties:
  */
 // POST /auth/resend-email implementation
 
@@ -201,17 +281,36 @@ export default router;
  *       - name: Content-Type
  *         in: header
  *         required: true
+ *         example: application/json
+ *         schema:
+ *           type: string
  *     requestBody:
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *               otp:
+ *                 type: string
+ *             required:
+ *               - email
+ *               - newPassword
+ *               - otp
+ *           example:
+ *             email: hir3@abcbank.com
+ *             otp: 1234
  *     responses:
  *       200:
  *         description:
  *         content:
  *           application/json:
  *             schema:
+ *               type: object
+ *               properties:
  */
 // POST /auth/verfiy-otp implementation
 
@@ -224,17 +323,29 @@ export default router;
  *       - name: Content-Type
  *         in: header
  *         required: true
+ *         example: application/json
+ *         schema:
+ *           type: string
  *     requestBody:
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *             required:
+ *               - email
+ *           example:
+ *             email: hir3@abcbank.com
  *     responses:
  *       200:
  *         description:
  *         content:
  *           application/json:
  *             schema:
+ *               type: object
+ *               properties:
  */
 // POST /auth/resend-otp implementation
 
@@ -247,19 +358,38 @@ export default router;
  *       - name: refreshToken
  *         in: header
  *         required: true
+ *         example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MWRkY2VjOWNiOTIxNWJmMDAzMWU0NyIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzQ3MDQ1NDQ3LCJleHAiOjE3NDc2NTAyNDd9.ZG1HprcgAMoLrBiL2pBXYKZXRXdjpeH0qMKzRofRLNM
+ *         schema:
+ *           type: string
  *       - name: Content-Type
  *         in: header
  *         required: true
+ *         example: application/json
+ *         schema:
+ *           type: string
  *     requestBody:
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             properties:
+ *               oldPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *             required:
+ *               - oldPassword
+ *               - newPassword
+ *           example:
+ *             oldPassword: Ordex@123
+ *             newPassword: Ordex@123
  *     responses:
  *       200:
  *         description:
  *         content:
  *           application/json:
  *             schema:
+ *               type: object
+ *               properties:
  */
 // POST /auth/change-password implementation
