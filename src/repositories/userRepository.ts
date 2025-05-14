@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import User, { IUser } from "../models/User";
 import { UserDocument } from "../types/userType";
-import redisClient from "../utils/redisClient";
+import  { nodeCacheClient } from "../utils/nodeCacheClient";
 import { hashToken } from "../utils/emailUtils";
 import { logger } from "../configs/winstonConfig";
 import { RoleModel } from "../models/RoleModel";
@@ -134,9 +134,7 @@ export class UserRepository {
         .createHash("sha256")
         .update(resetToken)
         .digest("hex");
-      await redisClient.set(`passwordReset:${userId}`, hashedToken, {
-        EX: 10 * 60,
-      });
+      nodeCacheClient.set(`passwordReset:${userId}`, hashedToken,600);
       return resetToken;
     } catch (error) {
       logger.error(`createPasswordResetToken error: ${error}`);
@@ -150,16 +148,22 @@ export class UserRepository {
         .createHash("sha256")
         .update(resetToken)
         .digest("hex");
-      const keys = await redisClient.keys("passwordReset:*");
 
+      // Retrieve the list of password reset keys
+      const keys =
+        (await nodeCacheClient.get<string[]>("passwordResetKeys")) || [];
+
+      // Iterate through each key and check for the hashed token
       for (const key of keys) {
-        const token = await redisClient.get(key);
+        const token = await nodeCacheClient.get(key);
         if (token === hashedToken) {
-          const userId = key.split(":")[1];
-          return await this.model.findById(userId);
+          const userId = key.split(":")[1]; // Assuming your key is in the format passwordReset:{userId}
+          return await this.model.findById(userId); // Fetch the user by ID
         }
       }
-      return null;
+
+    return null; // No user found with the matching reset token
+
     } catch (error) {
       logger.error(`findUserByResetToken error: ${error}`);
       throw error;
@@ -175,7 +179,7 @@ export class UserRepository {
         passwordChangedAt: new Date(),
         updatedBy: userId,
       });
-      await redisClient.del(`passwordReset:${userId}`);
+      nodeCacheClient.del(`passwordReset:${userId}`);
     } catch (error) {
       logger.error(`updatePassword error: ${error}`);
       throw error;
@@ -188,9 +192,7 @@ export class UserRepository {
   ): Promise<UserDocument | null> {
     try {
       const hashedToken = hashToken(token);
-      await redisClient.set(`emailVerificationWeb:${userId}`, hashedToken, {
-        EX: 24 * 60 * 60,
-      });
+      nodeCacheClient.set(`emailVerificationWeb:${userId}`, hashedToken, 86400);
       return await User.findById(userId);
     } catch (error) {
       logger.error(`updateEmailVerificationToken error: ${error}`);
@@ -198,49 +200,60 @@ export class UserRepository {
     }
   }
 
-  async findUserByEmailVerificationToken(
-    token: string
-  ): Promise<UserDocument | null> {
-    try {
-      const hashedToken = hashToken(token);
-      const keys = await redisClient.keys("emailVerificationWeb:*");
+ async  findUserByEmailVerificationToken(token: string): Promise<IUser | null> {
+  try {
+    const hashedToken = hashToken(token);
 
-      for (const key of keys) {
-        const cachedToken = await redisClient.get(key);
-        if (cachedToken === hashedToken) {
-          const userId = key.split(":")[1];
-          return await User.findById(userId);
-        }
+    // Retrieve the list of email verification keys
+    const keys = await nodeCacheClient.get<string[]>("emailVerificationKeys") || [];
+
+    // Iterate through each key and check if the cached token matches
+    for (const key of keys) {
+      const cachedToken = await nodeCacheClient.get(key);
+      if (cachedToken === hashedToken) {
+        const userId = key.split(":")[1]; // Assuming key format is emailVerificationWeb:{userId}
+        return await User.findById(userId); // Fetch user by ID
       }
-      return null;
-    } catch (error) {
-      logger.error(`findUserByEmailVerificationToken error: ${error}`);
-      throw error;
     }
+
+    return null; // Return null if no user is found
+  } catch (error) {
+    logger.error(`findUserByEmailVerificationToken error: ${error}`);
+    throw error;
   }
+}
 
-  async verifyEmail(userId: string): Promise<UserDocument | null> {
-    try {
-      const user = await User.findByIdAndUpdate(
-        userId,
-        { isEmailVerified: true, status: "active" },
-        { new: true }
-      );
+// Function to verify the email address
+async  verifyEmail(userId: string): Promise<IUser | null> {
+  try {
+    // Update the user's email verification status
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { isEmailVerified: true, status: "active" },
+      { new: true }
+    );
 
-      if (!user) return null;
+    if (!user) return null;
 
-      await redisClient.del(`emailVerificationWeb:${userId}`);
+    // Delete the email verification token from cache
+    await nodeCacheClient.del(`emailVerificationWeb:${userId}`);
 
-      sendWelcomeEmail(user.email, user.firstName).catch((err: any) => {
-        logger.error(`Failed to send welcome email to ${user.email}: ${err}`);
-      });
+    // Remove the key from the list of email verification keys
+    const emailVerificationKeys = await nodeCacheClient.get<string[]>("emailVerificationKeys") || [];
+    const updatedKeys = emailVerificationKeys.filter(key => key !== `emailVerificationWeb:${userId}`);
+    await nodeCacheClient.set("emailVerificationKeys", updatedKeys, 300); // TTL for 5 minutes
 
-      return user;
-    } catch (error) {
-      logger.error(`verifyEmail error: ${error}`);
-      throw error;
-    }
+    // Send welcome email
+    sendWelcomeEmail(user.email, user.firstName).catch((err: any) => {
+      logger.error(`Failed to send welcome email to ${user.email}: ${err}`);
+    });
+
+    return user;
+  } catch (error) {
+    logger.error(`verifyEmail error: ${error}`);
+    throw error;
   }
+}
   async isEmailAlreadyVerified(userId: string): Promise<boolean> {
     try {
       const user = await User.findById(userId, "isEmailVerified");

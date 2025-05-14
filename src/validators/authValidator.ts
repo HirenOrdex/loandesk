@@ -87,7 +87,7 @@ const baseUserSchema = {
       "any.only": "Passwords do not match",
     }),
   firstName: Joi.string().required(),
-  middleInitial: Joi.string().max(1).optional().allow(""),
+  middleInitial: Joi.string().optional().allow(""),
   lastName: Joi.string().required(),
   phone: Joi.string().required(),
 };

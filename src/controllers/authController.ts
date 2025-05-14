@@ -7,7 +7,7 @@ import {
   addTokenToBlacklist,
   isTokenBlacklisted,
 } from "../utils/jwtUtils";
-import { redisClient } from "../utils/redisClient";
+import nodeCacheClient from "../utils/nodeCacheClient";
 import bcrypt from "bcryptjs";
 import { APP_URL, NODE_ENV } from "../configs/envConfigs";
 import { UserRepository } from "../repositories/userRepository";
@@ -42,7 +42,11 @@ export class AuthController {
     logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
 
     const type = req?.query?.type;
-    logger.info(`Registering ${type}: ${JSON.stringify(req?.body)}`);
+     logger.info(`[${controllerName}] → ${functionName} → Start`);
+     logger.debug(`Request Query: ${JSON.stringify(req.query)}`);
+     logger.debug(`Request Body: ${JSON.stringify(req.body)}`);
+     console.log(`▶ Registering ${type} - Email: ${req?.body?.email}`);
+     console.debug(`Request Body: ${JSON.stringify(req.body)}`);
 
     try {
       const { email, password, confirm_password } = req?.body;
@@ -50,18 +54,17 @@ export class AuthController {
       // Check if user already exists
       const existingUser = await userRepository.findUserByEmail(email);
       if (existingUser) {
-        logger.info(`Email :${email}:already in use`);
+        logger.info(`email: ${email} Email already in use`);
+        console.log(`email: ${email} Email already in use`);
         return res.status(409).json({
           success: false,
           data: null,
-          message:
-            "The email address entered is already registered. Please try again with new email or contact the support team.",
-          error:
-            "The email address entered is already registered. Please try again with new email or contact the support team.",
+          message:"The email address entered is already registered. Please try again with new email or contact the support team.",
+          error:"The email address entered is already registered. Please try again with new email or contact the support team.",
         });
       }
       if (password !== confirm_password) {
-        logger.info(`Email :${email}: confirm Password and Password Should be same`);
+        logger.info(`email:${email} confirm Password: ${confirm_password} and Password: ${password} Should be same`);
         return res.status(400).json({
           success: false,
           data: null,
@@ -155,7 +158,9 @@ export class AuthController {
             emailVerificationToken
           );
           await sendVerificationEmail(email, emailVerificationToken);
-
+          logger.info(`Banker created: ${email}`);
+          console.log(`Banker created: ${email}`);
+    
           return res.status(201).json({
             success: true,
             data: {
@@ -168,7 +173,9 @@ export class AuthController {
           });
         } catch (error: unknown) {
           const err = error as Error;
-          logger.error(`Email : ${email}:Error creating banker: ${err.message}`);
+          logger.error(`Error creating banker: ${err.message}`);
+          console.error("💥 Banker registration error:", error);
+
           return res.status(500).json({
             success: false,
             data: null,
@@ -188,7 +195,7 @@ export class AuthController {
             coname,
             position,
             other_position,
-            captchaCode
+            captchaCode,
           } = req?.body;
 
           // Validate passwords
@@ -540,7 +547,7 @@ export class AuthController {
 
           // Invalidate refresh token in database
           await userRepository.updateRefreshToken(decoded.id, null);
-          await redisClient.del(`user_${decoded.id.toString()}`);
+           nodeCacheClient.del(`user_${decoded.id.toString()}`);
           logger.info(`logout: Deleted cached data for user ID: ${decoded.id}`);
 
           // Add refresh token to blacklist
@@ -1020,7 +1027,7 @@ export class AuthController {
         );
 
         if (updateUser) {
-          await redisClient.del(`user_${userId}`);
+          nodeCacheClient.del(`user_${userId}`);
           console.log("changePassword:-User password updated successfully.");
           logger.info("changePassword:-Password updated successfully.");
           return res.status(200).json({
@@ -1133,13 +1140,12 @@ export class AuthController {
           sameSite: "strict",
           maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         });
-        await redisClient.set(
+        nodeCacheClient.set(
           `user_${user._id.toString()}`,
-          JSON.stringify(user),
-          {
-            EX: 3600, // 1 hour
-          }
+          user, // No need to stringify the user object
+          3600 // TTL in seconds (1 hour)
         );
+
         // console.log("cookie",cookie)
         // Send response
         return res.status(200).json({

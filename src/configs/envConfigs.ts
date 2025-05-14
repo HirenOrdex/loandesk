@@ -8,7 +8,6 @@ export const NODE_ENV = process.env.NODE_ENV;
 export const DB_URL = process.env.DB_URL;
 export const DB_NAME = process.env.DB_NAME;
 export const JWT_SECRET = process.env.JWT_SECRET!;
-export const REDIS_URL = process.env.REDIS_URL!;
 // tokens
 export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
 export const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET!;
