@@ -1,5 +1,4 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import Select from 'react-dropdown-select';
 import { useBankerRegisterHandler } from '../hooks/auth/useBankerRegisterHandler';
 import AddressAutocomplete from '../components/AddressAutocomplete';
@@ -23,7 +22,6 @@ const specialityOptions = [
 ];
 
 const BankerRegister: React.FC = () => {
-    const navigate = useNavigate();
     const {
         register,
         handleSubmit,
@@ -32,7 +30,7 @@ const BankerRegister: React.FC = () => {
         formState: { errors }
     } = useForm<IBankerRegisterFormInput>();
 
-    const { handleBankerRegister, displayPopup, alert } = useBankerRegisterHandler(navigate);
+    const { handleBankerRegister, displayPopup, alert } = useBankerRegisterHandler();
 
     const onSubmit = (data: IBankerRegisterFormInput) => {
         handleBankerRegister(data);

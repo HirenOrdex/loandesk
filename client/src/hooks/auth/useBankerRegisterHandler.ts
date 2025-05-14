@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { NavigateFunction } from "react-router-dom";
 import { IBankerRegisterResponse, AlertState, IBankerRegisterFormInput } from "../../types/auth";
 import { isIErrorResponse } from "../useIsIErrorResponse";
 import { useRegisterBankerMutation } from "../../services/authApi";
 
-export const useBankerRegisterHandler = (navigate: NavigateFunction) => {
+export const useBankerRegisterHandler = () => {
     const [loader, setLoader] = useState(false);
     const [alert, setAlert] = useState<AlertState | null>(null);
     const [registerBanker] = useRegisterBankerMutation();
@@ -20,7 +19,6 @@ export const useBankerRegisterHandler = (navigate: NavigateFunction) => {
             });
             console.log("Banker registration successful:", result?.data);
             setDisplayPopup(true);
-            navigate("/login");
         } catch (error) {
             console.error("Registration error:", error);
             if (isIErrorResponse(error)) {
