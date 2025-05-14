@@ -66,7 +66,11 @@ const Profile: React.FC = () => {
 
     return (
         <div className='max-w-[90%] md:max-w-[60%] lg:max-w-[40%] mx-auto my-6'>
-            <AlertMessage type='error' className='mb-5' />
+            {/* <AlertMessage type='error' className='mb-5' /> */}
+            <AlertMessage
+                type='success'
+                message='Profile Updated Auccessfully'
+            />
             <form>
                 {/* profile picture */}
                 <div className="relative w-32 h-32 mx-auto mb-10">
@@ -205,7 +209,7 @@ const Profile: React.FC = () => {
                         type="email"
                         id="email2"
                         // name='email2'
-                        
+
                         {...register('email2')}
                     />
                 </div>
@@ -234,7 +238,7 @@ const Profile: React.FC = () => {
 
                 <div className='flex'>
                     <button type='submit' className='btn-main mx-auto mt-5'
-                    onClick={handleSubmit(onSubmit)}
+                        onClick={handleSubmit(onSubmit)}
                     >SUBMIT</button>
                 </div>
             </form>

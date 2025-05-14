@@ -58,7 +58,9 @@ export interface IOTPFormInput {
     email: string;
     otp: string
 }
-
+export interface IResendOTPFormInput {
+    email: string;
+}
 export interface IForgotResponse {
     success: boolean;
     error: string;

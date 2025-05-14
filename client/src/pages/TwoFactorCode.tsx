@@ -1,7 +1,7 @@
 import React from 'react'
 import AlertMessage from '../components/AlertMessage'
 import { useLocation, useNavigate } from 'react-router-dom';
-import { IOTPFormInput } from '../types/auth';
+import { IOTPFormInput, IResendOTPFormInput } from '../types/auth';
 import { useForm } from 'react-hook-form';
 import { useOTPHandler } from '../hooks/auth/useOTPHandler';
 
@@ -16,6 +16,7 @@ const TwoFactorCode: React.FC = () => {
     } = useForm<IOTPFormInput>();
     const {
         handleOTPSubmit,
+        handleResendOTP,
         alert
     } = useOTPHandler(navigate);
 
@@ -24,10 +25,14 @@ const TwoFactorCode: React.FC = () => {
             ...data,
             email
         }
-        console.log("payload", payload)
         handleOTPSubmit(payload);
     }
-
+    const resendOTPSubmit = () => {
+        const payload = {
+            email
+        }
+        handleResendOTP(payload);
+    }
     return (
         <>
             <header className='header-container'>
@@ -74,7 +79,11 @@ const TwoFactorCode: React.FC = () => {
                                     {errors.otp && <span className='error-msg'>{errors.otp.message}</span>}
                                 </div>
                                 <div className='flex justify-end mx-2'>
-                                    <a className='custom-link'>Resend code</a>
+                                    <a className='custom-link'
+                                        onClick={() => {
+                                            resendOTPSubmit()
+                                        }}
+                                    >Resend code</a>
                                 </div>
                                 <div className='flex'>
                                     <button className='btn-main my-12 mx-auto'

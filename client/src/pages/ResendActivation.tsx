@@ -16,6 +16,7 @@ const ResendActivation: React.FC = () => {
     const {
         handleResendEmail,
         loader,
+        alert
     } = useResendEmail(navigate);
     const onSubmit = (data: IResendEmailFormInput) => handleResendEmail(data);
     return (
@@ -28,7 +29,14 @@ const ResendActivation: React.FC = () => {
                     <div className="sm:max-w-[67%] mx-auto">
                         <h2 className='register-title pb-14'>RESEND ACTIVATION EMAIL?</h2>
                         <div className="card border-0 bg-white rounded">
-                            <AlertMessage type="success" />
+                            {
+                                alert && (
+                                    <AlertMessage
+                                        type={alert.type}
+                                        message={alert.message}
+                                    />
+                                )
+                            }
                             <div className='text-center pt-10 w-[75%] mx-auto'>
                                 <h2 className='text-[30px] font-semibold text-(--darkgray) mb-4'>RESEND ACTIVATION EMAIL?</h2>
                                 <p className='text-(--gray)'>Enter the email or username you signed up with and we'll resend the activation link to you.</p>
@@ -41,7 +49,7 @@ const ResendActivation: React.FC = () => {
                                         id="email"
                                         placeholder='Username or Email Address'
                                         {...register("email", {
-                                            required: "Email is required",
+                                            required: "Username or Email is required",
                                             pattern: {
                                                 value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
                                                 message: "Please enter a valid email address",

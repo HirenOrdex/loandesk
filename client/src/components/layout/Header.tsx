@@ -7,11 +7,12 @@ import VideoInterview from "../../assets/imgs/video.png";
 import messageicon from "../../assets/imgs/email.png";
 import "../../assets/css/header.css"; // Import the CSS file
 import { CiMenuBurger } from "react-icons/ci";
+import { useNavigate } from "react-router-dom";
 
 const Header: React.FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false); // for sidebar's hamburger menu
     const [menuOpen, setMenuOpen] = useState(false);     // for sidebar's dropdown
-
+    const navigate = useNavigate();
     // sidebar's hamburger menu visibility
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -59,7 +60,11 @@ const Header: React.FC = () => {
                                 &times;
                             </button>
 
-                            <a className="dashboardicons">
+                            <a className="dashboardicons"
+                                onClick={() => {
+                                    navigate('/dashboard')
+                                }}
+                            >
                                 <img src={dashboard} alt="Dashboard" className="icon-size" />Dashboard
                             </a>
 
@@ -86,12 +91,20 @@ const Header: React.FC = () => {
                                 <ul
                                     className={`absolute dropdown-up profile-dropdown-menu shadow-md rounded-md py-2 text-left w-40 z-10 bg-white transition-all duration-200 ${menuOpen ? 'block' : 'hidden'}`}
                                 >
-                                    <li>
+                                    <li
+                                        onClick={() => {
+                                            navigate('/profile')
+                                        }}
+                                    >
                                         <a className="block px-4 py-2" onClick={closeDropdown}>
                                             My Profile
                                         </a>
                                     </li>
-                                    <li>
+                                    <li
+                                        onClick={() => {
+                                            navigate('/changepassword')
+                                        }}
+                                    >
                                         <a className="block px-4 py-2" onClick={closeDropdown}>
                                             Change Password
                                         </a>
@@ -119,7 +132,11 @@ const Header: React.FC = () => {
                     {/* Menu Grid (displayed on desktop, toggled on mobile) */}
                     <div className="hidden lg:grid grid-cols-5 gap-2 justify-items-center text-center px-8">
                         {/* Dashboard */}
-                        <a className="dashboardicons">
+                        <a className="dashboardicons"
+                            onClick={() => {
+                                navigate('/dashboard')
+                            }}
+                        >
                             <img src={dashboard} alt="Dashboard" className="icon-size" />Dashboard
                         </a>
 
@@ -146,12 +163,20 @@ const Header: React.FC = () => {
                             </a>
                             {/* Dropdown Menu */}
                             <ul className="profile-dropdown-menu group-hover:block hidden">
-                                <li>
+                                <li
+                                    onClick={() => {
+                                        navigate('/profile')
+                                    }}
+                                >
                                     <a className="block px-4 py-2">
                                         My Profile
                                     </a>
                                 </li>
-                                <li>
+                                <li
+                                    onClick={() => {
+                                        navigate('/changepassword')
+                                    }}
+                                >
                                     <a className="block px-4 py-2">
                                         Change password
                                     </a>

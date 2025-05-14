@@ -1,20 +1,32 @@
 import { useState } from "react";
 import { NavigateFunction } from "react-router-dom";
-import { IResendEmailFormInput } from "../../types/auth";
+import { AlertState, ILoginResponse, IResendEmailFormInput } from "../../types/auth";
+import { isIErrorResponse } from "../useIsIErrorResponse";
+import { useResendEmailMutation } from "../../services/authApi";
 
 export const useResendEmail = (navigate: NavigateFunction) => {
     const [loader, setLoader] = useState(false);
-    // const [login] = useLoginMutation();
+    const [alert, setAlert] = useState<AlertState | null>(null);
+    const [resendEmail] = useResendEmailMutation();
     const handleResendEmail = async (data: IResendEmailFormInput) => {
         setLoader(true);
         try {
             console.log("data", data)
-            // const result: ILoginResponse = await login(data)?.unwrap();
-            // setCookie("elevateWebUserData", JSON?.stringify(result?.data?.user), 1);
-            // console.log("result", result?.data);
-            // navigate("/dashboard");
+            const result: ILoginResponse = await resendEmail(data)?.unwrap();
+            if ('data' in result) {
+                setAlert({
+                    type: "success",
+                    message: result?.message
+                });
+            }
         } catch (error: unknown) {
-            console.log("error", error)
+            // console.log("error", error)
+            if (isIErrorResponse(error)) {
+                setAlert({
+                    type: "error",
+                    message: error?.data?.message || "Something went wrong. Please try again."
+                });
+            }
         } finally {
             setLoader(false);
         }
@@ -23,5 +35,6 @@ export const useResendEmail = (navigate: NavigateFunction) => {
     return {
         handleResendEmail,
         loader,
+        alert
     };
 };

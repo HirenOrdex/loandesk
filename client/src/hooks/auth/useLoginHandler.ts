@@ -12,11 +12,13 @@ export const useLoginHandler = (navigate: NavigateFunction) => {
         setLoader(true);
         try {
             const result: ILoginResponse = await login(data)?.unwrap();
-            setAlert({
-                type: "success",
-                message: result?.message
-            });
-            navigate("/twofactorcode", { state: { email: result?.data?.requestId } });
+            if ('data' in result) {
+                setAlert({
+                    type: "success",
+                    message: result?.message
+                });
+                navigate("/twofactorcode", { state: { email: result?.data?.requestId } });
+            }
         } catch (error: unknown) {
             if (isIErrorResponse(error)) {
                 setAlert({
