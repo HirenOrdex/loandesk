@@ -714,12 +714,12 @@ export class AuthController {
         userId.toString()
       );
 
-      if (!isAlreadyVerified) {
+      if (isAlreadyVerified) {
         return res.status(400).json({
           success: false,
           data: null,
-          error: "Email is not verified, please verify your email.",
-          message: "Email is not verified, please verify your email.",
+          error: "Email already verified.",
+          message: "Email already verified.",
         });
       }
       // Update user status to active and mark email as verified
