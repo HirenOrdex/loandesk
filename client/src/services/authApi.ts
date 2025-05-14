@@ -55,14 +55,22 @@ export const authApi = createApi({
         body: data,
       }),
     }),
+    verifyEmail: builder.mutation({
+      query: ({ token }) => ({
+        url: `/auth/verfiy-email/${token}`,
+        method: "GET"
+      }),
+    }),
   }),
 });
 
-export const { useLoginMutation,
+export const { 
+  useLoginMutation,
   useVerifyOTPMutation,
   useForgotpasswordMutation,
   useResendEmailMutation,
   useResendOTPMutation,
   useRegisterBankerMutation,
-  useRegisterBorrowerMutation
+  useRegisterBorrowerMutation,
+  useVerifyEmailMutation
 } = authApi;

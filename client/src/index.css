@@ -249,3 +249,16 @@ h1 {
   display: block;
   pointer-events: none;
 }
+
+/* MessageModal */
+.m-alert {
+ padding: 0px 15px 0px 0px;
+}
+
+.m-alert.success {
+  color: var(--success);
+}
+
+.m-alert.error {
+  color: var(--error);
+}

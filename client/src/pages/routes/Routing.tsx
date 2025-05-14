@@ -12,6 +12,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import Profile from "../Profile";
 import ChangePassword from "../ChangePassword";
 import BorrowerRegister from "../BorrowerRegister";
+import RegisterVerifyEmail from "../RegisterVerifyEmail";
 const Routing = () => {
     return (
         <>
@@ -46,6 +47,7 @@ const Routing = () => {
                     <Route path="/resendemail" element={<ResendActivation />} />
                     <Route path="/twofactorcode" element={<TwoFactorCode />} />
                 </Route>
+                <Route path="/verify-email/:token" element={<RegisterVerifyEmail />} />
             </Routes>
         </>
     )

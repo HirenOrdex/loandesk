@@ -148,3 +148,12 @@ export interface IUserLogin {
     userId:string | null,
     refreshToken : string | null,
 }
+
+export interface IVerifyEmailResponse {
+    success: boolean;
+    error: string;
+    message: string;
+    data: {
+        requestId: string;
+    };
+}
