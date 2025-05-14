@@ -24,7 +24,6 @@ export const useBankerRegisterHandler = (navigate: NavigateFunction) => {
             });
             console.log("Banker registration successful:", result?.data?.id);
             setDisplayPopup(true);
-            navigate("/login"); 
         } catch (error) {
             console.error("Registration error:", error);
             if (isIErrorResponse(error)) {
@@ -42,7 +41,6 @@ export const useBankerRegisterHandler = (navigate: NavigateFunction) => {
         handleBankerRegister,
         loader,
         displayPopup,
-        setDisplayPopup,
         alert
     };
 };

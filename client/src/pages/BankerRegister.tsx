@@ -32,7 +32,7 @@ const BankerRegister: React.FC = () => {
         formState: { errors }
     } = useForm<ICommonRegisterFormInput>();
 
-    const { handleBankerRegister, displayPopup, setDisplayPopup, alert } = useBankerRegisterHandler(navigate);
+    const { handleBankerRegister, displayPopup, alert } = useBankerRegisterHandler(navigate);
 
     const onSubmit = (data: ICommonRegisterFormInput) => {
         const type: "banker" | "borrower" = "banker";
