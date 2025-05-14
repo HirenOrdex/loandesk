@@ -48,10 +48,10 @@ const BankerRegister: React.FC = () => {
                         <div className="card border-0 bg-white rounded">
                             {/* alert message */}
                             {
-                                alert && (
+                                (Object.keys(errors).length !== 0 || alert) && (
                                     <AlertMessage
-                                        type={alert.type}
-                                        message={alert.message}
+                                        type={alert?.type || "error"}
+                                        message={alert?.message || "Please fill out all the mandatory fields."}
                                     />
                                 )
                             }
