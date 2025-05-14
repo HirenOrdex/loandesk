@@ -43,7 +43,7 @@ export class AuthController {
     logger.info(`Coming into function ${functionName}`);
 
     const type = req.query.type;
-    logger.info(`User type: ${type}`);
+    logger.info(`Registering ${type}: ${JSON.stringify(req.body)}`);
 
     try {
       const { email, password, confirm_password } = req.body;
@@ -51,14 +51,18 @@ export class AuthController {
       // Check if user already exists
       const existingUser = await userRepository.findUserByEmail(email);
       if (existingUser) {
+        logger.info(`Email already in use`);
         return res.status(409).json({
           success: false,
           data: null,
-          message: "The email address entered is already registered. Please try again with new email or contact the support team.",
-          error: "The email address entered is already registered. Please try again with new email or contact the support team.",
+          message:
+            "The email address entered is already registered. Please try again with new email or contact the support team.",
+          error:
+            "The email address entered is already registered. Please try again with new email or contact the support team.",
         });
       }
       if (password !== confirm_password) {
+        logger.info(`confirm Password and Password Should be same`);
         return res.status(400).json({
           success: false,
           data: null,
@@ -127,7 +131,7 @@ export class AuthController {
 
           const accessToken = generateAccessToken({
             id: newUser._id.toString(),
-            role: "banker",
+            role: "Banker",
           });
 
           const refreshToken = generateRefreshToken({
@@ -184,22 +188,28 @@ export class AuthController {
 
           // Validate passwords
           if (password !== confirm_password) {
-            return res.status(400).json({ 
+            logger.info(`Passwords do not match`);
+
+            return res.status(400).json({
               success: false,
               data: null,
               message: "Passwords do not match",
-              error: "Passwords do not match" 
+              error: "Passwords do not match",
             });
           }
 
           // Check if user already exists
           const existingUser = await UserModel.findOne({ email });
           if (existingUser) {
-            return res.status(409).json({ 
+            logger.info(`User Already Exists`);
+
+            return res.status(409).json({
               success: false,
               data: null,
-              message: "The email address entered is already registered. Please try again with new email or contact the support team.",
-              error: "The email address entered is already registered. Please try again with new email or contact the support team.",
+              message:
+                "The email address entered is already registered. Please try again with new email or contact the support team.",
+              error:
+                "The email address entered is already registered. Please try again with new email or contact the support team.",
             });
           }
           const roleId = await userRepository.findRoleIdByName("Banker");
@@ -229,18 +239,19 @@ export class AuthController {
             message: "Borrower created successfully",
             user: newUser,
             borrower: newBorrower,
-            error: null
+            error: null,
           });
         } catch (error) {
           console.error("Error creating borrower:", error);
-          return res.status(500).json({ 
+          return res.status(500).json({
             success: false,
             data: null,
             message: "Internal Server Error",
-            error: "Internal Server Error"
+            error: "Internal Server Error",
           });
         }
       }
+      logger.error(`Unsupported user type: ${type}`);
       // FUTURE: Other user types like borrower, admin etc.
       return res.status(400).json({
         success: false,
@@ -263,39 +274,52 @@ export class AuthController {
   async sendLoginOtp(req: Request, res: Response): Promise<any> {
     try {
       const { email, password } = req.body;
+      const functionName = "sendLoginOtp";
+      logger.info(`Coming into Controller ${controllerName}`);
+      logger.info(`Coming into function ${functionName}`);
 
       // Find user
       const user = await userRepository.findUserByEmail(email);
       if (!user) {
+        logger.info(`Invalid credentials`);
         return res.status(401).json({
           success: false,
           data: null,
           error: "Cannot Process Request. Username does not exists",
-          message: "Cannot Process Request. Username does not exists"
+          message: "Cannot Process Request. Username does not exists",
         });
       }
       if (user.isEmailVerified === false) {
+        logger.info(`Email is not verified, please verify your email.`);
         return res.status(400).json({
           success: false,
           data: null,
-          error: "Account is not verified. Please check your email & complete verification process.",
-          message: "Account is not verified. Please check your email & complete verification process.",
+          error:
+            "Account is not verified. Please check your email & complete verification process.",
+          message:
+            "Account is not verified. Please check your email & complete verification process.",
         });
       }
       // Check if account is locked
       const isLocked = await userRepository.isAccountLocked(user);
       if (isLocked) {
+        logger.info(
+          `Account locked. Please try again later or reset your password.`
+        );
         return res.status(401).json({
           success: false,
           data: null,
-          error: "Account locked. Please try again later or reset your password.",
-          message: "Account locked. Please try again later or reset your password.",
+          error:
+            "Account locked. Please try again later or reset your password.",
+          message:
+            "Account locked. Please try again later or reset your password.",
         });
       }
 
       // Check password
       const isPasswordValid = await user.correctPassword(password);
       if (!isPasswordValid) {
+        logger.info(`Invalid credentials Password`);
         await userRepository.incrementLoginAttempts(user._id.toString());
         return res.status(401).json({
           success: false,
@@ -352,7 +376,8 @@ export class AuthController {
       }
     } catch (err: unknown) {
       const error = err as IError;
-      console.error("Login error:", error);
+      console.error("Send OTP error:", error);
+      logger.error("Send OTP  error:", error);
       return res.status(500).json({
         success: false,
         data: null,
@@ -363,9 +388,12 @@ export class AuthController {
   }
 
   async refreshToken(req: Request, res: Response): Promise<any> {
+    const functionName = "refreshToken";
+    logger.info(`Coming into Controller ${controllerName}`);
+    logger.info(`Coming into function ${functionName}`);
     try {
       // Get refresh token from cookie
-      const refreshToken: string = req.cookies.refreshToken;
+      const refreshToken: string = req?.cookies?.refreshToken;
       logger.info("refreshToken: Received refresh token request");
 
       if (!refreshToken) {
@@ -393,7 +421,7 @@ export class AuthController {
       const decoded = verifyRefreshToken(refreshToken);
 
       // Find user
-      const user = await userRepository.findUserById(decoded.id);
+      const user = await userRepository?.findUserById(decoded.id);
       if (!user) {
         logger.error(`refreshToken: No user found with ID: ${decoded.id}`);
         return res.status(401).json({
@@ -429,12 +457,12 @@ export class AuthController {
 
       // Generate new tokens
       const newAccessToken = generateAccessToken({
-        id: user._id.toString(),
+        id: user?._id.toString(),
         role: "banker",
       });
 
       const newRefreshToken = generateRefreshToken({
-        id: user._id.toString(),
+        id: user?._id.toString(),
         role: "banker",
       });
 
@@ -484,9 +512,12 @@ export class AuthController {
   }
 
   async logout(req: Request, res: Response): Promise<any> {
+    const functionName = "logout";
+    logger.info(`Coming into Controller ${controllerName}`);
+    logger.info(`Coming into function ${functionName}`);
     try {
       // Get refresh token from cookie
-      const refreshToken: string | undefined = req.cookies.refreshToken;
+      const refreshToken: string | undefined = req?.cookies?.refreshToken;
 
       if (refreshToken) {
         try {
@@ -514,7 +545,7 @@ export class AuthController {
       }
 
       // Get access token from Authorization header
-      const authHeader: string | undefined = req.headers.authorization;
+      const authHeader: string | undefined = req?.headers?.authorization;
       if (authHeader?.startsWith("Bearer ")) {
         const accessToken = authHeader.split(" ")[1];
 
@@ -544,6 +575,9 @@ export class AuthController {
   }
 
   async forgotPassword(req: Request, res: Response): Promise<any> {
+    const functionName = "forgotPassword";
+    logger.info(`Coming into Controller ${controllerName}`);
+    logger.info(`Coming into function ${functionName}`);
     try {
       const { email } = req.body;
 
@@ -582,7 +616,8 @@ export class AuthController {
         success: true,
         data: null,
         error: null,
-        message: "Email has been sent to your registered email Id. Please follow the steps to reset your password",
+        message:
+          "Email has been sent to your registered email Id. Please follow the steps to reset your password",
         resetToken, // In production, don't send this in the response
       });
     } catch (err: unknown) {
@@ -599,6 +634,9 @@ export class AuthController {
   }
 
   async resetPassword(req: Request, res: Response): Promise<any> {
+    const functionName = "resetPassword";
+    logger.info(`Coming into Controller ${controllerName}`);
+    logger.info(`Coming into function ${functionName}`);
     try {
       const { token, password } = req.body;
       logger.info(
@@ -640,6 +678,9 @@ export class AuthController {
     }
   }
   async verifyEmail(req: Request, res: Response): Promise<any> {
+    const functionName = "verifyEmail";
+    logger.info(`Coming into Controller ${controllerName}`);
+    logger.info(`Coming into function ${functionName}`);
     try {
       const { token } = req.params;
       logger.info("verifyEmail: Received request with token:", token);
@@ -681,6 +722,9 @@ export class AuthController {
   }
 
   async resendVerificationEmail(req: Request, res: Response): Promise<any> {
+    const functionName = "resendVerificationEmail";
+    logger.info(`Coming into Controller ${controllerName}`);
+    logger.info(`Coming into function ${functionName}`);
     try {
       const { email } = req.body;
 
@@ -705,8 +749,10 @@ export class AuthController {
         return res.status(400).json({
           success: false,
           data: null,
-          error: "User is already active. Please login to continue. Or use forgot password if you forgot the password. Else please contact support",
-          message: "User is already active. Please login to continue. Or use forgot password if you forgot the password. Else please contact support",
+          error:
+            "User is already active. Please login to continue. Or use forgot password if you forgot the password. Else please contact support",
+          message:
+            "User is already active. Please login to continue. Or use forgot password if you forgot the password. Else please contact support",
         });
       }
 
@@ -729,7 +775,8 @@ export class AuthController {
         success: true,
         data: null,
         error: null,
-        message: "Done! We have resent an email with instructions on how to activate your account. Please check your inbox. If you still did not receive an email, please contact us at support@loandesk.com.",
+        message:
+          "Done! We have resent an email with instructions on how to activate your account. Please check your inbox. If you still did not receive an email, please contact us at support@loandesk.com.",
       });
     } catch (err: unknown) {
       const error = err as IError;
@@ -749,6 +796,9 @@ export class AuthController {
     res: Response,
     next: NextFunction
   ): Promise<any> {
+    const functionName = "googleAuth";
+    logger.info(`Coming into Controller ${controllerName}`);
+    logger.info(`Coming into function ${functionName}`);
     passport.authenticate("google", {
       scope: ["profile", "email"],
     })(req, res, next);
@@ -760,6 +810,9 @@ export class AuthController {
     res: Response,
     next: NextFunction
   ): Promise<any> {
+    const functionName = "googleCallback";
+    logger.info(`Coming into Controller ${controllerName}`);
+    logger.info(`Coming into function ${functionName}`);
     passport.authenticate("google", async (err: any, profile: any) => {
       if (err || !profile) {
         console.error("OAuth failed:", err);
@@ -773,7 +826,7 @@ export class AuthController {
       }
 
       try {
-        const email = profile.emails?.[0].value;
+        const email = profile?.emails?.[0].value;
         if (!email) {
           return res.status(401).json({
             success: false,
@@ -788,8 +841,8 @@ export class AuthController {
         if (!user) {
           // Create a new user
           user = await userRepository.createUser({
-            firstName: profile.name?.givenName || "Google",
-            lastName: profile.name?.familyName || "User",
+            firstName: profile?.name?.givenName || "Google",
+            lastName: profile?.name?.familyName || "User",
             email,
             password: "google_oauth_dummy_password", // dummy password
             active: true,
@@ -847,8 +900,11 @@ export class AuthController {
   }
 
   async changePassword(req: Request, res: Response): Promise<any> {
+    const functionName = "changePassword";
+    logger.info(`Coming into Controller ${controllerName}`);
+    logger.info(`Coming into function ${functionName}`);
     try {
-      const refreshToken = req.cookies.refreshToken;
+      const refreshToken = req?.cookies?.refreshToken;
 
       if (!refreshToken) {
         logger.error("changePassword:-Refresh token missing in cookies.");
@@ -918,7 +974,7 @@ export class AuthController {
         });
       }
 
-      const isMatch = await bcrypt.compare(
+      const isMatch = await bcrypt?.compare(
         oldPassword,
         updatePassword.password
       );
@@ -971,10 +1027,15 @@ export class AuthController {
     }
   }
   async login(req: Request, res: Response): Promise<any> {
+    const functionName = "login";
+    logger.info(`Coming into Controller ${controllerName}`);
+    logger.info(`Coming into function ${functionName}`);
+
     try {
       const { email, otp } = req.body;
       console.log("in login ");
       if (!email || !otp) {
+        logger.info(`Email and OTP are required`);
         return res.status(400).json({
           success: false,
           data: null,
@@ -984,6 +1045,7 @@ export class AuthController {
       }
       const user = await userRepository.findUserByEmail(email);
       if (!user) {
+        logger.info(`INvaild Credentials`);
         return res.status(401).json({
           success: false,
           data: null,
@@ -1076,11 +1138,115 @@ export class AuthController {
       }
     } catch (error) {
       console.error("Error in verifyOtp:", error);
+      logger.error("Error in verifyOtp:", error);
       return res.status(500).json({
         success: false,
         data: null,
         message: "Internal server error",
         error: "Internal server error",
+      });
+    }
+  }
+  async resendLoginOtp(req: Request, res: Response): Promise<any> {
+    try {
+      const { email } = req.body;
+      const functionName = "resendLoginOtp";
+      logger.info(`Coming into Controller ${controllerName}`);
+      logger.info(`Coming into function ${functionName}`);
+
+      // Find user
+      const user = await userRepository.findUserByEmail(email);
+      if (!user) {
+        logger.info(`Invalid credentials`);
+        return res.status(401).json({
+          success: false,
+          data: null,
+          error: "Cannot Process Request. Username does not exists",
+          message: "Cannot Process Request. Username does not exists",
+        });
+      }
+      if (user.isEmailVerified === false) {
+        logger.info(`Email is not verified, please verify your email.`);
+        return res.status(400).json({
+          success: false,
+          data: null,
+          error:
+            "Account is not verified. Please check your email & complete verification process.",
+          message:
+            "Account is not verified. Please check your email & complete verification process.",
+        });
+      }
+      // Check if account is locked
+      const isLocked = await userRepository.isAccountLocked(user);
+      if (isLocked) {
+        logger.info(
+          `Account locked. Please try again later or reset your password.`
+        );
+        return res.status(401).json({
+          success: false,
+          data: null,
+          error:
+            "Account locked. Please try again later or reset your password.",
+          message:
+            "Account locked. Please try again later or reset your password.",
+        });
+      }
+
+      // send otp
+
+      // Reset login attempts on successful login
+      await userRepository.resetLoginAttempts(user._id.toString());
+      const deviceInfo = extractDeviceInfo(req);
+      const phone = user.phone;
+      // Check if user already exists by phone or email
+      if (phone) {
+        const otp = await generateOTP(phone);
+        const requestId = await otpRepository.storeOTP(
+          phone,
+          otp,
+          user.id,
+          email,
+          "login"
+        );
+
+        // In production, send the OTP via SMS
+        // For development, we'll log it
+        logger.info(`Generated OTP for  existingUser  ${phone}: ${otp}`);
+
+        // Store device info temporarily
+        await deviceRepository.storeTemporaryDeviceInfo(requestId, deviceInfo);
+
+        // Store registration data temporarily in Redis
+        // await redisClient.set(
+        //   `login_${requestId}`,
+        //   JSON.stringify({
+        //     phone,
+        //     deviceInfo,
+        //   }),
+        //   { EX: 300 }
+        // ); // 5 minutes expiry
+
+        return res.status(200).json({
+          success: true,
+          message: `A text message with a 6-digit verification code was just sent to ${phone}`,
+          data: {
+            requestId,
+            expiresIn: 300,
+            // For development only, remove in production
+            otp: NODE_ENV === "development" ? otp : undefined,
+          },
+          error: null,
+        });
+      }
+    } catch (err: unknown) {
+      const error = err as IError;
+      logger.error("reSend OTP error:", error);
+      console.error("reSend OTP error:", error);
+      return res.status(500).json({
+        success: false,
+        data: null,
+        message: "Server error",
+        error: `error ${error.message}`,
       });
     }
   }
