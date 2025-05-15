@@ -6,5 +6,8 @@ export class BorrowerRepository {
     return borrower;
   }
 
+   async findBorrowerByUserId(userId: string): Promise<IBorrower | null> {
+    return await BorrowerModel.findOne({ userId }).populate('userId');
+  }
   // (Optional) add more methods here like getBorrowerById, updateBorrower, etc.
 }
