@@ -20,7 +20,7 @@ const ProtectedRoute = () => {
       handleLogoutData();
       removeCookie("keymonoUserData");
       // Redirect after logout
-      navigate("/login", { replace: true });
+      navigate("/sign-in", { replace: true });
     }
     // Set initial render to false after first useEffect call
     isInitialRender.current = false;
@@ -30,7 +30,7 @@ const ProtectedRoute = () => {
   if (userData) {
     return <Outlet />;
   } else {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/sign-in" replace />;
   }
 };
 

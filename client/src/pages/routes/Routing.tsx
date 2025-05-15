@@ -30,7 +30,7 @@ const Routing = () => {
                 theme="light"
             />
             <Routes>
-                <Route path="/" element={<Navigate to="/login" />} />
+                <Route path="/" element={<Navigate to="/sign-in" />} />
                 <Route element={<ProtectedRoute />}>
                     <Route element={<ProtectedLayout />}>
                         <Route path="/dashboard" element={<BankerDashboard />} />
@@ -41,9 +41,9 @@ const Routing = () => {
 
 
                 <Route element={<Layout />}>
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<BankerRegister />} />
-                    <Route path="/borrower-register" element={<BorrowerRegister />} />
+                    <Route path="/sign-in" element={<Login />} />
+                    <Route path="/sign-up" element={<BankerRegister />} />
+                    <Route path="/borrower-signup" element={<BorrowerRegister />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/resend-email" element={<ResendActivation />} />

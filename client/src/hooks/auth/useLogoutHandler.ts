@@ -22,7 +22,7 @@ export const useLogoutHandler = (navigate: NavigateFunction) => {
                 });
 
                 removeCookie("keymonoUserData");
-                navigate("/login");
+                navigate("/sign-in");
             } else {
                 setAlert({
                     type: "error",

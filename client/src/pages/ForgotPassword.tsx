@@ -66,7 +66,7 @@ const ForgotPassword: React.FC = () => {
                                     >SEND</button>
                                     <a className='btn-main focus:outline-0'
                                         onClick={() => {
-                                            navigate('/login')
+                                            navigate('/sign-in')
                                         }}
                                     >BACK TO LOGIN</a>
                                 </div>

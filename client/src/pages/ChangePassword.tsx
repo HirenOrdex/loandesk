@@ -100,7 +100,7 @@ const ChangePassword: React.FC = () => {
                         type={alert.type}
                         header={alert.header}
                         message={alert.message}
-                        navigation="/login"
+                        navigation="/sign-in"
                     />
                 )}
             </div>

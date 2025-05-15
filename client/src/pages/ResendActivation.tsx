@@ -68,7 +68,7 @@ const ResendActivation: React.FC = () => {
                                     >RESEND</button>
                                     <a className='custom-link mx-auto mb-6'
                                         onClick={() => {
-                                            navigate('/login')
+                                            navigate('/sign-in')
                                         }}
                                     >Click here for login</a>
                                 </div>

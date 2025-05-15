@@ -26,7 +26,7 @@ export const useResetPasswordHandler = (navigate: NavigateFunction) => {
                     type: "success",
                     message: result?.message
                 });
-                navigate("/login");
+                navigate("/sign-in");
             }
         } catch (error: unknown) {
             if (isIErrorResponse(error)) {

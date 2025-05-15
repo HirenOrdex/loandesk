@@ -116,7 +116,7 @@ const Login: React.FC = () => {
                                         className="custom-link mx-1"
                                         onClick={(e) => {
                                             e.preventDefault();
-                                            navigate('/register');
+                                            navigate('/sign-up');
                                         }}
                                     >
                                         Banker

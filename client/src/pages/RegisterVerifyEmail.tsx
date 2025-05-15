@@ -22,7 +22,7 @@ const RegisterVerifyEmail = () => {
                     type={alert.type}
                     header={alert.header}
                     message={alert.message}
-                    navigation="/login"
+                    navigation="/sign-in"
                 />
             )}
         </>
