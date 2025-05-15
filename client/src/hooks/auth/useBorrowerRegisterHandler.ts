@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { NavigateFunction } from "react-router-dom";
 import { AlertState, IBorrowerRegisterFormInput, IBorrowerRegisterResponse } from "../../types/auth";
 import { isIErrorResponse } from "../useIsIErrorResponse";
 import { useRegisterBorrowerMutation } from "../../services/authApi";
 
-export const useBorrowerRegisterHandler = (navigate: NavigateFunction) => {
+export const useBorrowerRegisterHandler = () => {
     const [loader, setLoader] = useState(false);
     const [alert, setAlert] = useState<AlertState | null>(null);
     const [registerBorrower] = useRegisterBorrowerMutation();
@@ -21,7 +20,6 @@ export const useBorrowerRegisterHandler = (navigate: NavigateFunction) => {
                 });
             console.log("Borrower registration successful:", result?.data);
             setDisplayPopup(true);
-            navigate("/login");
             }
         } catch (error) {
             console.error("Registration error:", error);

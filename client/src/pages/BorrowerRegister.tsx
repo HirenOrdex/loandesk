@@ -3,7 +3,6 @@ import AlertMessage from '../components/AlertMessage'
 import PasswordInput from '../components/PasswordInput'
 import { InputMask } from '@react-input/mask';
 import logo from '../assets/imgs/logo.png'
-import { useNavigate } from 'react-router-dom';
 import { Controller, useForm } from 'react-hook-form';
 import { IBorrowerRegisterFormInput } from '../types/auth';
 import { useBorrowerRegisterHandler } from '../hooks/auth/useBorrowerRegisterHandler';
@@ -31,7 +30,6 @@ const positions = [
 ];
 
 const BorrowerRegister: React.FC = () => {
-    const navigate = useNavigate();
     const {
         register,
         handleSubmit,
@@ -41,7 +39,7 @@ const BorrowerRegister: React.FC = () => {
         formState: { errors }
     } = useForm<IBorrowerRegisterFormInput>();
 
-    const { handleBorrowerRegister, displayPopup, alert, loader } = useBorrowerRegisterHandler(navigate);
+    const { handleBorrowerRegister, displayPopup, alert, loader } = useBorrowerRegisterHandler();
     const position = watch("position");
     const [captchaQuestion, setCaptchaQuestion] = useState('');
     const [captchaAnswer, setCaptchaAnswer] = useState<number | null>(null);
@@ -106,10 +104,10 @@ const BorrowerRegister: React.FC = () => {
                         <div className="card border-0 bg-white rounded">
                             {/* alert message */}
                             {
-                                alert && (
+                                (Object.keys(errors).length !== 0 || alert) && (
                                     <AlertMessage
-                                        type={alert.type}
-                                        message={alert.message}
+                                        type={alert?.type || "error"}
+                                        message={alert?.message || "Please fill out all the mandatory fields."}
                                     />
                                 )
                             }
@@ -121,7 +119,7 @@ const BorrowerRegister: React.FC = () => {
                                         type="email"
                                         id="email"
                                         {...register("email", {
-                                            required: "Email is required",
+                                            required: "Email Address is required",
                                             pattern: {
                                                 value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
                                                 message: "Please enter a valid email address",
@@ -158,7 +156,7 @@ const BorrowerRegister: React.FC = () => {
                                         name="confirmPassword"
                                         id="confirmPassword"
                                         registration={register("confirm_password", {
-                                            required: "Confirm password is required",
+                                            required: "Confirm Password is required",
                                             validate: (value) =>
                                                 value === watch("password") || "Confirm password does not match the password",
                                         })}
@@ -205,7 +203,7 @@ const BorrowerRegister: React.FC = () => {
                                     <input
                                         type="text"
                                         id="companyName"
-                                        {...register("coname", { required: "Company name is required" })}
+                                        {...register("coname", { required: "Company Name is required" })}
                                     />
                                     {errors.coname && <span className='error-msg'>{errors.coname.message}</span>}
                                 </div>
@@ -293,7 +291,7 @@ const BorrowerRegister: React.FC = () => {
                                 </div>
 
                                 <div className='flex'>
-                                    <button type='submit' className='btn-main my-5 mx-auto'>SIGN UP</button>
+                                    <button type='submit' className='btn-main my-12 mx-auto'>Sign Up</button>
                                 </div>
                             </form>
                         </div>
