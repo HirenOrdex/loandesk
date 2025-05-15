@@ -5,14 +5,14 @@ import MessageModal from "../models/MessageModal";
 import Loader from "../components/Loader";
 
 const RegisterVerifyEmail = () => {
-    const { token } = useParams();
+    const { userId, token } = useParams();
     const { handleVerifyEmail, alert } = useVerifyEmailHandler();
 
     useEffect(() => {
-        if (token) {
-            handleVerifyEmail(token);
+        if (userId && token) {
+            handleVerifyEmail(userId, token);
         }
-    }, [token]);
+    }, [userId, token]);
 
     return (
         <>

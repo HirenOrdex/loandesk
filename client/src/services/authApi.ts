@@ -70,8 +70,8 @@ export const authApi = createApi({
       }),
     }),
     verifyEmail: builder.mutation({
-      query: ({ token }) => ({
-        url: `/auth/verfiy-email/${token}`,
+      query: (data) => ({
+        url: `/auth/verfiy-email/${data?.userId}/${data?.token}`,
         method: "GET"
       }),
     }),

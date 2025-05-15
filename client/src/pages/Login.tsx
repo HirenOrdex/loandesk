@@ -102,7 +102,7 @@ const Login: React.FC = () => {
                                     </div>
                                     <a className='custom-link mx-1'
                                         onClick={() => {
-                                            navigate('/forgotpassword')
+                                            navigate('/forgot-password')
                                         }}
                                     >Forgot password?</a>
                                 </div>
@@ -135,7 +135,7 @@ const Login: React.FC = () => {
                                 <p className='text-center mb-6'>Don't receive an activation email?
                                     <a className='custom-link mx-1'
                                         onClick={() => {
-                                            navigate('/resendemail')
+                                            navigate('/resend-email')
                                         }}
                                     >Resend Now</a>
                                 </p>

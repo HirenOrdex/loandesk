@@ -35,7 +35,7 @@ const Routing = () => {
                     <Route element={<ProtectedLayout />}>
                         <Route path="/dashboard" element={<BankerDashboard />} />
                         <Route path="/profile" element={<Profile />} />
-                        <Route path="/changepassword" element={<ChangePassword />} />
+                        <Route path="/change-password" element={<ChangePassword />} />
                     </Route>
                 </Route>
 
@@ -44,12 +44,12 @@ const Routing = () => {
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<BankerRegister />} />
                     <Route path="/borrower-register" element={<BorrowerRegister />} />
-                    <Route path="/forgotpassword" element={<ForgotPassword />} />
-                    <Route path="/resendemail" element={<ResendActivation />} />
-                    <Route path="/twofactorcode" element={<TwoFactorCode />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route path="/resend-email" element={<ResendActivation />} />
+                    <Route path="/verify-code" element={<TwoFactorCode />} />
                 </Route>
-                <Route path="/verify-email/:token" element={<RegisterVerifyEmail />} />
+                <Route path="/verify-email/:userId/:token" element={<RegisterVerifyEmail />} />
             </Routes>
         </>
     )

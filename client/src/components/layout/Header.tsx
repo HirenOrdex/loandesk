@@ -105,7 +105,7 @@ const Header: React.FC = () => {
                                     </li>
                                     <li
                                         onClick={() => {
-                                            navigate('/changepassword')
+                                            navigate('/change-password')
                                         }}
                                     >
                                         <a className="block px-4 py-2" onClick={closeDropdown}>
@@ -177,7 +177,7 @@ const Header: React.FC = () => {
                                 </li>
                                 <li
                                     onClick={() => {
-                                        navigate('/changepassword')
+                                        navigate('/change-password')
                                     }}
                                 >
                                     <a className="block px-4 py-2">

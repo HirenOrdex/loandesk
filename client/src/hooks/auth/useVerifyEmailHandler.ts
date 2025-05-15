@@ -9,10 +9,14 @@ export const useVerifyEmailHandler = () => {
     const [alert, setAlert] = useState<IAlertType | null>(null); // ✅ define alert
     const [verifyEmail] = useVerifyEmailMutation();
 
-    const handleVerifyEmail = async (token: string) => {
+    const handleVerifyEmail = async (userId: string, token: string) => {
         setLoader(true);
         try {
-            const result: IVerifyEmailResponse = await verifyEmail({ token }).unwrap(); // ✅ simplified
+            let data: {userId: string, token: string} = {
+                userId,
+                token,
+            }
+            const result: IVerifyEmailResponse = await verifyEmail(data).unwrap();
             setAlert({
                 type: "success",
                 header: "Email Verification: Success",
