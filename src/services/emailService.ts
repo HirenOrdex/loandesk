@@ -133,7 +133,7 @@ export const sendWelcomeEmail = async (
           <h2>Welcome!</h2>
           <p>Hi ${name},</p>
           <p>Your email is verified and your account is active. Welcome aboard!</p>
-          <a href="${APP_URL}/login" style="background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px;">Go to Login</a>
+          <a href="${APP_URL}/sign-in" style="background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px;">Go to Login</a>
         </div>
       `,
     });
