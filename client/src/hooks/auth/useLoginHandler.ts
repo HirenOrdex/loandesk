@@ -17,7 +17,7 @@ export const useLoginHandler = (navigate: NavigateFunction) => {
                     type: "success",
                     message: result?.message
                 });
-                navigate("/twofactorcode", { state: { email: result?.data?.requestId } });
+                navigate("/twofactorcode", { state: { email: result?.data?.requestId, successMsg: result?.message } });
             }
         } catch (error: unknown) {
             if (isIErrorResponse(error)) {

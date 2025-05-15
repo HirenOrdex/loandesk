@@ -116,7 +116,7 @@ const BorrowerRegister: React.FC = () => {
                                 <div className="mb-3">
                                     <label htmlFor="email" className="mb-2">Email Address <span className='error-star'>*</span></label>
                                     <input
-                                        type="email"
+                                        type="text"
                                         id="email"
                                         {...register("email", {
                                             required: "Email Address is required",

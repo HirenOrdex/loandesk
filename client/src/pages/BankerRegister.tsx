@@ -69,7 +69,7 @@ const BankerRegister: React.FC = () => {
                                     <div className="mb-3">
                                         <label htmlFor="email">Email Address <span className='error-star'>*</span></label>
                                         <input
-                                            type="email"
+                                            type="text"
                                             id='email'
                                             {...register("email", {
                                                 required: "Email Address is required",

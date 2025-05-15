@@ -10,6 +10,8 @@ const TwoFactorCode: React.FC = () => {
     const navigate = useNavigate()
     const location = useLocation();
     const email = location.state?.email;
+    const successMsg = location.state?.successMsg;
+    console.log("successMsg", successMsg)
     const {
         register,
         handleSubmit,
@@ -37,7 +39,7 @@ const TwoFactorCode: React.FC = () => {
     }
     return (
         <>
-         {loader ? <Loader/> : null}
+            {loader ? <Loader /> : null}
             <header className='header-container'>
                 <h1 className='text-blue text-center'>Sign In</h1>
             </header>
@@ -47,10 +49,10 @@ const TwoFactorCode: React.FC = () => {
                         <h2 className='register-title pb-14'>Get your Sign In in 5 mins. Let's get started.</h2>
                         <div className="card border-0 bg-white rounded">
                             {
-                                alert && (
+                                (successMsg || alert) && (
                                     <AlertMessage
-                                        type={alert.type}
-                                        message={alert.message}
+                                        type={alert?.type || "success"}
+                                        message={alert?.message || successMsg}
                                     />
                                 )
                             }
