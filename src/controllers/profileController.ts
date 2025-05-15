@@ -60,7 +60,7 @@ export const getProfileById = async (
 
     if (role === "Banker") {
       const banker = await bankerRepository.findBankerByUserId(userId);
-
+      console.log("banker",banker)
       if (banker) {
         const address = banker.addressId
           ? await AddressModel.findById(banker.addressId)
