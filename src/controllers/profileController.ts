@@ -110,3 +110,86 @@ export const getProfileById = async (
     });
   }
 };
+
+export const updateProfileById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.params.id;
+
+    if (!userId) {
+      res.status(400).json({
+        success: false,
+        data: null,
+        message: "User ID is required.",
+        error: "Missing user ID.",
+      });
+      return;
+    }
+
+    const user = await userRepository.findUserById(userId);
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        data: null,
+        message: "User not found.",
+        error: "User does not exist.",
+      });
+      return;
+    }
+
+    const role = await userRepository.findRoleIdById(user.roleId.toString());
+
+    // Extract and separate user-related fields
+    const {
+      firstName,
+      lastName,
+      middleName,
+      phone,
+      cellPhone,
+      email2,
+      linkedinUrl,
+      websiteUrl,
+      workPhone,
+      ...rest
+    } = req.body;
+
+    // Update UserModel (core user fields)
+    const updatedUser = await userRepository.updateUserById(userId, {
+      firstName,
+      lastName,
+      phone: phone || cellPhone,
+      email2,
+       linkedinUrl,
+      websiteUrl,
+      workPhone
+    });
+
+    // Update role-specific table
+    let updatedProfile: any = null;
+
+    if (role === "Banker") {
+      updatedProfile = await bankerRepository.updateBankerByUserId(userId, rest);
+    } else if (role === "Borrower") {
+      updatedProfile = await borrowerRepository.updateBorrowerByUserId(userId, rest);
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        user: updatedUser,
+        profile: updatedProfile,
+      },
+      message: "Profile updated successfully.",
+      error: null,
+    });
+
+  } catch (error: any) {
+    logger.error(`Error updating profile by ID: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      data: null,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+

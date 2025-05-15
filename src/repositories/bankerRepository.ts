@@ -154,6 +154,15 @@ export class BankerRepossitory {
     throw new Error(`Error fetching banker by user ID: ${err.message}`);
   }
 }
+
+async updateBankerByUserId(userId: string, updateData: any) {
+  return await BankerRegistrationModel.findOneAndUpdate( { userId },
+  { $set: updateData },
+  { new: true });
+}
+
+
+
 }
 
 

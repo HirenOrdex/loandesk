@@ -9,5 +9,10 @@ export class BorrowerRepository {
    async findBorrowerByUserId(userId: string): Promise<IBorrower | null> {
     return await BorrowerModel.findOne({ userId }).populate('userId');
   }
+
+  async updateBorrowerByUserId(userId: string, updateData: Partial<IBorrower>) {
+  return await BorrowerModel.findOneAndUpdate({ userId }, updateData, { new: true });
+}
+
   // (Optional) add more methods here like getBorrowerById, updateBorrower, etc.
 }
