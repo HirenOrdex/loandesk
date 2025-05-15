@@ -14,6 +14,10 @@ import ChangePassword from "../ChangePassword";
 import BorrowerRegister from "../BorrowerRegister";
 import RegisterVerifyEmail from "../RegisterVerifyEmail";
 import ResetPassword from "../ResetPassword";
+import BorrowerDashboard from "../borrower/BorrowerDashboard";
+import CoiDashboard from "../coi/CoiDashboard";
+import AdminDashboard from "../admin/AdminDashboard";
+import GuarantorDashboard from "../Guarantor/GuarantorDashboard";
 const Routing = () => {
     return (
         <>
@@ -36,6 +40,10 @@ const Routing = () => {
                         <Route path="/dashboard" element={<BankerDashboard />} />
                         <Route path="/profile" element={<Profile />} />
                         <Route path="/change-password" element={<ChangePassword />} />
+                        <Route path="/borrower" element={<BorrowerDashboard />} />
+                        <Route path="/coi" element={<CoiDashboard />} />
+                        <Route path="/admin" element={<AdminDashboard />} />
+                        <Route path="/guarantor" element={<GuarantorDashboard />} />
                     </Route>
                 </Route>
 

@@ -4,6 +4,7 @@ import { AlertState, ILoginResponse, IOTPFormInput, IResendOTPFormInput } from "
 import { useResendOTPMutation, useVerifyOTPMutation } from "../../services/authApi";
 import { setCookie } from "../../services/commonServices/cookie";
 import { isIErrorResponse } from "../useIsIErrorResponse";
+import { useRedirectDashboard } from "../useRedirectDashboard";
 
 export const useOTPHandler = (navigate: NavigateFunction) => {
     const [loader, setLoader] = useState(false);
@@ -21,7 +22,8 @@ export const useOTPHandler = (navigate: NavigateFunction) => {
                     type: "success",
                     message: result?.message
                 });
-                navigate("/dashboard");
+                // navigate("/dashboard");
+                useRedirectDashboard(result?.data?.user?.role, navigate);
             }
         } catch (error: unknown) {
             if (isIErrorResponse(error)) {

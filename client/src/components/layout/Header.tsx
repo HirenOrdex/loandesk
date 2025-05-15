@@ -9,8 +9,13 @@ import "../../assets/css/header.css"; // Import the CSS file
 import { CiMenuBurger } from "react-icons/ci";
 import { useNavigate } from "react-router-dom";
 import { useLogoutHandler } from "../../hooks/auth/useLogoutHandler";
+import { getCookie } from "../../services/commonServices/cookie";
+import { useDispatch } from "react-redux";
+import { IUserData } from "../../types/auth";
 
 const Header: React.FC = () => {
+    const dispatch = useDispatch();
+    const userData: IUserData | null = getCookie("keymonoUserData", dispatch)
     const [isMenuOpen, setIsMenuOpen] = useState(false); // for sidebar's hamburger menu
     const [menuOpen, setMenuOpen] = useState(false);     // for sidebar's dropdown
     const navigate = useNavigate();
@@ -87,7 +92,7 @@ const Header: React.FC = () => {
                                 {/* Profile Button */}
                                 <a className="dashboardicons cursor-pointer" onClick={toggleDropdown}>
                                     <img src={profileicon} alt="Profile" className="icon-round" />
-                                    Vruddhi Shah
+                                    {userData?.firstName}
                                 </a>
 
                                 {/* Dropdown */}
@@ -162,7 +167,7 @@ const Header: React.FC = () => {
                         <div className="relative group">
                             <a className="dashboardicons cursor-pointer">
                                 <img src={profileicon} alt="Profile" className="icon-round" />
-                                Vruddhi Shah
+                                {userData?.firstName}
                             </a>
                             {/* Dropdown Menu */}
                             <ul className="profile-dropdown-menu group-hover:block hidden">

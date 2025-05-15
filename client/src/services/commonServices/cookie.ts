@@ -1,6 +1,7 @@
 import Cookies from "js-cookie";
 import LZString from "lz-string";
 import { handleUserLogout } from "./utilities";
+import { IUserData } from "../../types/auth";
 
 export const setCookie = (
     name: string,
@@ -20,7 +21,7 @@ export const getCookie = (
     name: string,
     dispatch?: any,
     showToast: boolean = false
-  ): string | null => {
+  ): IUserData | null => {
     const handleLogoutData = handleUserLogout(dispatch,showToast);
   
     // Function to validate the cookie value
@@ -51,7 +52,7 @@ export const getCookie = (
           cookieData?.trim()
         );
         if (validateCookieValue(decompressedValue)) {
-          return JSON?.parse(decompressedValue);
+          return JSON?.parse(decompressedValue!) as IUserData;
         } else {
           console.log("Invalid cookie value after decompression");
           handleLogoutData();

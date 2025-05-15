@@ -175,3 +175,12 @@ export interface IVerifyEmailResponse {
         requestId: string;
     };
 }
+
+export interface IUserData {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: 'Admin' | 'Banker' | 'Borrower' | 'Coi' | 'Guarantor'; // Add other roles as needed
+    accessToken: string;
+}
