@@ -1,6 +1,7 @@
 import React from 'react'
 import './App.css'
 import Routing from './pages/routes/Routing'
+import NavigateToTop from './components/NavigateToTop'
 
 const App: React.FC = () => {
 
@@ -8,6 +9,7 @@ const App: React.FC = () => {
     <div>
       {/* public screens */}
       {/* <Layout /> */}
+      <NavigateToTop />
       <Routing />
       {/* protected screens */}
       {/* <Header />
