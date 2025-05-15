@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import PasswordInput from '../components/PasswordInput'
 import { useForm } from 'react-hook-form'
 import { useChangePasswordHandler } from '../hooks/auth/useChangePasswordHandler'
@@ -22,10 +22,17 @@ const ChangePassword: React.FC = () => {
         alert,
         loader
     } = useChangePasswordHandler();
+    const [showModal, setShowModal] = useState<boolean>(false);
+
     const newPassword = watch('newPassword')
     const onSubmit = (data: IChangePassword) => {
         handleChangePassword(data)
+        setShowModal(true);
     }
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+    };
 
     return (
         <>
@@ -95,14 +102,15 @@ const ChangePassword: React.FC = () => {
                     </div>
                 </form>
 
-                {alert && (
+                {alert && showModal && (
                     <MessageModal
                         type={alert.type}
                         header={alert.header}
                         message={alert.message}
-                        navigation="/sign-in"
+                        onClose={handleCloseModal}
                     />
                 )}
+                
             </div>
         </>
     )

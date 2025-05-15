@@ -1,16 +1,19 @@
 import React from 'react'
 import Footer from '../components/layout/Footer'
-import { Navigate, Outlet } from 'react-router-dom'
+import { Outlet, useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux';
 import { getCookie } from '../services/commonServices/cookie';
 import BackToTopButton from '../components/BackToTopButton';
+import { useRedirectDashboard } from '../hooks/useRedirectDashboard';
+import { IUserData } from '../types/auth';
 
 const Layout: React.FC = () => {
   const dispatch = useDispatch();
-  const userData = getCookie("keymonoUserData", dispatch)
+  const navigate = useNavigate();
+  const userData: IUserData | null = getCookie("keymonoUserData", dispatch)
 
   if (userData) {
-    return <Navigate to="/dashboard" />
+    useRedirectDashboard(userData?.role || "", navigate);
   } else {
     return (
       <>

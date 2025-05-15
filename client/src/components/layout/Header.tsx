@@ -12,6 +12,7 @@ import { useLogoutHandler } from "../../hooks/auth/useLogoutHandler";
 import { getCookie } from "../../services/commonServices/cookie";
 import { useDispatch } from "react-redux";
 import { IUserData } from "../../types/auth";
+import { useRedirectDashboard } from "../../hooks/useRedirectDashboard";
 
 const Header: React.FC = () => {
     const dispatch = useDispatch();
@@ -70,7 +71,7 @@ const Header: React.FC = () => {
 
                             <a className="dashboardicons"
                                 onClick={() => {
-                                    navigate('/dashboard')
+                                    useRedirectDashboard(userData?.role || "", navigate);
                                 }}
                             >
                                 <img src={dashboard} alt="Dashboard" className="icon-size" />Dashboard
@@ -142,7 +143,7 @@ const Header: React.FC = () => {
                         {/* Dashboard */}
                         <a className="dashboardicons"
                             onClick={() => {
-                                navigate('/dashboard')
+                                useRedirectDashboard(userData?.role || "", navigate);
                             }}
                         >
                             <img src={dashboard} alt="Dashboard" className="icon-size" />Dashboard

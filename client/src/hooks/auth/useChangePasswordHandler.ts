@@ -3,19 +3,16 @@ import { IChangePassword, ILoginResponse } from "../../types/auth";
 import { useChangePasswordMutation } from "../../services/authApi";
 import { isIErrorResponse } from "../useIsIErrorResponse";
 import { IAlertType } from "../../types/common";
-import { handleUserLogout } from "../../services/commonServices/utilities";
-import { useDispatch } from "react-redux";
 
 export const useChangePasswordHandler = () => {
     const [loader, setLoader] = useState(false);
     const [alert, setAlert] = useState<IAlertType | null>(null);
     const [changePassword] = useChangePasswordMutation();
-    const dispatch = useDispatch()
     const handleChangePassword = async (data: IChangePassword) => {
         setLoader(true);
         try {
-            const { oldPassword, newPassword } = data; // destructure only the required field
-            const result: ILoginResponse = await changePassword({ oldPassword, newPassword })?.unwrap();
+            const { oldPassword, newPassword, confirmPassword } = data; // destructure only the required field
+            const result: ILoginResponse = await changePassword({ oldPassword, newPassword, confirmPassword })?.unwrap();
             if ('data' in result) {
                 setAlert({
                     type: "success",
@@ -23,7 +20,7 @@ export const useChangePasswordHandler = () => {
                     message: result?.message
                 });
                 setLoader(false);
-                handleUserLogout(dispatch)();
+                // handleUserLogout(dispatch)();
             }
         } catch (error: unknown) {
             if (isIErrorResponse(error)) {
