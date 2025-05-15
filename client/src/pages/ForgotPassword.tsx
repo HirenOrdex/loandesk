@@ -47,6 +47,7 @@ const ForgotPassword: React.FC = () => {
                                         type="email"
                                         className=""
                                         id="email"
+                                        placeholder="Username or Email Address"
                                         {...register("email", {
                                             required: "Contact Email is required",
                                             pattern: {

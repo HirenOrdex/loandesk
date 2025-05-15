@@ -195,7 +195,7 @@ const Header: React.FC = () => {
                                     </a>
                                 </li>
                                 <li>
-                                    <a className="block px-4 py-2">
+                                    <a className="block px-4 py-2" onClick={handleLogout}>
                                         Logout
                                     </a>
                                 </li>

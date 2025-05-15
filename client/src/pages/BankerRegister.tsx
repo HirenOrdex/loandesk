@@ -8,6 +8,7 @@ import { InputMask } from '@react-input/mask';
 import RegistrationModal from '../models/RegistrationModal';
 import AlertMessage from '../components/AlertMessage';
 import { IBankerRegisterFormInput } from '../types/auth';
+import Loader from '../components/Loader';
 
 const specialityOptions = [
     { label: 'SBA', value: 'SBA' },
@@ -38,7 +39,7 @@ const BankerRegister: React.FC = () => {
 
     return (
         <>
-            {loader ? <div className='loader'></div> : null}
+            {loader ? <Loader /> : null}
             <header className='header-container'>
                 <h1 className='text-blue text-center'>Banker</h1>
             </header>
@@ -71,7 +72,7 @@ const BankerRegister: React.FC = () => {
                                             type="email"
                                             id='email'
                                             {...register("email", {
-                                                required: "Email is required",
+                                                required: "Email Address is required",
                                                 pattern: {
                                                     value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
                                                     message: "Please enter a valid email address",
@@ -131,7 +132,7 @@ const BankerRegister: React.FC = () => {
                                     <h2 className='text-3xl text-(--darkgray) mb-3'>Contact Information</h2>
                                     <div className="mb-3">
                                         <label htmlFor="firstName">Banker's First Name <span className='error-star'>*</span></label>
-                                        <input id='firstName' {...register("firstName", { required: "Banker's First Name is required" })} />
+                                        <input id='firstName' {...register("firstName", { required: "First Name is required" })} />
                                         {errors.firstName && <span className='error-msg'>{errors.firstName.message}</span>}
                                     </div>
 
@@ -142,7 +143,7 @@ const BankerRegister: React.FC = () => {
 
                                     <div className="mb-3">
                                         <label htmlFor="lastName">Banker's Last Name <span className='error-star'>*</span></label>
-                                        <input id='lastName' {...register("lastName", { required: "Banker's Last Name is required" })} />
+                                        <input id='lastName' {...register("lastName", { required: "Last Name is required" })} />
                                         {errors.lastName && <span className='error-msg'>{errors.lastName.message}</span>}
                                     </div>
 
@@ -192,7 +193,7 @@ const BankerRegister: React.FC = () => {
                                         <Controller
                                             control={control}
                                             name="areaOfSpecialty"
-                                            rules={{ required: "Area of Specialty is required" }}
+                                            rules={{ required: "Please select Area of specialty" }}
                                             render={({ field }) => (
                                                 <Select
                                                     multi
@@ -205,8 +206,8 @@ const BankerRegister: React.FC = () => {
                                                     onChange={(values) =>
                                                         field.onChange(values.map(v => v.value).join(', '))
                                                     }
-                                                    // onSelect={() => { }}
-                                                    // onDeselect={() => { }}
+                                                // onSelect={() => { }}
+                                                // onDeselect={() => { }}
                                                 />
                                             )}
                                         />
