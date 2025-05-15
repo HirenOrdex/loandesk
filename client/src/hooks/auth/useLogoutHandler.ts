@@ -43,7 +43,7 @@ export const useLogoutHandler = (navigate: NavigateFunction) => {
 
     return {
         handleLogout,
-        // loader,
-        // alert,
+        loader,
+        alert,
     };
 };

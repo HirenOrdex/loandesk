@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { IResendEmailFormInput } from '../types/auth'
 import { useResendEmail } from '../hooks/auth/useResendEmail'
+import Loader from '../components/Loader'
 
 const ResendActivation: React.FC = () => {
     const navigate = useNavigate()
@@ -14,11 +15,13 @@ const ResendActivation: React.FC = () => {
     } = useForm<IResendEmailFormInput>();
     const {
         handleResendEmail,
-        alert
+        alert,
+        loader
     } = useResendEmail();
     const onSubmit = (data: IResendEmailFormInput) => handleResendEmail(data);
     return (
         <>
+            {loader ? <Loader /> : null}
             <header className='header-container'>
                 <h1 className='text-blue text-center'>Resend Email</h1>
             </header>
