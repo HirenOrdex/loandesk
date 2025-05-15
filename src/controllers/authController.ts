@@ -6,6 +6,7 @@ import {
   verifyRefreshToken,
   addTokenToBlacklist,
   isTokenBlacklisted,
+  verifyAccessToken,
 } from "../utils/jwtUtils";
 import nodeCacheClient from "../utils/nodeCacheClient";
 import bcrypt from "bcryptjs";
@@ -42,11 +43,11 @@ export class AuthController {
     logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
 
     const type = req?.query?.type;
-     logger.info(`[${controllerName}] → ${functionName} → Start`);
-     logger.debug(`Request Query: ${JSON.stringify(req.query)}`);
-     logger.debug(`Request Body: ${JSON.stringify(req.body)}`);
-     console.log(`▶ Registering ${type} - Email: ${req?.body?.email}`);
-     console.debug(`Request Body: ${JSON.stringify(req.body)}`);
+    logger.info(`[${controllerName}] → ${functionName} → Start`);
+    logger.debug(`Request Query: ${JSON.stringify(req.query)}`);
+    logger.debug(`Request Body: ${JSON.stringify(req.body)}`);
+    console.log(`▶ Registering ${type} - Email: ${req?.body?.email}`);
+    console.debug(`Request Body: ${JSON.stringify(req.body)}`);
 
     try {
       const { email, password, confirm_password } = req?.body;
@@ -59,8 +60,8 @@ export class AuthController {
         return res.status(409).json({
           success: false,
           data: null,
-          message:"The email address entered is already registered. Please try again with new email or contact the support team.",
-          error:"The email address entered is already registered. Please try again with new email or contact the support team.",
+          message: "The email address entered is already registered. Please try again with new email or contact the support team.",
+          error: "The email address entered is already registered. Please try again with new email or contact the support team.",
         });
       }
       if (password !== confirm_password) {
@@ -157,10 +158,10 @@ export class AuthController {
             newUser?._id.toString(),
             emailVerificationToken
           );
-          await sendVerificationEmail(email, emailVerificationToken);
+          await sendVerificationEmail(newUser?._id?.toString(), email, emailVerificationToken);
           logger.info(`Banker created: ${email}`);
           console.log(`Banker created: ${email}`);
-    
+
           return res.status(201).json({
             success: true,
             data: {
@@ -251,7 +252,7 @@ export class AuthController {
             newUser?._id.toString(),
             emailVerificationToken
           );
-          await sendVerificationEmail(email, emailVerificationToken);
+          await sendVerificationEmail(newUser?._id?.toString(), email, emailVerificationToken);
 
           return res.status(201).json({
             success: true,
@@ -547,7 +548,7 @@ export class AuthController {
 
           // Invalidate refresh token in database
           await userRepository.updateRefreshToken(decoded.id, null);
-           nodeCacheClient.del(`user_${decoded.id.toString()}`);
+          nodeCacheClient.del(`user_${decoded.id.toString()}`);
           logger.info(`logout: Deleted cached data for user ID: ${decoded.id}`);
 
           // Add refresh token to blacklist
@@ -700,21 +701,11 @@ export class AuthController {
     const functionName = "verifyEmail";
     logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
     try {
-      const { token } = req?.params;
+      const { userId, token } = req.params;
+      logger.info(`verifyEmail: Received request for userId: ${userId} with token: ${token}`);
       logger.info("verifyEmail: Received request with token:", token);
       // Find user by verification token
-      const user = await userRepository.findUserByEmailVerificationToken(token);
-      if (!user) {
-        logger.error("verifyEmail: Invalid or expired token");
-        return res.status(400).json({
-          success: false,
-          data: null,
-          error: "Invalid or expired verification token",
-          message: "Invalid or expired verification token",
-        });
-      }
-      const userId = user?._id;
-      const isAlreadyVerified = await userRepository.isEmailAlreadyVerified(
+        const isAlreadyVerified = await userRepository.isEmailAlreadyVerified(
         userId.toString()
       );
 
@@ -726,6 +717,17 @@ export class AuthController {
           message: "Email already verified.",
         });
       }
+      const user = await userRepository.findUserByEmailVerificationToken(token);
+      if (!user) {
+        logger.error("verifyEmail: Invalid or expired token");
+        return res.status(400).json({
+          success: false,
+          data: null,
+          error: "Invalid or expired verification token",
+          message: "Invalid or expired verification token",
+        });
+      }
+   
       // Update user status to active and mark email as verified
       await userRepository.verifyEmail(user?._id.toString());
       logger.info(
@@ -795,7 +797,7 @@ export class AuthController {
       );
 
       // Send verification email``
-      await sendVerificationEmail(email, emailVerificationToken);
+      await sendVerificationEmail(user?._id?.toString(), email, emailVerificationToken);
       logger.info(
         `Email: ${email}: resendVerificationEmail: Verification email sent to ${email}`
       );
@@ -877,7 +879,7 @@ export class AuthController {
           });
 
           const verificationToken = generateEmailVerificationToken();
-          await sendVerificationEmail(email, verificationToken); // optional
+          await sendVerificationEmail(user?._id?.toString(), email, verificationToken); // optional
         }
 
         const accessToken = generateAccessToken({
@@ -930,8 +932,17 @@ export class AuthController {
     const functionName = "changePassword";
     logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
     try {
-      const refreshToken = req?.cookies?.refreshToken;
-
+      const authHeader = req.header("authorization");
+      if (!authHeader?.startsWith("Bearer ")) {
+        logger.warn("Authorization header missing or invalid.");
+        return res
+          .status(401)
+          .json({
+            success: false,
+            message: "Unauthorized: Invalid token format.",
+          });
+      }
+      const refreshToken = authHeader.split(" ")[1];
       if (!refreshToken) {
         logger.error("changePassword:-Refresh token missing in cookies.");
         console.error("changePassword:-Refresh token missing in cookies.");
@@ -945,7 +956,7 @@ export class AuthController {
       // Verify token and extract userId
       let decoded: any;
       try {
-        decoded = verifyRefreshToken(refreshToken); // This should return an object with `id`
+        decoded = verifyAccessToken(refreshToken);
       } catch (err) {
         logger.error("changePassword:-Invalid refresh token.");
         console.error("changePassword:-Invalid refresh token.");
@@ -969,7 +980,7 @@ export class AuthController {
           message: "Email is not verified, please verify your email.",
         });
       }
-      const { oldPassword, newPassword } = req.body;
+      const { oldPassword, newPassword, confirm_password } = req.body;
       if (!(oldPassword && newPassword)) {
         logger.error(
           "changePassword: old password, and new password are required"
@@ -984,7 +995,28 @@ export class AuthController {
           message: "User ID, old password, and new password are required.",
         });
       }
-
+      if (newPassword !== confirm_password) {
+        logger.info(
+          `UserId:${userId} confirm Password: ${confirm_password} and Password: ${newPassword} Should be same`
+        );
+        return res.status(400).json({
+          success: false,
+          data: null,
+          message: `confirm Password and Password Should be same`,
+          error: `confirm Password and Password Should be same`,
+        });
+      }
+      if (newPassword === oldPassword) {
+        logger.info(
+          `UserId:${userId} old Password: ${oldPassword} and Password: ${newPassword} Should not be  same`
+        );
+        return res.status(400).json({
+          success: false,
+          data: null,
+          message: `newPassword and oldPassword Should not be same`,
+          error: `newPassword and oldPassword Should not be same`,
+        });
+      }
       //
       const updatePassword: UpdateUser | null = await UserModel.findOne({
         _id: userId,

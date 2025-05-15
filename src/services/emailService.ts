@@ -59,11 +59,12 @@ const sendEmail = async (
 };
 
 export const sendVerificationEmail = async (
+  userId:string,
   email: string,
   token: string
 ): Promise<void> => {
   try {
-    const verificationUrl = createVerificationUrl(token, APP_URL);
+    const verificationUrl = createVerificationUrl(userId,token, APP_URL);
 
     await sendEmail({
       from: SMTP_USER || '"Support" <support@example.com>',
