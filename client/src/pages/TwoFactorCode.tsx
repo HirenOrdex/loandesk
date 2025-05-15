@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { IOTPFormInput } from '../types/auth';
 import { useForm } from 'react-hook-form';
 import { useOTPHandler } from '../hooks/auth/useOTPHandler';
+import Loader from '../components/Loader';
 
 const TwoFactorCode: React.FC = () => {
     const navigate = useNavigate()
@@ -17,7 +18,8 @@ const TwoFactorCode: React.FC = () => {
     const {
         handleOTPSubmit,
         handleResendOTP,
-        alert
+        alert,
+        loader
     } = useOTPHandler(navigate);
 
     const onSubmit = (data: IOTPFormInput) => {
@@ -35,6 +37,7 @@ const TwoFactorCode: React.FC = () => {
     }
     return (
         <>
+         {loader ? <Loader/> : null}
             <header className='header-container'>
                 <h1 className='text-blue text-center'>Sign In</h1>
             </header>

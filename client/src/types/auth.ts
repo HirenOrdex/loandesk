@@ -63,13 +63,18 @@ export interface IResendOTPFormInput {
 }
 export interface IResetPasswordFormInput {
     password: string;
-    token:string;
+    token: string;
     confirmPassword?: string;
 }
 export interface IForgotResponse {
     success: boolean;
     error: string;
     message: string;
+}
+export interface IChangePassword {
+    oldPassword: string
+    newPassword: string
+    confirmPassword?: string
 }
 
 export interface IForgotFormInput {
@@ -100,7 +105,7 @@ export interface IBankerRegisterFormInput {
     phone: string;
     title: string;
     areaOfSpecialty: string;
-    address: IAddress[]; 
+    address: IAddress[];
     bankType: string;
     assetSize: string;
 }
@@ -127,7 +132,7 @@ export interface IBankerRegisterResponse {
         email: string;
         name: string;
     };
-    error: any; 
+    error: any;
 }
 
 export interface IBorrowerRegisterResponse {
@@ -157,9 +162,9 @@ export interface AlertState {
 export interface IUserLogin {
     email: string | null,
     password: string | null,
-    accessToken:string|null,
-    userId:string | null,
-    refreshToken : string | null,
+    accessToken: string | null,
+    userId: string | null,
+    refreshToken: string | null,
 }
 
 export interface IVerifyEmailResponse {

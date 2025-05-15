@@ -5,6 +5,7 @@ import { IResetPasswordFormInput } from '../types/auth'
 import { useResetPasswordHandler } from '../hooks/auth/useResetPasswordHandler'
 import { useNavigate } from 'react-router-dom'
 import AlertMessage from '../components/AlertMessage'
+import Loader from '../components/Loader'
 
 const ResetPassword: React.FC = () => {
     const {
@@ -17,7 +18,8 @@ const ResetPassword: React.FC = () => {
     const navigate = useNavigate()
     const {
         handleResetPassword,
-        alert
+        alert,
+        loader
     } = useResetPasswordHandler(navigate);
 
     const onSubmit = (data: IResetPasswordFormInput) => {
@@ -27,6 +29,7 @@ const ResetPassword: React.FC = () => {
 
     return (
         <>
+            {loader ? <Loader /> : null}
             <header className='header-container'>
                 <h1 className='text-blue text-center'>Reset Password</h1>
             </header>

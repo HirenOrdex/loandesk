@@ -12,6 +12,7 @@ const BASE_URL: string = import.meta.env.VITE_REACT_BASE_URL as string;
 
 export const baseQuery = fetchBaseQuery({
   baseUrl: `${BASE_URL}`,
+  credentials: 'include',
   prepareHeaders: (headers, { extraOptions }) => {
     // Define extraOptions with proper type
     const options = extraOptions as { dispatch?: typeof store.dispatch; resourcename?: string } | undefined;
@@ -28,7 +29,7 @@ export const baseQuery = fetchBaseQuery({
       headers.set('Authorization', `Bearer ${token}`);
     }
     // if (userData?.refreshToken) {
-    //   headers.set('ref_token', userData.refreshToken);
+    //   headers.set('refreshToken', userData.refreshToken);
     // }
     // if (userPolicy?.roleId) {
     //   headers.set('roleid', userPolicy.roleId);

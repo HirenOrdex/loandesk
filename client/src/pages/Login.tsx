@@ -8,6 +8,7 @@ import { getCookie } from '../services/commonServices/cookie'
 import { useDispatch } from 'react-redux'
 import PasswordInput from '../components/PasswordInput'
 import AlertMessage from '../components/AlertMessage'
+import Loader from '../components/Loader'
 
 const Login: React.FC = () => {
     const navigate = useNavigate()
@@ -19,7 +20,8 @@ const Login: React.FC = () => {
     } = useForm<ILoginFormInput>();
     const {
         handleLogin,
-        alert
+        alert,
+        loader
     } = useLoginHandler(navigate);
     const userData = getCookie("keymonoUserData", dispatch)
     console.log("userData", userData)
@@ -27,6 +29,7 @@ const Login: React.FC = () => {
     const onSubmit = (data: ILoginFormInput) => handleLogin(data);
     return (
         <>
+            {loader ? <Loader/> : null}
             <header className='header-container'>
                 <h1 className='text-blue text-center'>Sign In</h1>
             </header>
@@ -41,7 +44,7 @@ const Login: React.FC = () => {
                                     <AlertMessage
                                         type={alert.type}
                                         message={alert.message}
-                                    /> 
+                                    />
                                 )
                             }
                             {/* continue with google */}
@@ -109,7 +112,7 @@ const Login: React.FC = () => {
                                     >SIGN IN</button>
                                 </div>
                                 <p className='text-center mb-8'>Don't have an account? Sign up as
-                                <a
+                                    <a
                                         className="custom-link mx-1"
                                         onClick={(e) => {
                                             e.preventDefault();

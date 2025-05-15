@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { IForgotFormInput } from '../types/auth'
 import { useForgotPasswordHandler } from '../hooks/auth/useForgotPasswordHandler'
+import Loader from '../components/Loader'
 
 const ForgotPassword: React.FC = () => {
     const navigate = useNavigate()
@@ -14,12 +15,14 @@ const ForgotPassword: React.FC = () => {
     } = useForm<IForgotFormInput>();
     const {
         handleForgotPassword,
-        alert
+        alert,
+        loader
     } = useForgotPasswordHandler();
 
     const onSubmit = (data: IForgotFormInput) => handleForgotPassword(data);
     return (
         <>
+            {loader ? <Loader /> : null}
             <header className='header-container'>
                 <h1 className='text-blue text-center'>Forgot Password</h1>
             </header>
