@@ -961,7 +961,7 @@ export class AuthController {
           message: "Email is not verified, please verify your email.",
         });
       }
-      const { oldPassword, newPassword, confirm_password } = req.body;
+      const { oldPassword, newPassword, confirmPassword } = req.body;
       if (!(oldPassword && newPassword)) {
         logger.error("changePassword: old password, and new password are required"
         );
@@ -974,14 +974,15 @@ export class AuthController {
           message: "User ID, old password, and new password are required.",
         });
       }
-      if (newPassword !== confirm_password) {
-        logger.info(`UserId:${userId} confirm Password: ${confirm_password} and Password: ${newPassword} Should be same`
+      if (newPassword !== confirmPassword) {
+        logger.info(
+          `UserId:${userId} Password: ${newPassword} and Confirm Password: ${confirmPassword} should be same`
         );
         return res.status(400).json({
           success: false,
           data: null,
-          message: `confirm Password and Password Should be same`,
-          error: `confirm Password and Password Should be same`,
+          message: `Password and Confirm Password should be same`,
+          error: `Password and Confirm Password should be same`,
         });
       }
       if (newPassword === oldPassword) {
