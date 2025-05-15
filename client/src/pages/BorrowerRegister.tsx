@@ -293,7 +293,7 @@ const BorrowerRegister: React.FC = () => {
                                 </div>
 
                                 <div className='flex'>
-                                    <button type='submit' className='btn-main my-12 mx-auto'>SIGN UP</button>
+                                    <button type='submit' className='btn-main my-5 mx-auto'>SIGN UP</button>
                                 </div>
                             </form>
                         </div>

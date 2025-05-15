@@ -264,7 +264,7 @@ const BankerRegister: React.FC = () => {
                                 </div>
 
                                 <div className='flex'>
-                                    <button type='submit' className='btn-main my-5 mx-auto'>Sign Up</button>
+                                    <button type='submit' className='btn-main my-5 mx-auto'>SIGN UP</button>
                                 </div>
                             </form>
                         </div>
