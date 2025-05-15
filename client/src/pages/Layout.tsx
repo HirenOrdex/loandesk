@@ -3,6 +3,7 @@ import Footer from '../components/layout/Footer'
 import { Navigate, Outlet } from 'react-router-dom'
 import { useDispatch } from 'react-redux';
 import { getCookie } from '../services/commonServices/cookie';
+import BackToTopButton from '../components/BackToTopButton';
 
 const Layout: React.FC = () => {
   const dispatch = useDispatch();
@@ -14,6 +15,7 @@ const Layout: React.FC = () => {
     return (
       <>
         <Outlet />
+        <BackToTopButton />
         <Footer />
       </>
     )

@@ -31,16 +31,17 @@ const ChangePassword: React.FC = () => {
         <>
             {loader ? <Loader /> : null}
             <div className='max-w-[90%] md:max-w-[30%] mx-auto my-10'>
+                {
+                    alert && (
+                        <AlertMessage
+                            type={alert.type}
+                            message={alert.message}
+                            className='mb-5'
+                        />
+                    )
+                }
                 <form>
                     <div className="mb-3">
-                        {
-                            alert && (
-                                <AlertMessage
-                                    type={alert.type}
-                                    message={alert.message}
-                                />
-                            )
-                        }
                         <label htmlFor="currentPassword">Current Password <span className='error-msg'>*</span></label>
                         <PasswordInput
                             name='currentPassword'

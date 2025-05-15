@@ -70,6 +70,7 @@ const Profile: React.FC = () => {
             <AlertMessage
                 type='success'
                 message='Profile Updated Auccessfully'
+                className='mb-5'
             />
             <form>
                 {/* profile picture */}
