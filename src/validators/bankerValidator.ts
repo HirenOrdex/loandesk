@@ -27,8 +27,8 @@ const bankerRegistrationSchema = Joi.object({
     "string.empty": "First name is required.",
     "string.min": "First name must be at least 2 characters.",
   }),
-  middleInitial: Joi.string().length(1).optional().messages({
-    "string.length": "Middle initial must be a single character.",
+  middleInitial: Joi.string().optional().messages({
+    "string.length": "Middle initial must be a string.",
   }),
   lastName: Joi.string().min(2).required().messages({
     "string.empty": "Last name is required.",
