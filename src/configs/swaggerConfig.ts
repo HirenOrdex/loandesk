@@ -4,9 +4,9 @@ export const swaggerOptions: Options = {
     definition: {
         openapi: '3.0.0',
         info: {
-            title: 'Keymono API',
+            title: 'ALoanMatic API',
             version: '1.0.0',
-            description: 'API documentation for Keymono backend',
+            description: 'API documentation for ALoanMatic backend',
         },
         servers: [
             { url: "http://localhost:3000/", description: "Local" },
