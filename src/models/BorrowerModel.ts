@@ -22,6 +22,7 @@ const BorrowerSchema: Schema = new Schema<IBorrower>(
   },
   {
     timestamps: true,
+    collection: "borrower", 
   }
 );
 

@@ -122,7 +122,7 @@ export default router;
  *           example:
  *             email: hir134@abcbank.com
  *             password: StrongP@ssw0rd!
- *             confirm_password: StrongP@ssw0rd!
+ *             confirmPassword: StrongP@ssw0rd!
  *             firstName: John
  *             middleInitial: D
  *             lastName: Doe

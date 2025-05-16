@@ -83,7 +83,7 @@ const authSchemas = {
 const baseUserSchema = {
   email: Joi.string().email().required(),
   password: Joi.string().min(8).required(),
-  confirm_password: Joi.string()
+  confirmPassword: Joi.string()
     .valid(Joi.ref("password"))
     .required()
     .messages({
@@ -108,14 +108,14 @@ export const bankerSchema = Joi.object({
       Joi.object({
         address1: Joi.string().allow(null, ""),
         address2: Joi.string().allow(null, ""),
-        city: Joi.string().required(),
-        state: Joi.string().required(),
+        city: Joi.string().allow(null, ""),
+        state: Joi.string().allow(null, ""),
         zip: Joi.string().allow(null, ""),
-        country: Joi.string().required(),
-        longitude: Joi.string().required(),
-        latitude: Joi.string().required(),
-        fulladdress: Joi.string().required(),
-        suiteno: Joi.string().allow(null, ""),
+        country: Joi.string().allow(null, ""),
+        longitude: Joi.string().allow(null, ""),
+        latitude: Joi.string().allow(null, ""),
+        fullAddress: Joi.string().allow(null, ""),
+        suiteNo: Joi.string().allow(null, ""),
       })
     )
     .required(),

@@ -53,6 +53,7 @@ const deviceSchema = new Schema(
   },
   {
     timestamps: true,
+    collection: "device"
   }
 );
 

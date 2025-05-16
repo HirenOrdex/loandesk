@@ -51,7 +51,7 @@ export class AuthController {
     console.debug(`Request Body: ${JSON.stringify(req.body)}`);
 
     try {
-      const { email, password, confirm_password } = req?.body;
+      const { email, password, confirmPassword } = req?.body;
 
       // Check if user already exists
       const existingUser = await userRepository.findUserByEmail(email);
@@ -65,8 +65,8 @@ export class AuthController {
           error: "The email address entered is already registered. Please try again with new email or contact the support team.",
         });
       }
-      if (password !== confirm_password) {
-        logger.info(`email:${email} confirm Password: ${confirm_password} and Password: ${password} Should be same`);
+      if (password !== confirmPassword) {
+        logger.info(`email:${email} confirm Password: ${confirmPassword} and Password: ${password} Should be same`);
         return res.status(400).json({
           success: false,
           data: null,
@@ -190,8 +190,9 @@ export class AuthController {
           const {
             email,
             password,
-            confirm_password,
+            confirmPassword,
             firstName,
+            middleInitial,
             lastName,
             phone,
             coname,
@@ -201,7 +202,7 @@ export class AuthController {
           } = req?.body;
 
           // Validate passwords
-          if (password !== confirm_password) {
+          if (password !== confirmPassword) {
             logger.info(`Email : ${email}:Passwords do not match`);
 
             return res.status(400).json({
@@ -232,6 +233,7 @@ export class AuthController {
             email,
             password: hashedPassword,
             firstName,
+            middleInitial,
             lastName,
             phone,
             roleId: roleId, // Replace or pass dynamically
@@ -1039,7 +1041,7 @@ export class AuthController {
         );
 
         if (updateUser) {
-          nodeCacheClient.del(`user_${userId}`);
+          // nodeCacheClient.del(`user_${userId}`);
           console.log("changePassword:-User password updated successfully.");
           logger.info("changePassword:-Password updated successfully.");
           return res.status(200).json({
