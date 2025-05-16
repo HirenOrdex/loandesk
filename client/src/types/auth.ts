@@ -90,15 +90,15 @@ export interface IAddress {
     country: string;
     longitude: string;
     latitude: string;
-    fulladdress: string;
-    suiteno: string;
+    fullAddress: string;
+    suiteNo: string;
 }
 
 export interface IBankerRegisterFormInput {
     financialInstitutionName: string;
     email: string;
     password: string;
-    confirm_password: string;
+    confirmPassword: string;
     firstName: string;
     middleInitial?: string;
     lastName: string;
@@ -113,7 +113,7 @@ export interface IBankerRegisterFormInput {
 export interface IBorrowerRegisterFormInput {
     email: string;
     password: string;
-    confirm_password: string;
+    confirmPassword: string;
     firstName: string;
     middleInitial?: string;
     lastName: string;

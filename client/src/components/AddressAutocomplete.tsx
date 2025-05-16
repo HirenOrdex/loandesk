@@ -160,8 +160,8 @@ const AddressAutocomplete = ({ name, value, onChange, id }: AddressAutocompleteP
       country: place.address.country || "",
       longitude: place.lon,
       latitude: place.lat,
-      fulladdress: place.display_name,
-      suiteno: "",
+      fullAddress: place.display_name,
+      suiteNo: "",
     };
 
     onChange([payload]);
