@@ -178,7 +178,7 @@ const AddressAutocomplete = ({ name, value, onChange, id }: AddressAutocompleteP
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         autoComplete="off"
-        style={{ width: "100%", padding: "8px" }}
+        style={{ width: "100%" }}
       />
 
       {results.length > 0 && (
