@@ -10,7 +10,7 @@ export interface IBankerRegistration extends Document {
   assetSize?: string;
   createdBy: Types.ObjectId;
   updatedby: Types.ObjectId;
-  userId?: string;
+  userId?: Types.ObjectId;
 }
 
 const bankerSchema = new Schema<IBankerRegistration>(
