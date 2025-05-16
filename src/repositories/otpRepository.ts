@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import redisClient from "../utils/redisClient";
+import  { nodeCacheClient } from "../utils/nodeCacheClient";
 import { logger } from "../configs/winstonConfig";
 
 interface OTPData {
@@ -31,9 +31,8 @@ class OTPRepository {
         attempts: 0,
       };
 
-      await redisClient.set(`${type}_${email}`, JSON.stringify(otpData), {
-        EX: 600,
-      });
+      nodeCacheClient.set(`${type}_${email}`, otpData, 600);
+
       return email;
     } catch (error) {
       logger.error(`Error in storeOTP: ${error}`);
@@ -45,11 +44,11 @@ class OTPRepository {
     try {
       const key = `${type}_${email}`;
       console.log("Getting Redis key:", key);
-      const otpData = await redisClient.get(key);
+      const otpData = nodeCacheClient.get<OTPData>(key); // ✅ Use generic type
       if (!otpData) return null;
-      const parsed = JSON.parse(otpData);
-      console.log("Parsed OTP data:", parsed);
-      return parsed;
+
+      console.log("OTP data from cache:", otpData);
+      return otpData;
     } catch (error) {
       logger.error(`Error in getOTP: ${error}`);
       throw error;
@@ -58,7 +57,7 @@ class OTPRepository {
 
   async deleteOTP(email: string, type: string): Promise<void> {
     try {
-      await redisClient.del(`${type}_${email}`);
+      nodeCacheClient.del(`${type}_${email}`);
     } catch (error) {
       logger.error(`Error in deleteOTP: ${error}`);
       throw error;
@@ -71,9 +70,7 @@ class OTPRepository {
       if (!otpData) throw new Error("OTP not found");
 
       otpData.attempts += 1;
-      await redisClient.set(`${type}_${email}`, JSON.stringify(otpData), {
-        EX: 300,
-      });
+      nodeCacheClient.set(`${type}_${email}`, JSON.stringify(otpData), 300);
 
       return otpData.attempts;
     } catch (error) {

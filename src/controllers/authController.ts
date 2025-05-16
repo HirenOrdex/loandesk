@@ -6,8 +6,9 @@ import {
   verifyRefreshToken,
   addTokenToBlacklist,
   isTokenBlacklisted,
+  verifyAccessToken,
 } from "../utils/jwtUtils";
-import { redisClient } from "../utils/redisClient";
+import nodeCacheClient from "../utils/nodeCacheClient";
 import bcrypt from "bcryptjs";
 import { APP_URL, NODE_ENV } from "../configs/envConfigs";
 import { UserRepository } from "../repositories/userRepository";
@@ -43,7 +44,11 @@ export class AuthController {
     logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
 
     const type = req?.query?.type;
-    logger.info(`Registering ${type}: ${JSON.stringify(req?.body)}`);
+    logger.info(`[${controllerName}] → ${functionName} → Start`);
+    logger.debug(`Request Query: ${JSON.stringify(req.query)}`);
+    logger.debug(`Request Body: ${JSON.stringify(req.body)}`);
+    console.log(`▶ Registering ${type} - Email: ${req?.body?.email}`);
+    console.debug(`Request Body: ${JSON.stringify(req.body)}`);
 
     try {
       const { email, password, confirm_password } = req?.body;
@@ -51,18 +56,17 @@ export class AuthController {
       // Check if user already exists
       const existingUser = await userRepository.findUserByEmail(email);
       if (existingUser) {
-        logger.info(`Email :${email}:already in use`);
+        logger.info(`email: ${email} Email already in use`);
+        console.log(`email: ${email} Email already in use`);
         return res.status(409).json({
           success: false,
           data: null,
-          message:
-            "The email address entered is already registered. Please try again with new email or contact the support team.",
-          error:
-            "The email address entered is already registered. Please try again with new email or contact the support team.",
+          message: "The email address entered is already registered. Please try again with new email or contact the support team.",
+          error: "The email address entered is already registered. Please try again with new email or contact the support team.",
         });
       }
       if (password !== confirm_password) {
-        logger.info(`Email :${email}: confirm Password and Password Should be same`);
+        logger.info(`email:${email} confirm Password: ${confirm_password} and Password: ${password} Should be same`);
         return res.status(400).json({
           success: false,
           data: null,
@@ -155,7 +159,9 @@ export class AuthController {
             newUser?._id.toString(),
             emailVerificationToken
           );
-          await sendVerificationEmail(email, emailVerificationToken);
+          await sendVerificationEmail(newUser?._id?.toString(), email, emailVerificationToken);
+          logger.info(`Banker created: ${email}`);
+          console.log(`Banker created: ${email}`);
 
           return res.status(201).json({
             success: true,
@@ -169,7 +175,9 @@ export class AuthController {
           });
         } catch (error: unknown) {
           const err = error as Error;
-          logger.error(`Email : ${email}:Error creating banker: ${err.message}`);
+          logger.error(`Error creating banker: ${err.message}`);
+          console.error("💥 Banker registration error:", error);
+
           return res.status(500).json({
             success: false,
             data: null,
@@ -189,7 +197,7 @@ export class AuthController {
             coname,
             position,
             other_position,
-            captchaCode
+            captchaCode,
           } = req?.body;
 
           // Validate passwords
@@ -212,13 +220,11 @@ export class AuthController {
             return res.status(409).json({
               success: false,
               data: null,
-              message:
-                "The email address entered is already registered. Please try again with new email or contact the support team.",
-              error:
-                "The email address entered is already registered. Please try again with new email or contact the support team.",
+              message:"The email address entered is already registered. Please try again with new email or contact the support team.",
+              error:"The email address entered is already registered. Please try again with new email or contact the support team.",
             });
           }
-          const roleId = await userRepository.findRoleIdByName("Banker");
+          const roleId = await userRepository.findRoleIdByName("Borrower");
 
           // Create user
           const hashedPassword = await bcrypt.hash(password, 10);
@@ -245,7 +251,7 @@ export class AuthController {
             newUser?._id.toString(),
             emailVerificationToken
           );
-          await sendVerificationEmail(email, emailVerificationToken);
+          await sendVerificationEmail(newUser?._id?.toString(), email, emailVerificationToken);
 
           return res.status(201).json({
             success: true,
@@ -311,25 +317,20 @@ export class AuthController {
         return res.status(400).json({
           success: false,
           data: null,
-          error:
-            "Account is not verified. Please check your email & complete verification process.",
-          message:
-            "Account is not verified. Please check your email & complete verification process.",
+          error:"Account is not verified. Please check your email & complete verification process.",
+          message:"Account is not verified. Please check your email & complete verification process.",
         });
       }
       // Check if account is locked
       const isLocked = await userRepository.isAccountLocked(user);
       if (isLocked) {
-        logger.info(
-          `Email: ${email}: Account locked. Please try again later or reset your password.`
+        logger.info(`Email: ${email}: Account locked. Please try again later or reset your password.`
         );
         return res.status(401).json({
           success: false,
           data: null,
-          error:
-            "Account locked. Please try again later or reset your password.",
-          message:
-            "Account locked. Please try again later or reset your password.",
+          error:"Account locked. Please try again later or reset your password.",
+          message:"Account locked. Please try again later or reset your password.",
         });
       }
 
@@ -487,8 +488,7 @@ export class AuthController {
         user._id.toString(),
         newRefreshToken
       );
-      logger.info(
-        `refreshToken: Refresh token updated for user ID: ${user._id}`
+      logger.info(`refreshToken: Refresh token updated for user ID: ${user._id}`
       );
 
       // Blacklist old refresh token
@@ -541,7 +541,7 @@ export class AuthController {
 
           // Invalidate refresh token in database
           await userRepository.updateRefreshToken(decoded.id, null);
-          await redisClient.del(`user_${decoded.id.toString()}`);
+          nodeCacheClient.del(`user_${decoded.id.toString()}`);
           logger.info(`logout: Deleted cached data for user ID: ${decoded.id}`);
 
           // Add refresh token to blacklist
@@ -630,8 +630,7 @@ export class AuthController {
         success: true,
         data: null,
         error: null,
-        message:
-          "Email has been sent to your registered email Id. Please follow the steps to reset your password",
+        message:"Email has been sent to your registered email Id. Please follow the steps to reset your password",
         resetToken, // In production, don't send this in the response
       });
     } catch (err: unknown) {
@@ -652,8 +651,7 @@ export class AuthController {
     logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
     try {
       const { token, password } = req?.body;
-      logger.info(
-        `resetPassword: Received password reset request with token: ${token}`
+      logger.info(`resetPassword: Received password reset request with token: ${token}`
       );
       // Find user with valid reset token
       const user = await userRepository.findUserByResetToken(token);
@@ -667,8 +665,7 @@ export class AuthController {
       }
       // Update password
       await userRepository.updatePassword(user?._id.toString(), password);
-      logger.info(
-        `resetPassword: Password updated successfully for user ID: ${user?._id}`
+      logger.info(`resetPassword: Password updated successfully for user ID: ${user?._id}`
       );
       // Invalidate all refresh tokens
       await userRepository.updateRefreshToken(user?._id.toString(), null);
@@ -694,20 +691,10 @@ export class AuthController {
     const functionName = "verifyEmail";
     logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
     try {
-      const { token } = req?.params;
+      const { userId, token } = req.params;
+      logger.info(`verifyEmail: Received request for userId: ${userId} with token: ${token}`);
       logger.info("verifyEmail: Received request with token:", token);
       // Find user by verification token
-      const user = await userRepository.findUserByEmailVerificationToken(token);
-      if (!user) {
-        logger.error("verifyEmail: Invalid or expired token");
-        return res.status(400).json({
-          success: false,
-          data: null,
-          error: "Invalid or expired verification token",
-          message: "Invalid or expired verification token",
-        });
-      }
-      const userId = user?._id;
       const isAlreadyVerified = await userRepository.isEmailAlreadyVerified(
         userId.toString()
       );
@@ -720,6 +707,17 @@ export class AuthController {
           message: "Email already verified.",
         });
       }
+      const user = await userRepository.findUserByEmailVerificationToken(token);
+      if (!user) {
+        logger.error("verifyEmail: Invalid or expired token");
+        return res.status(400).json({
+          success: false,
+          data: null,
+          error: "Invalid or expired verification token",
+          message: "Invalid or expired verification token",
+        });
+      }
+
       // Update user status to active and mark email as verified
       await userRepository.verifyEmail(user?._id.toString());
       logger.info(
@@ -754,8 +752,7 @@ export class AuthController {
       // Find user by email
       const user = await userRepository.findUserByEmail(email);
       if (!user) {
-        logger.error(
-          `Email: ${email}: resendVerificationEmail: User not found `
+        logger.error(`Email: ${email}: resendVerificationEmail: User not found `
         );
         return res.status(404).json({
           success: false,
@@ -766,16 +763,13 @@ export class AuthController {
       }
 
       if (user.isEmailVerified) {
-        logger.error(
-          `Email: ${email}: resendVerificationEmail: Email already verified `
+        logger.error(`Email: ${email}: resendVerificationEmail: Email already verified `
         );
         return res.status(400).json({
           success: false,
           data: null,
-          error:
-            "User is already active. Please login to continue. Or use forgot password if you forgot the password. Else please contact support",
-          message:
-            "User is already active. Please login to continue. Or use forgot password if you forgot the password. Else please contact support",
+          error:"User is already active. Please login to continue. Or use forgot password if you forgot the password. Else please contact support",
+          message:"User is already active. Please login to continue. Or use forgot password if you forgot the password. Else please contact support",
         });
       }
 
@@ -789,17 +783,15 @@ export class AuthController {
       );
 
       // Send verification email``
-      await sendVerificationEmail(email, emailVerificationToken);
-      logger.info(
-        `Email: ${email}: resendVerificationEmail: Verification email sent to ${email}`
+      await sendVerificationEmail(user?._id?.toString(), email, emailVerificationToken);
+      logger.info(`Email: ${email}: resendVerificationEmail: Verification email sent to ${email}`
       );
 
       return res.status(200).json({
         success: true,
         data: null,
         error: null,
-        message:
-          "Done! We have resent an email with instructions on how to activate your account. Please check your inbox. If you still did not receive an email, please contact us at support@loandesk.com.",
+        message:"Done! We have resent an email with instructions on how to activate your account. Please check your inbox. If you still did not receive an email, please contact us at support@loandesk.com.",
       });
     } catch (err: unknown) {
       const error = err as IError;
@@ -871,7 +863,7 @@ export class AuthController {
           });
 
           const verificationToken = generateEmailVerificationToken();
-          await sendVerificationEmail(email, verificationToken); // optional
+          await sendVerificationEmail(user?._id?.toString(), email, verificationToken); // optional
         }
 
         const accessToken = generateAccessToken({
@@ -894,8 +886,7 @@ export class AuthController {
         });
 
         // Redirect to frontend with accessToken
-        return res.redirect(
-          `${APP_URL}/google-callback?accessToken=${accessToken}&firstName=${user.firstName}`
+        return res.redirect(`${APP_URL}/google-callback?accessToken=${accessToken}&firstName=${user.firstName}`
         );
         //  return res.status(200).json({
         //   success: true,
@@ -912,8 +903,7 @@ export class AuthController {
         return res.status(500).json({
           success: false,
           data: null,
-          message:
-            "An error occurred during  continue with google. Please try again later.",
+          message:"An error occurred during  continue with google. Please try again later.",
           error: `Error during continue with google: ${err.message}`,
         });
       }
@@ -924,8 +914,17 @@ export class AuthController {
     const functionName = "changePassword";
     logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
     try {
-      const refreshToken = req?.cookies?.refreshToken;
-
+      const authHeader = req.header("authorization");
+      if (!authHeader?.startsWith("Bearer ")) {
+        logger.warn("Authorization header missing or invalid.");
+        return res
+          .status(401)
+          .json({
+            success: false,
+            message: "Unauthorized: Invalid token format.",
+          });
+      }
+      const refreshToken = authHeader.split(" ")[1];
       if (!refreshToken) {
         logger.error("changePassword:-Refresh token missing in cookies.");
         console.error("changePassword:-Refresh token missing in cookies.");
@@ -939,7 +938,7 @@ export class AuthController {
       // Verify token and extract userId
       let decoded: any;
       try {
-        decoded = verifyRefreshToken(refreshToken); // This should return an object with `id`
+        decoded = verifyAccessToken(refreshToken);
       } catch (err) {
         logger.error("changePassword:-Invalid refresh token.");
         console.error("changePassword:-Invalid refresh token.");
@@ -963,13 +962,11 @@ export class AuthController {
           message: "Email is not verified, please verify your email.",
         });
       }
-      const { oldPassword, newPassword } = req.body;
+      const { oldPassword, newPassword, confirmPassword } = req.body;
       if (!(oldPassword && newPassword)) {
-        logger.error(
-          "changePassword: old password, and new password are required"
+        logger.error("changePassword: old password, and new password are required"
         );
-        console.error(
-          "changePassword: old password, and new password are required"
+        console.error("changePassword: old password, and new password are required"
         );
         return res.status(400).json({
           success: false,
@@ -978,7 +975,28 @@ export class AuthController {
           message: "User ID, old password, and new password are required.",
         });
       }
-
+      if (newPassword !== confirmPassword) {
+        logger.info(
+          `UserId:${userId} Password: ${newPassword} and Confirm Password: ${confirmPassword} should be same`
+        );
+        return res.status(400).json({
+          success: false,
+          data: null,
+          message: `Password and Confirm Password should be same`,
+          error: `Password and Confirm Password should be same`,
+        });
+      }
+      if (newPassword === oldPassword) {
+        logger.info(
+          `UserId:${userId} old Password: ${oldPassword} and Password: ${newPassword} Should not be  same`
+        );
+        return res.status(400).json({
+          success: false,
+          data: null,
+          message: `newPassword and oldPassword Should not be same`,
+          error: `newPassword and oldPassword Should not be same`,
+        });
+      }
       //
       const updatePassword: UpdateUser | null = await UserModel.findOne({
         _id: userId,
@@ -1021,7 +1039,7 @@ export class AuthController {
         );
 
         if (updateUser) {
-          await redisClient.del(`user_${userId}`);
+          nodeCacheClient.del(`user_${userId}`);
           console.log("changePassword:-User password updated successfully.");
           logger.info("changePassword:-Password updated successfully.");
           return res.status(200).json({
@@ -1134,13 +1152,12 @@ export class AuthController {
           sameSite: "strict",
           maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         });
-        await redisClient.set(
+        nodeCacheClient.set(
           `user_${user._id.toString()}`,
-          JSON.stringify(user),
-          {
-            EX: 3600, // 1 hour
-          }
+          user, // No need to stringify the user object
+          3600 // TTL in seconds (1 hour)
         );
+
         // console.log("cookie",cookie)
         // Send response
         return res.status(200).json({
@@ -1175,13 +1192,12 @@ export class AuthController {
     try {
       const { email } = req.body;
       const functionName = "resendLoginOtp";
-      logger.info(`Coming into Controller ${controllerName}`);
-      logger.info(`Coming into function ${functionName}`);
+      logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
 
       // Find user
       const user = await userRepository.findUserByEmail(email);
       if (!user) {
-        logger.info(`Invalid credentials`);
+        logger.info(`Email:${email} is not vaild`);
         return res.status(401).json({
           success: false,
           data: null,
@@ -1190,21 +1206,22 @@ export class AuthController {
         });
       }
       if (user.isEmailVerified === false) {
-        logger.info(`Email is not verified, please verify your email.`);
+        logger.info(`Email:${email} is not verified, please verify your email.`);
         return res.status(400).json({
           success: false,
           data: null,
-          error:
-            "Account is not verified. Please check your email & complete verification process.",
-          message:
-            "Account is not verified. Please check your email & complete verification process.",
+          error:"Account is not verified. Please check your email & complete verification process.",
+          message:"Account is not verified. Please check your email & complete verification process.",
         });
       }
       // Check if account is locked
       const isLocked = await userRepository.isAccountLocked(user);
       if (isLocked) {
+        console.log(
+          `Email:${email} Account locked. Please try again later or reset your password.`
+        );
         logger.info(
-          `Account locked. Please try again later or reset your password.`
+          `Email:${email} Account locked. Please try again later or reset your password.`
         );
         return res.status(401).json({
           success: false,

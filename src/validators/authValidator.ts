@@ -74,6 +74,9 @@ const authSchemas = {
     newPassword: Joi.string().required().messages({
       "any.required": "New Password is required",
     }),
+    confirmPassword: Joi.string().required().messages({
+      "any.required": "Confirm Password is required",
+    }),
   }),
 };
 // Common fields

@@ -1,5 +1,5 @@
 import jwt, { Secret, SignOptions } from "jsonwebtoken";
-import { redisClient } from "./redisClient";
+import nodeCacheClient from "./nodeCacheClient";
 import {
   ACCESS_TOKEN_EXPIRES,
   ACCESS_TOKEN_SECRET,
@@ -69,10 +69,11 @@ export const addTokenToBlacklist = async (
     expiry = expiresIn;
   }
 
-  await redisClient.set(`bl_${token}`, "true", { EX: expiry });
+  nodeCacheClient.set(`bl_${token}`, "true", expiry);
+
 };
 
 export const isTokenBlacklisted = async (token: string): Promise<boolean> => {
-  const result = await redisClient.get(`bl_${token}`);
+  const result = nodeCacheClient.get(`bl_${token}`);
   return result === "true";
 };

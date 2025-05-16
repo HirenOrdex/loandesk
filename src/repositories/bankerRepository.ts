@@ -3,7 +3,6 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import User, { IUser } from "../models/User";
 import { UserDocument } from "../types/userType";
-import redisClient from "../utils/redisClient";
 import { hashToken } from "../utils/emailUtils";
 import { logger } from "../configs/winstonConfig";
 import BankerRegistrationModel from "../models/BankerModel";

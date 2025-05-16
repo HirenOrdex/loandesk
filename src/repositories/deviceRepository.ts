@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { logger } from "../configs/winstonConfig";
 import Device, { IDevice } from "../models/deviceModel";
-import redisClient from "../utils/redisClient";
+import  { nodeCacheClient } from "../utils/nodeCacheClient";
 
 interface DeviceInfo {
   deviceId: string;
@@ -14,30 +14,35 @@ interface DeviceInfo {
 }
 
 class DeviceRepository {
-  async storeTemporaryDeviceInfo(
-    requestId: string,
-    deviceInfo: DeviceInfo
-  ): Promise<void> {
-    try {
-      await redisClient.set(`device_${requestId}`, JSON.stringify(deviceInfo), {
-        EX: 300,
-      });
-    } catch (error) {
-      logger.error(`DeviceRepository.storeTemporaryDeviceInfo error: ${error}`);
-      throw error;
-    }
+ // Store device info in cache for 5 minutes (300 seconds)
+async storeTemporaryDeviceInfo(
+  requestId: string,
+  deviceInfo: DeviceInfo
+): Promise<void> {
+  try {
+    nodeCacheClient.set(
+      `device_${requestId}`,
+      deviceInfo, // No need to stringify here, node-cache handles it
+      300 // TTL in seconds
+    );
+  } catch (error) {
+    logger.error(`DeviceRepository.storeTemporaryDeviceInfo error: ${error}`);
+    throw error;
   }
+}
 
-  async getTemporaryDeviceInfo(requestId: string): Promise<DeviceInfo | null> {
-    try {
-      const deviceInfo = await redisClient.get(`device_${requestId}`);
-      if (!deviceInfo) return null;
-      return JSON.parse(deviceInfo);
-    } catch (error) {
-      logger.error(`DeviceRepository.getTemporaryDeviceInfo error: ${error}`);
-      throw error;
-    }
+// Retrieve device info from cache
+async getTemporaryDeviceInfo(requestId: string): Promise<DeviceInfo | null> {
+  try {
+    const deviceInfo = await nodeCacheClient.get<DeviceInfo>(`device_${requestId}`);
+    if (!deviceInfo) return null;
+    return deviceInfo; // No need to parse, it's already an object
+  } catch (error) {
+    logger.error(`DeviceRepository.getTemporaryDeviceInfo error: ${error}`);
+    throw error;
   }
+}
+
 
   async saveDeviceInfo(
     userId: string,
