@@ -8,8 +8,8 @@ export interface IBorrowerCompany extends Document {
   addressId: Types.ObjectId;
   suite?: string;
   isDelete: boolean;
-  createdBy: Types.ObjectId;
-  updatedBy: Types.ObjectId;
+  createdBy?: Types.ObjectId;
+  updatedBy?: Types.ObjectId;
 }
 
 const borrowerCompanySchema = new Schema<IBorrowerCompany>(
@@ -21,10 +21,11 @@ const borrowerCompanySchema = new Schema<IBorrowerCompany>(
     addressId: { type: Schema.Types.ObjectId, ref: "Address", required: true },
     suite: { type: String },
     isDelete: { type: Boolean, default: false },
-    createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    updatedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    createdBy: { type: Schema.Types.ObjectId, ref: "User", required: false },
+    updatedBy: { type: Schema.Types.ObjectId, ref: "User", required: false },
   },
   {
+    collection: "borrowerCompany",
     timestamps: true,
   }
 );

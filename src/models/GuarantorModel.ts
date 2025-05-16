@@ -24,7 +24,8 @@ const guarantorSchema = new Schema<IGuarantor>(
     updatedBy: { type: Schema.Types.ObjectId, ref: "User"},
   },
   {
-    timestamps: true, // You are providing manual createdDate/updatedDate as strings
+    collection: "guarantor",
+    timestamps: true,
   }
 );
 

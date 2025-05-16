@@ -11,6 +11,7 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { configurePassport } from "./configs/passportConfig";
 import authRoutes from "./routes/authRoutes";
 import bankerRoutes from "./routes/bankerRoutes";
+import newDealRoutes from "./routes/newDealRoutes";
 import cookieParser from 'cookie-parser';
 const port = PORT || 3000;
 
@@ -62,6 +63,7 @@ app.get("/", (req, res) => {
 });
 app.use("/auth", authRoutes);
 app.use("/", bankerRoutes);
+app.use("/new-deal", newDealRoutes);
 
 const startServer = async () => {
   try {
