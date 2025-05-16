@@ -114,15 +114,15 @@ const BankerRegister: React.FC = () => {
                                         <PasswordInput
                                             name="confirmPassword"
                                             id="confirmPassword"
-                                            registration={register("confirm_password", {
+                                            registration={register("confirmPassword", {
                                                 required: "Confirm password is required",
                                                 validate: (value) =>
                                                     value === watch("password") || "Confirm password does not match the password",
                                             })}
-                                            error={errors.confirm_password?.message}
+                                            error={errors.confirmPassword?.message}
                                         />
-                                        {errors?.confirm_password && (
-                                            <span className="error-msg">{errors.confirm_password.message}</span>
+                                        {errors?.confirmPassword && (
+                                            <span className="error-msg">{errors.confirmPassword.message}</span>
                                         )}
                                     </div>
                                 </div>
@@ -228,7 +228,7 @@ const BankerRegister: React.FC = () => {
                                                 <AddressAutocomplete
                                                     id="address"
                                                     {...field}
-                                                    value={field.value?.[0]?.fulladdress || ""}
+                                                    value={field.value?.[0]?.fullAddress || ""}
                                                 />
                                             )}
                                         />

@@ -32,7 +32,7 @@ export const baseQuery = fetchBaseQuery({
     //   headers.set('refreshToken', userData.refreshToken);
     // }
     // if (userPolicy?.roleId) {
-    //   headers.set('roleid', userPolicy.roleId);
+    //   headers.set('roleId', userPolicy.roleId);
     // }
 
     // // ✅ Set resourcename dynamically from extraOptions
