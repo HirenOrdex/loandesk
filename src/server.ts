@@ -45,7 +45,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  * /:
  *   get:
  *     summary: Welcome endpoint
- *     description: Returns a welcome message for the Keymono backend.
+ *     description: Returns a welcome message for the ALoanMatic backend.
  *     tags:
  *       - Base
  *     responses:
@@ -55,10 +55,10 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  *           text/plain:
  *             schema:
  *               type: string
- *               example: Welcome to Keymono Backend
+ *               example: Welcome to ALoanMatic Backend
  */
 app.get("/", (req, res) => {
-  res.send("Welcome to Keymono Backend");
+  res.send("Welcome to ALoanMatic Backend");
 });
 app.use("/auth", authRoutes);
 app.use("/", bankerRoutes);
@@ -69,7 +69,7 @@ const startServer = async () => {
     //  connectNodeCache();
     app.listen(port, () => {
       console.log(
-        `🚀 Keymono server started >> Environment = ${NODE_ENV} >> URL = http://localhost:${port}`
+        `🚀 ALoanMatic server started >> Environment = ${NODE_ENV} >> URL = http://localhost:${port}`
       );
       console.log(
         `📘 Swagger docs available at: http://localhost:${port}/api-docs`
