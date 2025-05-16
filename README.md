@@ -1,8 +1,8 @@
-# 🚀 Keymono
+# 🚀 ALoanMatic
 
 <div align="center">
   
-![Keymono Logo](https://via.placeholder.com/150/3498db/FFFFFF?text=Keymono)
+![ALoanMatic Logo](https://via.placeholder.com/150/3498db/FFFFFF?text=ALoanMatic)
 
 **A modern loan management system built with Node.js, Express, and TypeScript**
 
@@ -62,8 +62,8 @@
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/yourusername/keymono.git
-   cd keymono
+   git clone https://github.com/yourusername/aLoanMatic.git
+   cd aLoanMatic
    ```
 
 2. **Install dependencies**
@@ -145,7 +145,7 @@
 ### Backend Structure
 
 ```
-keymono/
+aLoanMatic/
 ├── client/           # Frontend application
 ├── dist/             # Compiled production files
 ├── src/              # Backend source

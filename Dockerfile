@@ -1,6 +1,6 @@
 FROM node:18-alpine
 
-RUN mkdir -p /var/log/loandesk_logs && chown -R node:node /var/log/loandesk_logs
+RUN mkdir -p /var/log/aLoanMatic_logs && chown -R node:node /var/log/aLoanMatic_logs
 
 WORKDIR /app
 # Install ssh

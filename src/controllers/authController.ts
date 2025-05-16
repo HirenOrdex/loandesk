@@ -32,6 +32,7 @@ import UserModel from "../models/User";
 import { Console } from "winston/lib/winston/transports";
 import { IUser } from "../types/userType";
 import { UpdateUser } from "../types/auth.type";
+import { maskPhoneNumber } from "../utils/phoneMask.util";
 
 const userRepository = new UserRepository();
 const controllerName: string = "authController";
@@ -381,7 +382,7 @@ export class AuthController {
 
         return res.status(200).json({
           success: true,
-          message: `A text message with a 6-digit verification code was just sent to ${phone}`,
+          message: `A text message with a 6-digit verification code was just sent to ${maskPhoneNumber(phone)}`,
           data: {
             requestId,
             expiresIn: 300,
