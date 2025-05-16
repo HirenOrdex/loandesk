@@ -11,7 +11,6 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { configurePassport } from "./configs/passportConfig";
 import authRoutes from "./routes/authRoutes";
 import bankerRoutes from "./routes/bankerRoutes";
-import { connectRedis } from "./utils/redisClient";
 import cookieParser from 'cookie-parser';
 const port = PORT || 3000;
 
@@ -67,7 +66,7 @@ app.use("/", bankerRoutes);
 const startServer = async () => {
   try {
     await connectToDB(); // Ensure DB is connected before server starts
-    await connectRedis();
+    //  connectNodeCache();
     app.listen(port, () => {
       console.log(
         `🚀 Keymono server started >> Environment = ${NODE_ENV} >> URL = http://localhost:${port}`
@@ -82,3 +81,7 @@ const startServer = async () => {
 };
 
 startServer();
+function connectNodeCache() {
+  throw new Error("Function not implemented.");
+}
+

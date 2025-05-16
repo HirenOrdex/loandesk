@@ -22,7 +22,7 @@ router.post(
 );
 router.post("/verfiy-otp", authController.login);
 router.get(
-  "/verfiy-email/:token",
+  "/verfiy-email/:userId/:token",
   // rateLimiter({ windowMs: 60 * 60 * 1000, max: 3 }), // 3 requests per hour
   authController.verifyEmail
 );
