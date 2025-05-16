@@ -8,7 +8,7 @@ function RegistrationModal() {
         <div className="popup-backdrop">
             <div className="popup mx-3">
                 <div className="popup-header">
-                    <h3 className='font-bold'>Loandesk Message</h3>
+                    <h3 className='font-bold'>ALoanMatic Message</h3>
                     <button className="close-button" onClick={() => { navigate('/sign-in') }}>×</button>
                 </div>
                 <div className="popup-body">
