@@ -2,6 +2,7 @@ import { useSelector, TypedUseSelectorHook } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit/react";
 import { authApi } from "../services/authApi";
 import AuthReducer from "./reducers/AuthSlice";
+import { profileApi } from "../services/profileApi";
 
 
 
@@ -10,6 +11,7 @@ const store = configureStore({
     reducer: {
         auth: AuthReducer,
         [authApi.reducerPath]: authApi.reducer,
+        [profileApi.reducerPath]: profileApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
@@ -18,6 +20,7 @@ const store = configureStore({
             },
         }).concat(
             authApi.middleware,
+            profileApi.middleware,
         ),
 });
 

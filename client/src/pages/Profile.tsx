@@ -3,7 +3,8 @@ import React, { useRef } from 'react'
 import AlertMessage from '../components/AlertMessage'
 import { FaPencil } from 'react-icons/fa6'
 import defaultAvatar from '../assets/imgs/default-profile.png'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
+import AddressAutocomplete from '../components/AddressAutocomplete'
 
 type FormValues = {
     firstName: string;
@@ -29,6 +30,7 @@ const Profile: React.FC = () => {
         handleSubmit,
         setValue,
         watch,
+        control,
         formState: { errors },
     } = useForm<FormValues>();
 
@@ -69,7 +71,7 @@ const Profile: React.FC = () => {
             {/* <AlertMessage type='error' className='mb-5' /> */}
             <AlertMessage
                 type='success'
-                message='Profile Updated Auccessfully'
+                message='Profile Updated Successfully'
                 className='mb-5'
             />
             <form>
@@ -147,7 +149,7 @@ const Profile: React.FC = () => {
                             inputMode='numeric'
                             // name='cellPhone'
                             replacement={{ _: /\d/ }}
-                            {...register('cellPhone', { required: 'Cell phone is required' })}
+                            {...register('cellPhone', { required: 'Business Phone number is required' })}
                         />
                         {/* <span className='error-msg'>Business phone number is required</span> */}
                         {errors.cellPhone && <span className='error-msg'>{errors.cellPhone.message}</span>}
@@ -170,12 +172,28 @@ const Profile: React.FC = () => {
                 <div className="mb-3">
                     <label htmlFor="address" className="mb-2">Address
                         <span className='error-star'>*</span></label>
-                    <input
+                    {/* <input
                         type="text"
-                        id="address"
-                        // name='address'
-                        {...register('address', { required: 'Address is required' })}
+                        id="address" */}
+                         {/* name='address' */}
+
+                    <Controller
+                        name="address"
+                        control={control}
+                        rules={{ required: "Address is required" }}
+                        render={({ field }) => (
+                            <AddressAutocomplete
+                                id="address"
+                                {...field}
+                                value={field.value?.[0] || ""}
+                            />
+                        )}
                     />
+                    {errors.address && (
+                        <span className="error-msg">{errors.address.message}</span>
+                    )}
+                                                                
+                    {/* /> */}
                     {/* <span className='error-msg'>Address is required</span> */}
                     {errors.address && <span className='error-msg'>{errors.address.message}</span>}
                 </div>
@@ -211,7 +229,12 @@ const Profile: React.FC = () => {
                         id="email2"
                         // name='email2'
 
-                        {...register('email2')}
+                        {...register("email2", {
+                            pattern: {
+                                value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                                message: "Please enter a valid email",
+                            },
+                        })}
                     />
                 </div>
 
