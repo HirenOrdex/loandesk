@@ -97,6 +97,10 @@ const userSchema = new Schema(
     //   type: Date,
     //   select: false
     // },
+    //  address: {
+    //   type: String,
+    //   default: "",
+    // },
     lastLoginAttempt: {
       type: Date,
       select: false,
@@ -120,5 +124,5 @@ userSchema.methods.correctPassword = async function (
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-const UserModel = model<UserDocument>("user", userSchema);
+const UserModel = model<UserDocument>("User", userSchema);
 export default UserModel;

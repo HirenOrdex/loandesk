@@ -20,7 +20,7 @@ export const protect = async (
   req: Request,
   res: Response,
   next: NextFunction,
-): Promise<void | Response> => {
+):  Promise<void> => {
   try {
     // Get token from Authorization header
     const authHeader = req.headers.authorization;
@@ -36,21 +36,23 @@ export const protect = async (
         // Check if token is blacklisted
         const isBlacklisted = await isTokenBlacklisted(token);
         if (isBlacklisted) {
-          return res.status(401).json({
+           res.status(401).json({
             status: 'error',
             data: null,
             message: 'Invalid token. Please log in again.',
           });
+          return
         }
 
         // Check if user exists
         const user = await userRepo.findUserById(decoded.id);
         if (!user) {
-          return res.status(401).json({
+           res.status(401).json({
             status: 'error',
             data: null,
             message: 'User no longer exists.',
           });
+          return
         }
 
         // Grant access
@@ -70,11 +72,12 @@ export const protect = async (
             ?.split('=')[1];
 
           if (!refreshToken) {
-            return res.status(401).json({
+             res.status(401).json({
               status: 'error',
               data: null,
               message: 'Session expired. Please log in again.',
             });
+            return
           }
 
           try {
@@ -84,21 +87,23 @@ export const protect = async (
             // Check if refresh token is blacklisted
             const isBlacklisted = await isTokenBlacklisted(refreshToken);
             if (isBlacklisted) {
-              return res.status(440).json({
+               res.status(440).json({
                 status: 'error',
                 data: null,
                 message: 'Invalid refresh token. Please log in again.',
               });
+              return
             }
 
             // Check if user still exists
             const user = await userRepo.findUserById(refreshDecoded.id);
             if (!user) {
-              return res.status(440).json({
+               res.status(440).json({
                 status: 'error',
                 data: null,
                 message: 'User no longer exists.',
               });
+              return
             }
 
             // Grant access
@@ -109,34 +114,37 @@ export const protect = async (
 
             next();
           } catch (refreshError) {
-            return res.status(440).json({
+             res.status(440).json({
               status: 'error',
               data: null,
               message: 'Invalid refresh token. Please log in again.',
             });
+            return
           }
         } else {
           // For any other token error (invalid signature, malformed, etc)
-          return res.status(401).json({
+           res.status(401).json({
             status: 'error',
             data: null,
             message: 'Invalid token. Please log in again.',
           });
+          return
         }
       }
     } else {
-      return res.status(401).json({
+       res.status(401).json({
         status: 'error',
         data: null,
         message: 'Not authenticated. Please log in.',
-      });
+      });return
     }
   } catch (error) {
-    return res.status(401).json({
+     res.status(401).json({
       status: 'error',
       data: null,
       message: 'Not authenticated. Please log in.',
     });
+    return
   }
 };
 

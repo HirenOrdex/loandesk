@@ -38,4 +38,4 @@ const AddressSchema: Schema = new Schema<IAddress>(
   }
 );
 
-export const AddressModel = mongoose.model<IAddress>("address", AddressSchema);
+export const AddressModel = mongoose.model<IAddress>("Address", AddressSchema);
