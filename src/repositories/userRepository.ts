@@ -358,41 +358,4 @@ export class UserRepository {
       return `Error finding role by ID: ${roleId}`;
     }
   };
-
-   async updateUserById(userId: string, updateData: Partial<IUser>) {
-  try {
-    const user = await User.findById(userId);
-
-    if (!user) throw new Error("User not found");
-
-    // Merge or set fields if they don't exist
-    const fieldsToCheck = [
-      "address",
-      "workPhone",
-      "email2",
-      "linkedinUrl",
-      "websiteUrl"
-    ];
-
-    for (const field of fieldsToCheck) {
-      if (
-        typeof updateData[field as keyof IUser] !== "undefined" &&
-        !user[field as keyof IUser]
-      ) {
-        (user[field as keyof IUser] as any) = updateData[field as keyof IUser];
-      }
-    }
-
-    // Update other fields normally
-    Object.assign(user, updateData);
-
-    await user.save();
-
-    return user;
-  } catch (error) {
-    logger.error(`updateUserById error: ${error}`);
-    throw error;
-  }
-}
-
 }

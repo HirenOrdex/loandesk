@@ -6,7 +6,7 @@ const router = express.Router();
 
 // router.get("/profile", protect, getProfile); // Authenticated profile
 router.get("/profile/:id", getProfileById); // Public or admin usage
-router.put("/profile/:id", updateProfileById);
+router.patch("/profile/:id", updateProfileById);
 
 
 export default router;

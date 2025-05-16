@@ -17,11 +17,6 @@ export interface IUser extends Document {
   loginAttempts: number;
   lastLoginAttempt?: Date;
   phone?: string;
-   address?: string;
-  workPhone?: string;
-  email2?: string;
-  linkedinUrl?: string;
-  websiteUrl?: string;
   // passwordResetToken?: string | null;
   // passwordResetExpires?: Date | undefined | null;
   passwordChangedAt?: Date;
@@ -104,22 +99,6 @@ const userSchema = new Schema(
     //   type: String,
     //   default: "",
     // },
-    workPhone: {
-      type: String,
-      default: false,
-    },
-    email2: {
-      type: String,
-      default: false,
-    },
-    linkedinUrl: {
-      type: String,
-      default: false,
-    },
-    websiteUrl: {
-      type: String,
-      default: false,
-    },
     lastLoginAttempt: {
       type: Date,
       select: false,
