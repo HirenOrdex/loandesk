@@ -1,6 +1,6 @@
-# 📘 Keymono
+# 📘 ALoanMatic
 
-Keymono Frontend is a modern web application built with **React**, **Vite**, and **TypeScript**, providing a responsive and intuitive user interface for managing loan-related workflows.
+ALoanMatic Frontend is a modern web application built with **React**, **Vite**, and **TypeScript**, providing a responsive and intuitive user interface for managing loan-related workflows.
 
 ---
 
@@ -51,7 +51,7 @@ $ npm run build
 ## 📂 Project Structure
 
 ```bash
-keymono/
+aLoanMatic/
 └── client/                       # Frontend application (React + Vite + TypeScript)
     ├── dist/                     # Contains the production-ready bundled files for deployment.
     ├── node_modules/             # Stores all the dependencies required by the project.
