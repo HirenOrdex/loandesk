@@ -6,4 +6,6 @@ const router = Router();
 const newDealController = new NewDealController();
 // router.post("/bankers", validateBankerRequest, BankerController.createBanker);
 router.post("/borrower-company", BorrowerCompanyValidations, newDealController.createBorrowerCompany);
+router.post("/guarantors/:id", newDealController.createMultiple); // ✅ Correct
+router.get("/guarantors/:dealDataReqId", newDealController.getByDealDataReqId);
 export default router;

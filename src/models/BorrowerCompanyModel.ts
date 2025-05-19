@@ -14,11 +14,11 @@ export interface IBorrowerCompany extends Document {
 
 const borrowerCompanySchema = new Schema<IBorrowerCompany>(
   {
-    companyName: { type: String, required: true },
-    legalEntity: { type: String, required: true },
-    businessPhone: { type: String, required: true },
+    companyName: { type: String, required: false },
+    legalEntity: { type: String, required: false },
+    businessPhone: { type: String, required: false },
     website: { type: String },
-    addressId: { type: Schema.Types.ObjectId, ref: "Address", required: true },
+    addressId: { type: Schema.Types.ObjectId, ref: "Address", required: false },
     suite: { type: String },
     isDelete: { type: Boolean, default: false },
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: false },

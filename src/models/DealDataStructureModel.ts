@@ -20,46 +20,46 @@ const DealDataStructureSchema = new Schema<IDealDataStructure>(
     dealDataReqId: {
       type: Schema.Types.ObjectId,
       ref: "DealDataRequest",
-      required: true,
+      required: false,
     },
     loanType: {
       type: String,
-      required: true,
+      required: false,
     },
     loanAmount: {
       type: Number,
-      required: true,
+      required: false,
     },
     rate: {
       type: Number,
-      required: true,
+      required: false,
     },
     amortization: {
       type: Number,
-      required: true,
+      required: false,
     },
     paymentType: {
       type: String,
-      required: true,
+      required: false,
     },
     sba: {
       type: String,
-      required: true,
+      required: false,
     },
     term: {
       type: Number,
-      required: true,
+      required: false,
     },
     active: {
       type: String,
-      required: true,
+      required: false,
     },
     createdBy: { type: Schema.Types.ObjectId, ref: "User" },
     updatedBy: { type: Schema.Types.ObjectId, ref: "User" }, // Reference to User model
 
     updatedFlag: {
       type: String,
-      required: true,
+      required: false,
     },
   },
   {
