@@ -160,8 +160,8 @@ const AddressAutocomplete = ({ name, value, onChange, id }: AddressAutocompleteP
       country: place.address.country || "",
       longitude: place.lon,
       latitude: place.lat,
-      fulladdress: place.display_name,
-      suiteno: "",
+      fullAddress: place.display_name,
+      suiteNo: "",
     };
 
     onChange([payload]);
@@ -178,7 +178,7 @@ const AddressAutocomplete = ({ name, value, onChange, id }: AddressAutocompleteP
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         autoComplete="off"
-        style={{ width: "100%", padding: "8px" }}
+        style={{ width: "100%" }}
       />
 
       {results.length > 0 && (

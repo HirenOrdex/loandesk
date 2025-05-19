@@ -32,3 +32,10 @@ export const USE_STATIC_OTP = process.env.USE_STATIC_OTP!;
 export const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID!;
 export const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN!;
 export const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER;
+
+// #AWS
+export const AWS_REGION = process.env.AWS_REGION!;
+export const AWS_S3_BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME!;
+export const AWS_S3_AVATAR_FOLDER = process.env.AWS_S3_AVATAR_FOLDER!;
+export const AWS_S3_ACCESS_KEY = process.env.AWS_S3_ACCESS_KEY!;
+export const AWS_S3_SECRET_KEY = process.env.AWS_S3_SECRET_KEY!;

@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { NODE_ENV, USE_STATIC_OTP } from "../configs/envConfigs";
 import { logger } from "../configs/winstonConfig";
 import { IError } from "../types/errorType";
+import { sendOtpViaSms } from "../services/twilioService";
 
 /**
  * Generates a 6-digit OTP
@@ -18,7 +19,7 @@ export const generateOTP = async (phoneNumber: string): Promise<string> => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     // Send OTP via SMS using Twilio
-    // await sendOtpViaSms(phoneNumber, otp);
+    await sendOtpViaSms(phoneNumber, otp);
 
     return otp;
   } catch (err: unknown) {
