@@ -32,7 +32,7 @@ export const getProfileById = async (
       { $match: { _id: objectUserId } },
       {
         $lookup: {
-          from: "roles",
+          from: "role",
           localField: "roleId",
           foreignField: "_id",
           as: "roleData",
@@ -50,7 +50,7 @@ export const getProfileById = async (
       { $unwind: { path: "$personData", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
-          from: "addresses",
+          from: "address",
           localField: "personData.addressId",
           foreignField: "_id",
           as: "personAddressData",
@@ -59,7 +59,7 @@ export const getProfileById = async (
       { $unwind: { path: "$personAddressData", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
-          from: "bankers",
+          from: "banker",
           localField: "_id",
           foreignField: "userId",
           as: "bankerData",
@@ -68,7 +68,7 @@ export const getProfileById = async (
       { $unwind: { path: "$bankerData", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
-          from: "addresses",
+          from: "address",
           localField: "bankerData.addressId",
           foreignField: "_id",
           as: "bankerAddressData",
@@ -77,7 +77,7 @@ export const getProfileById = async (
       { $unwind: { path: "$bankerAddressData", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
-          from: "borrowers",
+          from: "borrower",
           localField: "_id",
           foreignField: "userId",
           as: "borrowerData",
