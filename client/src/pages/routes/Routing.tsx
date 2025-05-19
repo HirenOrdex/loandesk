@@ -18,6 +18,7 @@ import BorrowerDashboard from "../borrower/BorrowerDashboard";
 import CoiDashboard from "../coi/CoiDashboard";
 import AdminDashboard from "../admin/AdminDashboard";
 import GuarantorDashboard from "../Guarantor/GuarantorDashboard";
+import NewDealForm from "../dashboard/newdeal/NewDealForm";
 const Routing = () => {
     return (
         <>
@@ -44,6 +45,8 @@ const Routing = () => {
                         <Route path="/coi" element={<CoiDashboard />} />
                         <Route path="/admin" element={<AdminDashboard />} />
                         <Route path="/guarantor" element={<GuarantorDashboard />} />
+
+                        <Route path="/new-deal" element={<NewDealForm />} />
                     </Route>
                 </Route>
 

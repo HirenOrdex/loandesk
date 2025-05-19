@@ -1,36 +1,58 @@
 import React, { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
-import CompanyDetailsStep from "./CompanyDetailsStep";
-import GuarantorDetailsStep from "./GuarantorDetailsStep";
-import DealStructureStep from "./DealStructureStep";
-import AdditionalPeopleStep from "./AdditionalPeopleStep";
+import { INewDealStep1Form, INewDealStep2Form, NewDealFormStepData, newDealStepComponents, newDealStepFields, newDealStepFormMap, newDealSteps } from "../../../types/newDeal";
 import '../../../assets/css/new-deal-form.css'
 
-const steps = [
-    "Company Details",
-    "Guarantor Details",
-    "Deal Structure Details",
-    "Additional People Details",
-];
-
-const StepComponents = [
-    CompanyDetailsStep,
-    GuarantorDetailsStep,
-    DealStructureStep,
-    AdditionalPeopleStep,
-];
-
 const NewDealForm: React.FC = () => {
-    const form = useForm({ mode: "onChange" });
+    const form = useForm({
+        mode: "onChange",
+        shouldUnregister: false,
+    });
     const [currentStep, setCurrentStep] = useState(0);
+    const Step = newDealStepComponents[currentStep];
 
-    // next button function
+    console.log("Address field value:", form.watch("address"));
+
     const onNext = async () => {
-        const isStepValid = await form.trigger();
-        if (isStepValid) {
-            setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
+        const stepIndex = currentStep as keyof newDealStepFormMap;
+        const currentStepKeys = newDealStepFields[stepIndex];
+        const isStepValid = await form.trigger(currentStepKeys);
+
+        if (!isStepValid) return;
+
+        const fullData = form.getValues();
+
+        let currentStepData: newDealStepFormMap[typeof stepIndex];
+
+        if (stepIndex === 0) {
+            const fullDataTyped = fullData as INewDealStep1Form;
+            const stepKeys = currentStepKeys as (keyof INewDealStep1Form)[];
+            currentStepData = stepKeys.reduce((acc, key) => {
+                const value = fullDataTyped[key];
+                if (value !== undefined) {
+                    acc[key] = value;
+                }
+                return acc;
+            }, {} as INewDealStep1Form);
+        } else if (stepIndex === 1) {
+            const fullDataTyped = fullData as INewDealStep2Form;
+            const stepKeys = currentStepKeys as (keyof INewDealStep2Form)[];
+            currentStepData = stepKeys.reduce((acc, key) => {
+                acc[key] = fullDataTyped[key];
+                return acc;
+            }, {} as INewDealStep2Form);
+        } else {
+            console.error("Invalid step index:", stepIndex);
+            return;
         }
-        window.scrollTo(0, 0);
+
+        try {
+            await submitStepData(currentStep, currentStepData);
+            setCurrentStep((prev) => Math.min(prev + 1, newDealSteps.length - 1));
+            window.scrollTo(0, 0);
+        } catch (err) {
+            console.error("Failed to submit step data", err);
+        }
     };
 
     // back button function
@@ -39,11 +61,10 @@ const NewDealForm: React.FC = () => {
         window.scrollTo(0, 0);
     };
 
-    const onSubmit = form.handleSubmit((data) => {
-        console.log("Final Submission:", data);
-    });
+    const submitStepData = async (stepIndex: number, data: NewDealFormStepData) => {
+        console.log(`Submitting Step ${stepIndex + 1} Data:`, data);
+    };
 
-    const Step = StepComponents[currentStep];
 
     return (
         <>
@@ -51,7 +72,7 @@ const NewDealForm: React.FC = () => {
                 <div className="relative flex justify-between">
                     {/* Connecting lines */}
                     <div className="absolute left-0 right-0 top-[27px] h-[1px] bg-(--primary-color) z-0"></div>
-                    {steps.map((label, idx) => (
+                    {newDealSteps?.map((label, idx) => (
                         <div key={idx} className="relative z-10 flex flex-col items-center w-1/4">
                             {/* Circle */}
                             <div
@@ -71,7 +92,7 @@ const NewDealForm: React.FC = () => {
                 </div>
 
                 <FormProvider {...form}>
-                    <form onSubmit={onSubmit}>
+                    <form>
                         <Step />
 
                         <div
@@ -90,7 +111,7 @@ const NewDealForm: React.FC = () => {
                                     type="button"
                                     className="btn-main"
                                 >Save As Draft</button>
-                                {currentStep < steps.length - 1 ? (
+                                {currentStep < newDealSteps?.length - 1 ? (
                                     <button
                                         type="button"
                                         className="btn-main"
