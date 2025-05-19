@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import AlertMessage from '../../components/AlertMessage';
+import AlertMessage from '../../../components/AlertMessage';
 import { IoCloseSharp } from 'react-icons/io5';
 import { useFormContext, useFieldArray } from 'react-hook-form';
 

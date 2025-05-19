@@ -1,9 +1,9 @@
 import React from 'react'
-import AlertMessage from '../../components/AlertMessage'
+import AlertMessage from '../../../components/AlertMessage'
 import '../../assets/css/new-deal-form.css'
 import { InputMask } from '@react-input/mask'
 import { Controller, useFormContext } from 'react-hook-form'
-import AddressAutocomplete from '../../components/AddressAutocomplete'
+import AddressAutocomplete from '../../../components/AddressAutocomplete'
 
 type FormValues = {
   companyName: string;

@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { useFormContext, useFieldArray, Controller } from 'react-hook-form';
-import AddressAutocomplete from '../../components/AddressAutocomplete';
+import AddressAutocomplete from '../../../components/AddressAutocomplete';
 import { InputMask } from '@react-input/mask';
-import AlertMessage from '../../components/AlertMessage';
-import { IAddress } from '../../types/auth';
+import AlertMessage from '../../../components/AlertMessage';
+import { IAddress } from '../../../types/auth';
 import { IoCloseSharp } from 'react-icons/io5';
 
 type Member = {
