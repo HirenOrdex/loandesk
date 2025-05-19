@@ -1,0 +1,55 @@
+.new-deal-form .title-wrapper{
+    border-bottom: 1px dotted var(--border);
+}
+
+.new-deal-form .title-wrapper .title{
+    display: inline-block;
+    color: var(--primary-color);
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--primary-color);
+    font-family: "Open Sans-Semibold";
+}
+
+.new-deal-form .new-form-label{
+    font-size: .9rem;
+    font-family: 'Times New Roman', Times, serif;
+}
+
+.new-deal-form .btn-outline{
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-size: 14px;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+.new-deal-form .btn-outline:hover, .new-deal-form .btn-outline:focus{
+    background-color: var(--primary-color);
+    color: var(--white);
+}
+
+.new-deal-form .btn-outline:focus{
+    border: 1px solid #000;
+}
+
+.new-deal-form .btn-remove{
+    padding: 8px;
+    border-radius: 50%;
+    background-color: var(--color-red-600);
+    color: var(--white);
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.new-deal-form input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+.new-deal-form input[type=number] {
+    -moz-appearance:textfield; /* Firefox */
+    appearance: textfield;
+}
