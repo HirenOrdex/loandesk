@@ -7,6 +7,7 @@ export interface IUser extends Document {
   // changedPasswordAfter?: Date;
   _id: Types.ObjectId;
   firstName: string;
+  middleInitial?: string;
   lastName: string;
   email?: string;
   password?: string;
@@ -32,6 +33,7 @@ export interface IUser extends Document {
 const userSchema = new Schema(
   {
     firstName: { type: String, required: true },
+    middleInitial: { type: String, required: false },
     lastName: { type: String, required: true },
     email: {
       type: String,
@@ -108,6 +110,7 @@ const userSchema = new Schema(
   },
   {
     timestamps: true,
+    collection: "user", 
   }
 );
 

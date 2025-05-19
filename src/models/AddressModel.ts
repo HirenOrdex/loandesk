@@ -1,7 +1,6 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 
 export interface IAddress extends Document {
-  addressid: number;
   address1: string;
   address2: string;
   city: string;
@@ -10,8 +9,8 @@ export interface IAddress extends Document {
   country: string;
   longitude: string;
   latitude: string;
-  fulladdress: string;
-  suiteno: string;
+  fullAddress: string;
+  suiteNo: string;
   active: string;
   createdBy: Types.ObjectId;
   updatedby: Types.ObjectId;
@@ -19,7 +18,6 @@ export interface IAddress extends Document {
 
 const AddressSchema: Schema = new Schema<IAddress>(
   {
-    addressid: Number,
     address1: String,
     address2: String,
     city: String,
@@ -28,14 +26,15 @@ const AddressSchema: Schema = new Schema<IAddress>(
     country: String,
     longitude: String,
     latitude: String,
-    fulladdress: String,
-    suiteno: String,
+    fullAddress: String,
+    suiteNo: String,
     active: String,
     createdBy: { type: Schema.Types.ObjectId, ref: "User" },
     updatedby: { type: Schema.Types.ObjectId, ref: "User" },
   },
   {
     timestamps: true,
+    collection: "address"
   }
 );
 

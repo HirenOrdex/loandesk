@@ -335,7 +335,7 @@ export class UserRepository {
   }
   findRoleIdByName = async (roleName: string): Promise<any> => {
     try {
-      const role = await RoleModel.findOne({ rolename: roleName }).lean();
+      const role = await RoleModel.findOne({ roleName: roleName }).lean();
       if (role?._id) {
         return role?._id;
       } else {
@@ -351,7 +351,7 @@ export class UserRepository {
       console.log("role",roleId)
       const role = await RoleModel.findById(roleId).lean();
       if (role) {
-        return role.rolename;
+        return role.roleName;
       }
     } catch (error) {
       console.error(`Error finding role by ID: ${roleId}`, error);

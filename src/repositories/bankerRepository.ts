@@ -16,6 +16,7 @@ export class BankerRepossitory {
       // Create a new user
       const newUser = await UserModel.create({
         firstName: bankerData.firstName,
+        middleInitial: bankerData.middleInitial,
         lastName: bankerData.lastName,
         email: bankerData.email,
         password: bankerData.password, // Ensure this is hashed before passing
