@@ -195,8 +195,7 @@ export const updateProfileById = async (
     return res.status(errorResponse.statusCode).json(errorResponse);
   }
 
-  const session = await mongoose.startSession();
-  session.startTransaction();
+
 
   try {
     const userId = req.params.id;
@@ -286,14 +285,10 @@ export const updateProfileById = async (
       }
     }
     // === Update basic fields in UserModel ===
-    const user = await UserModel.findById(objectUserId).session(session);
+    const user = await UserModel.findById(objectUserId);
     if (!user) {
-      await session.abortTransaction();
-      session.endSession();
       logger.warn("User not found during profile update");
-
      return res.status(404).json({ success: false, message: "User not found" });
-      
     }
 
     let userModified = false;
@@ -323,7 +318,7 @@ export const updateProfileById = async (
     }
 
     if (userModified) {
-      await user.save({ session });
+      await user.save();
     }
 
     // === Update or Create PersonModel entry for extended fields ===
@@ -340,7 +335,7 @@ export const updateProfileById = async (
 
     const existingPerson = await PersonModel.findOne({
       userId: objectUserId,
-    }).session(session);
+    });
 
     if (!existingPerson) {
       await PersonModel.create(
@@ -352,21 +347,19 @@ export const updateProfileById = async (
             ...personUpdate,
           },
         ],
-        { session }
+        
       );
       logger.info(` userId: ${userId} Created new person entry `);
     } else {
       await PersonModel.updateOne(
         { userId: objectUserId },
         { $set: personUpdate },
-        { session }
+   
       );
       logger.info(` userId: ${userId} Updated person entry`);
     }
 
-    // Commit the transaction before aggregation
-    await session.commitTransaction();
-    session.endSession();
+   
 
     //pipeline
     const pipeline = [
@@ -474,8 +467,8 @@ export const updateProfileById = async (
      return res.status(404).json({
         success: false,
         data: null,
-        message: "Updated profile not found.",
         error: "No user profile found after update",
+        message: "Updated profile not found.",
       });
     }
 
@@ -490,8 +483,7 @@ export const updateProfileById = async (
       },
     });
   } catch (error: any) {
-    await session.abortTransaction();
-    session.endSession();
+
     logger.error(
       `UserId: ${req.params.id}: Error updating profile by ID: ${error.message}`
     );
