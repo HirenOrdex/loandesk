@@ -120,5 +120,5 @@ userSchema.methods.correctPassword = async function (
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-const UserModel = model<UserDocument>("user", userSchema);
+const UserModel = model<UserDocument>("User", userSchema);
 export default UserModel;

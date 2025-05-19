@@ -38,10 +38,10 @@ export const borrowerCompanySchema = Joi.object({
         latitude: Joi.string().required().messages({
           "any.required": `"latitude" is required in address`,
         }),
-        fulladdress: Joi.string().required().messages({
+        fullAddress: Joi.string().required().messages({
           "any.required": `"fulladdress" is required in address`,
         }),
-        suiteno: Joi.string().allow(null, ""),
+        suiteNo: Joi.string().allow(null, ""),
       })
     )
     .required()
