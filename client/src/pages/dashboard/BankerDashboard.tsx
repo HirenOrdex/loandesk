@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 
 const BankerDashboard = () => {
     const cardData = [
+        { title: 'New Deal', image: useriumg, extraImage: pluse, route: '/new-deal' },
         { title: 'Find A Match', image: findmatch },
         { title: 'Pipeline', image: pipeline },
         { title: 'Interview Calendar', image: interviewcalendar },
