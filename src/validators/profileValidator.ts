@@ -22,14 +22,30 @@ export const profileUpdateSchema = Joi.object({
       .messages({
         "string.uri": "linkedinUrl must be a valid URL",
       }),
-    addressId: Joi.string()
-      .hex()
-      .length(24)
-      .optional()
-      .allow(null, "")
-      .messages({
-        "string.length": "addressId must be a 24 character hex string",
-      }),
+      addressId: Joi.string()
+        .hex()
+        .length(24)
+        .optional()
+        .allow(null, "")
+        .messages({
+          "string.length": "addressId must be a 24 character hex string",
+        }),
+
+   address: Joi.array()
+       .items(
+         Joi.object({
+           address1: Joi.string().allow(null, ""),
+           address2: Joi.string().allow(null, ""),
+           city: Joi.string().allow(null, ""),
+           state: Joi.string().allow(null, ""),
+           zip: Joi.string().allow(null, ""),
+           country: Joi.string().allow(null, ""),
+           longitude: Joi.string().allow(null, ""),
+           latitude: Joi.string().allow(null, ""),
+           fullAddress: Joi.string().allow(null, ""),
+           suiteNo: Joi.string().allow(null, ""),
+         })
+       ),
   }).required(),
    profileImage: Joi.any().optional(),
 }).unknown(false);

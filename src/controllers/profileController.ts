@@ -8,6 +8,7 @@ import { ErrorResponse } from "../types/errorType";
 import { PersonData } from "../types/personType";
 import { AWS_S3_AVATAR_FOLDER } from "../configs/envConfigs";
 import { uploadFileToS3 } from "../services/uploadFileToS3.service";
+import { AddressModel } from "../models/AddressModel";
 
 export const getProfileById = async (
   req: Request,
@@ -198,7 +199,7 @@ const personData = typeof req.body.personData === 'string'
   ? JSON.parse(req.body.personData)
   : req.body;
 
-const {
+let {
   firstName,
   middleInitial,
   lastName,
@@ -209,8 +210,10 @@ const {
   linkedinUrl,
   webUrl,
   suiteNo,
-  addressId,
+  address,
 } = personData;
+
+let addressId
 
 
     // handle profileImage
@@ -222,6 +225,57 @@ const {
     }
 
 
+     const profile = await PersonModel.findOne({ userId });
+
+
+
+if (!profile) {
+
+  throw new Error("Profile not found");
+
+}
+
+console.log("aaaa",address[0]?.fullAddress)
+
+const currentAddress = await AddressModel.findOne({_id:profile.addressId});
+
+console.log("aaaa",currentAddress?.fullAddress)
+
+if (!currentAddress || currentAddress.fullAddress !== address[0]?.fullAddress) {
+
+  console.log("hhdkhsdksdkh")
+
+  const addressInput = Array.isArray(personData.address)
+
+    ? personData.address[0]
+
+    : personData.address;
+
+
+
+  if (addressInput) {
+
+    const addressWithCreator = {
+
+      ...addressInput,
+
+    };
+
+    const newAddress = await AddressModel.create(addressWithCreator);
+
+
+
+    console.log("New address created:", newAddress.fullAddress);
+
+    console.log("New address ID:", newAddress._id);
+
+
+
+    addressId = newAddress._id;
+
+  }
+
+}
     // === Update basic fields in UserModel ===
     const user = await UserModel.findById(objectUserId).session(session);
     if (!user) {
@@ -268,7 +322,7 @@ const {
   ...(suiteNo && { suiteNo }),
   ...(webUrl && { webUrl }),
   ...(linkedinUrl && { linkedinUrl: linkedinUrl }),
-  ...(addressId && { addressId: new mongoose.Types.ObjectId(addressId) }),
+  ...(addressId ? {addressId} : {}),
   profileImage: profileImage,
 };
 
