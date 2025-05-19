@@ -42,7 +42,9 @@ const AdditionalPeopleStep: React.FC = () => {
   });
 
   useEffect(() => {
-    if (!skipCOI && fields.length === 0) {
+    if (skipCOI) {
+      remove(); // remove all existing entries from the array
+    } else if (fields.length === 0) {
       append({
         COIfor: '',
         email1: '',
@@ -58,7 +60,7 @@ const AdditionalPeopleStep: React.FC = () => {
         titleRelationship: '',
       });
     }
-  }, [fields, append]);
+  }, [skipCOI]);
 
   const addPerson = () =>
     append({
