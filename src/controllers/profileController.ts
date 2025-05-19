@@ -6,6 +6,8 @@ import mongoose from "mongoose";
 import { profileUpdateSchema } from "../validators/profileValidator";
 import { ErrorResponse } from "../types/errorType";
 import { PersonData } from "../types/personType";
+import { AWS_S3_AVATAR_FOLDER } from "../configs/envConfigs";
+import { uploadFileToS3 } from "../services/uploadFileToS3.service";
 
 export const getProfileById = async (
   req: Request,
@@ -95,6 +97,7 @@ export const getProfileById = async (
           email2: "$personData.email2",
           webUrl: "$personData.webUrl",
           linkedinURL: "$personData.linkedinURL",
+          profileImage: "$personData.profileImage",
           role: "$roleData.name",
           userAddress: "$personAddressData",
           financialInstitutionName: "$bankerData.financialInstitutionName",
@@ -210,10 +213,12 @@ const {
 } = personData;
 
 
-// handle profileImage
-let profileImage: string | null = null;
+    // handle profileImage
+    let profileImage: string | null = null;
     if (req.file) {
-      profileImage = ``;
+      const file = req.file;
+      const result = await uploadFileToS3(file?.originalname, file?.buffer, AWS_S3_AVATAR_FOLDER);
+      profileImage = result.Location;
     }
 
 
