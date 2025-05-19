@@ -4,21 +4,17 @@ import { Schema, model, Document, Types } from "mongoose";
 export interface IPerson extends Document {
   userId?: Types.ObjectId;
   addressId: Types.ObjectId;
-  firstname: string;
-  middelname: string;
-  lastname: string;
-  birthdate: Date;
-  contact1: string;
-  contact2: string;
-  email1: string;
+  name: string;
+  birthDate: Date;
+  workPhone: string;
   email2: string;
-  companyname: string;
+  companyName: string;
   title: string;
   ssn: string;
   isUsCitizen: Boolean;
   profileimagepath: string;
-  websiteurl: string;
-  linkedinurl: string;
+  webURL: string;
+  linkedinUrl: string;
   organizationstructureid: number;
   active: string;
   createdBy: Types.ObjectId;
@@ -29,28 +25,24 @@ const PersonSchema = new Schema<IPerson>(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: false },
     addressId: { type: Schema.Types.ObjectId, ref: "Address" },
-    firstname: { type: String, required: false },
-    middelname: { type: String },
-    lastname: { type: String, required: false },
-    birthdate: { type: Date },
-    contact1: { type: String },
-    contact2: { type: String },
-    email1: { type: String },
+    name: { type: String, required: false },
+    birthDate: { type: Date },
+    workPhone: { type: String },
     email2: { type: String },
-    companyname: { type: String },
+    companyName: { type: String },
     title: { type: String },
     ssn: { type: String },
     isUsCitizen: { type: Boolean, required: false },
     profileimagepath: { type: String },
-    websiteurl: { type: String },
-    linkedinurl: { type: String },
+    webURL: { type: String },
+    linkedinUrl: { type: String },
     organizationstructureid: { type: Number },
     active: { type: String, required: false },
     createdBy: { type: Schema.Types.ObjectId, ref: "User" },
     updatedby: { type: Schema.Types.ObjectId, ref: "User" }, // Reference to User model
   },
   {
-    collection: "persons",
+    collection: "person",
     timestamps: true,
   }
 );

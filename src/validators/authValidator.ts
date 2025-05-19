@@ -144,10 +144,12 @@ export const validateRequest = (
     const { error } = schema.validate(req.body, { abortEarly: false });
 
     if (error) {
-      const errorMessage = error.details[0].message;
-      res.status(400).json({
-        status: "error",
-        message: errorMessage,
+      res.status(422).json({
+        message: "Validation error.",
+        errors: error.details.map((err) => ({
+          field: err.path.join("."),
+          message: err.message,
+        })),
       });
       return;
     }
@@ -178,10 +180,14 @@ export const validateRegister = (
   const { error } = schema.validate(req.body, { abortEarly: false });
 
   if (error) {
-    return res.status(400).json({
-      message: "Validation failed",
-      details: error.details.map((detail) => detail.message),
+    res.status(422).json({
+      message: "Validation error.",
+      errors: error.details.map((err) => ({
+        field: err.path.join("."),
+        message: err.message,
+      })),
     });
+    return;
   }
 
   next();

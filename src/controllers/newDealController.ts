@@ -3,6 +3,7 @@ import { newDealRepository } from "../repositories/newDealRepository";
 import { IBorrowerCompany } from "../models/BorrowerCompanyModel";
 import { logger } from "../configs/winstonConfig";
 import { Types } from "mongoose";
+const controllerName: string = "newDealController";
 
 export class NewDealController {
   private NewDealRepository: newDealRepository;
@@ -35,16 +36,23 @@ export class NewDealController {
       });
     }
   };
-   createMultiple:RequestHandler = async(req: Request, res: any) =>{
+  createMultiple: RequestHandler = async (req: Request, res: any) => {
     try {
       const { guarantors } = req.body;
-      const dealReqId = req.params.id
+      const dealReqId = req.params.id;
+      const functionName = "createMultiple";
+      logger.info(`[${controllerName}] → ${functionName} → Start`);
+      logger.debug(`Request path: ${dealReqId}`);
+      logger.debug(`Request Body: ${JSON.stringify(req.body)}`);
+      console.debug(`Request Body: ${JSON.stringify(req.body)}`);
+
       if (!Array.isArray(guarantors) || guarantors.length === 0) {
         return res.status(400).json({ message: "Invalid guarantor data" });
       }
-      console.log("thisss braeak ")
-      console.log("r",dealReqId)
-      const dealData = await this.NewDealRepository.findCompanyById(dealReqId.toString());
+
+      const dealData = await this.NewDealRepository.findCompanyById(
+        dealReqId.toString()
+      );
       const borrowerCompanyId = dealData.borrowerCompanyId; // extract just the ID
 
       const result = await this.NewDealRepository.createMultipleGuarantors(
@@ -54,18 +62,24 @@ export class NewDealController {
       );
 
       return res.status(201).json({
-        message: "Guarantors processed successfully",
+        success: true,
         data: result,
+        message: "Guarantors processed successfully",
+        error: null,
       });
     } catch (error: any) {
       console.error("Error in GuarantorController.createMultiple:", error);
-      return res.status(400).json({
-        message: error.message || "Failed to process guarantors",
+      return res.status(500).json({
+        success: false,
+
+        data: null,
+        message: "Failed to process guarantors",
+        error: error.message,
       });
     }
   }
 
-   getByDealDataReqId:RequestHandler= async(req: Request, res: Response) => {
+  getByDealDataReqId: RequestHandler = async (req: Request, res: Response) => {
     try {
       const { dealDataReqId } = req.params;
       const objectId = new Types.ObjectId(dealDataReqId);
@@ -75,4 +89,33 @@ export class NewDealController {
       res.status(500).json({ message: "Failed to fetch guarantors", error: error.message });
     }
   }
+  updateGuarantor: RequestHandler = async (req: Request, res: Response): Promise<any> => {
+    try {
+      const dealDataReqId = req.params.id;
+      const { guarantors } = req.body;
+      const functionName = "updateGuarantorsByDeal";
+
+      logger.info(`[${controllerName}] → ${functionName} → Start`);
+      logger.debug(`Request path: ${dealDataReqId}`);
+      logger.debug(`Request Body: ${JSON.stringify(req.body)}`);
+      console.debug(`Request Body: ${JSON.stringify(req.body)}`);
+      if (!Array.isArray(guarantors) || guarantors.length === 0) {
+        return res.status(400).json({ message: "Guarantors array is required" });
+      }
+      const updated = await this.NewDealRepository.updateGuarantorsByDealDataReqId(
+        dealDataReqId,
+        guarantors
+      );
+      return res.status(200).json({
+        message: "Guarantors updated successfully",
+        data: updated,
+      });
+    } catch (err) {
+      logger.error("Error in patchGuarantorsByDeal", err);
+      return res.status(500).json({
+        message: "Internal Server Error",
+        error: (err as Error).message,
+      });
+    }
+  };
 }

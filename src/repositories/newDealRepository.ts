@@ -6,6 +6,7 @@ import BorrowerCompanyModel, { IBorrowerCompany } from "../models/BorrowerCompan
 import { DealDataRequest } from "../models/DealDataRequestModel";
 import GuarantorModel from "../models/GuarantorModel";
 import { Person } from "../models/PersonModel";
+import { IError } from "../types/errorType";
 
 
 export class newDealRepository {
@@ -84,18 +85,20 @@ export class newDealRepository {
   async createGuarantor(data: any) {
     return GuarantorModel.create(data);
   }
-
   async createMultipleGuarantors(
-    guarantors: any[],
-    borrowerCompanyId: Types.ObjectId,
-    dealDataReqId: any
-  ) {
+  guarantors: any[],
+  borrowerCompanyId: Types.ObjectId,
+  dealDataReqId: any
+) {
+  try {
     const totalOwnership = guarantors.reduce(
       (sum, g) => sum + g.percentageOfOwnership,
       0
     );
 
     if (totalOwnership !== 100) {
+      console.warn("Total percentageOfOwnership is not 100");
+      logger.warn("Total percentageOfOwnership is not 100");
       throw new Error("Total percentageOfOwnership must equal 100");
     }
 
@@ -127,14 +130,26 @@ export class newDealRepository {
       const newGuarantor = await this.createGuarantor(guarantorPayload);
       results.push(newGuarantor);
     }
+    const crruentStep = await DealDataRequest.findByIdAndUpdate(dealDataReqId,{currentStep:2})
+    console.log("Successfully created multiple guarantors");
 
+    logger.info("Successfully created multiple guarantors");
     return results;
+  } catch (err: unknown) {
+ 
+    const error = err as IError;
+    console.error(`Error in createMultipleGuarantors: ${error.message}`, { error });
+ 
+    logger.error(`Error in createMultipleGuarantors: ${error.message}`, { error });
+    throw error;
   }
+}
 
-  async getByDealDataReqId(dealDataReqId: Types.ObjectId) {
-    return GuarantorModel.aggregate([
+ async getByDealDataReqId(dealDataReqId: Types.ObjectId) {
+  try {
+    const result = await GuarantorModel.aggregate([
       { $match: { dealDataReqId } },
-      // Lookup person details (assuming you have a Person collection)
+
       {
         $lookup: {
           from: "persons",
@@ -143,26 +158,8 @@ export class newDealRepository {
           as: "person",
         },
       },
-      {
-        $unwind: {
-          path: "$person",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      {
-        $lookup: {
-          from: "persons",
-          localField: "personId",
-          foreignField: "_id",
-          as: "person",
-        },
-      },
-      {
-        $unwind: {
-          path: "$person",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
+      { $unwind: { path: "$person", preserveNullAndEmptyArrays: true } },
+
       {
         $lookup: {
           from: "users",
@@ -171,13 +168,8 @@ export class newDealRepository {
           as: "user",
         },
       },
-      {
-        $unwind: {
-          path: "$user",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      // Lookup address details
+      { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+
       {
         $lookup: {
           from: "addresses",
@@ -186,13 +178,8 @@ export class newDealRepository {
           as: "address",
         },
       },
-      {
-        $unwind: {
-          path: "$address",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      // Lookup borrower company
+      { $unwind: { path: "$address", preserveNullAndEmptyArrays: true } },
+
       {
         $lookup: {
           from: "borrowercompanies",
@@ -201,13 +188,8 @@ export class newDealRepository {
           as: "borrowerCompany",
         },
       },
-      {
-        $unwind: {
-          path: "$borrowerCompany",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      // Project only necessary fields (optional)
+      { $unwind: { path: "$borrowerCompany", preserveNullAndEmptyArrays: true } },
+
       {
         $project: {
           isGuarantor: 1,
@@ -235,17 +217,104 @@ export class newDealRepository {
         },
       },
     ]);
+    console.log(`Fetched guarantors for dealDataReqId: ${dealDataReqId}`);
+
+    logger.info(`Fetched guarantors for dealDataReqId: ${dealDataReqId}`);
+    return result;
+  }catch (err: unknown) {
+        const error = err as IError;
+            console.error(`Error in getByDealDataReqId: ${error.message}`, { error });
+
+    logger.error(`Error in getByDealDataReqId: ${error.message}`, { error });
+    throw error;
   }
-  async findCompanyById(dealDataReqId: any) {
-    console.log("sdjkksjdjkdsjk");
-    const deal = await DealDataRequest.findOne({
-      borrowerCompanyId: dealDataReqId,
-    });
+}
+
+ async findCompanyById(dealDataReqId: any) {
+  try {
+    const deal = await DealDataRequest.findById(dealDataReqId);
 
     if (!deal) {
+      logger.warn(`No DealDataRequest found for borrowerCompanyId: ${dealDataReqId}`);
       throw new Error("DealDataRequest not found");
     }
 
     return deal;
+  } catch (err: unknown) {
+      const error = err as IError;
+          console.error(`Error in findCompanyById: ${error.message}`, { error });
+
+    logger.error(`Error in findCompanyById: ${error.message}`, { error });
+    throw error;
   }
+}
+async updateGuarantorsByDealDataReqId(
+  dealDataReqId: string,
+  guarantors: any[]
+) {
+  try {
+    const totalOwnership = guarantors.reduce(
+      (sum, g) => sum + g.percentageOfOwnership,
+      0
+    );
+
+    if (totalOwnership !== 100) {
+      logger.warn("Total percentageOfOwnership is not 100");
+      throw new Error("Total percentageOfOwnership must equal 100");
+    }
+
+    const updatedResults = [];
+
+    for (const g of guarantors) {
+      if (!g.guarantorId) {
+        throw new Error("guarantorId is required for update");
+      }
+
+      const existing = await GuarantorModel.findOne({
+        _id: g.guarantorId,
+        dealDataReqId,
+      });
+
+      if (!existing) {
+        throw new Error(`Guarantor not found with id ${g.guarantorId}`);
+      }
+
+      // Update person
+      if (g.person) {
+        await Person.findOneAndUpdate(existing.personId, g.person);
+      }
+
+      // Update address
+      if (g.person?.address && existing.addressId) {
+        await AddressModel.findByIdAndUpdate(existing.addressId, g.person.address, {
+          new: true,
+        });
+      }
+
+      // Update guarantor fields
+      await GuarantorModel.findByIdAndUpdate(
+        g.guarantorId,
+        {
+          isGuarantor: g.isGuarantor,
+          percentageOfOwnership: g.percentageOfOwnership,
+          numberOfCOI: g.numberOfCOI,
+          active: g.active,
+          updatedBy: g.updatedBy,
+        },
+        { new: true }
+      );
+
+      updatedResults.push({ guarantorId: g.guarantorId });
+    }
+    const crruentStep = await DealDataRequest.findByIdAndUpdate(dealDataReqId,{currentStep:2})
+
+    logger.info("Guarantors updated successfully", { dealDataReqId });
+    return updatedResults;
+  } catch (err) {
+    const error = err as IError;
+    logger.error(`Error updating guarantors: ${error.message}`, { error });
+    throw error;
+  }
+}
+
 }

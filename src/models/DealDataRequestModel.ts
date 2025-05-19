@@ -38,7 +38,23 @@ const DealDataRequestSchema = new Schema<IDealDataRequest>(
     requestedDate: { type: Date, required: false },
     channel: { type: String, required: false },
     initiatedBy: { type: String, required: false },
-    saveStatus: { type: String, required: false },
+    saveStatus: {
+      type: String,
+      enum: [
+        'DRAFT',
+        'INPROGRESS',
+        'INACTIVE',
+        'COMPLETE',
+        'PROPOSAL ISSUED',
+        'DEAL DECLINED',
+        'DEAL FUNDED',
+        'READY TO PARSE',
+        'ACCESSIBLE',
+        'DEAL COMPLETED'
+      ],
+      default: 'DRAFT',
+      required: false,
+    },
     fundedDate: { type: Date },
     organizationStructureId: { type: Number, required: false },
     isParsing: { type: String },
@@ -51,7 +67,7 @@ const DealDataRequestSchema = new Schema<IDealDataRequest>(
     updatedby: { type: Schema.Types.ObjectId, ref: "User" }, // Reference to User model
   },
   {
-    collection: "dealdatarequest",
+    collection: "dealDataRequest",
     timestamps: true,
   }
 );
