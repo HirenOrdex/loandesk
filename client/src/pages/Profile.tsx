@@ -1,30 +1,26 @@
 import { InputMask } from '@react-input/mask'
-import React, { useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import AlertMessage from '../components/AlertMessage'
 import { FaPencil } from 'react-icons/fa6'
 import defaultAvatar from '../assets/imgs/default-profile.png'
 import { Controller, useForm } from 'react-hook-form'
 import AddressAutocomplete from '../components/AddressAutocomplete'
+import { IProfileFormInput } from '../types/profile'
+import { useGetProfileDataQuery } from '../services/profileApi'
+import { getCookie } from '../services/commonServices/cookie'
+import { useDispatch } from 'react-redux'
+import useSetProfileData from '../hooks/profile/useSetProfileData'
+import { IAddress } from '../types/auth'
+import { useUpdateProfile } from '../hooks/profile/useMyProfile'
 
-type FormValues = {
-    firstName: string;
-    middleName?: string;
-    lastName: string;
-    cellPhone: string;
-    workPhone?: string;
-    address: string;
-    suiteNumber?: string;
-    email2?: string;
-    websiteUrl?: string;
-    linkedInUrl?: string;
-    profileImage: File | null;
-};
+
 
 const Profile: React.FC = () => {
-
-    // const [profileImage, setProfileImage] = useState<string | null>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
-
+    const dispatch = useDispatch()
+    const userData = getCookie("keymonoUserData", dispatch)
+    const { data: getProfileData, isSuccess, refetch, isLoading, isFetching } = useGetProfileDataQuery(userData?.id, {
+        skip: !userData?.id,
+    })
     const {
         register,
         handleSubmit,
@@ -32,10 +28,30 @@ const Profile: React.FC = () => {
         watch,
         control,
         formState: { errors },
-    } = useForm<FormValues>();
+    } = useForm<IProfileFormInput>();
+    const {
+        handleProfileUpdate,
+    } = useUpdateProfile();
+    const setProfileDetails = useSetProfileData(setValue); // Initialize custom hook
+    console.log("getProfileData", getProfileData);
 
-    const onSubmit = (data: FormValues) => {
+    // const [profileImage, setProfileImage] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+
+
+    useEffect(() => {
+        if (userData?.id && isSuccess) {
+            refetch(); // This will trigger the refetch when the tab is active
+            if (getProfileData) {
+                setProfileDetails(getProfileData); // Pass data to the custom hook
+            }
+        }
+    }, [refetch, getProfileData, setProfileDetails]);
+
+    const onSubmit = (data: IProfileFormInput) => {
         console.log('Form Submitted:', data);
+        handleProfileUpdate(data,userData?.id)
     };
     const profileImage = watch('profileImage');
 
@@ -121,7 +137,7 @@ const Profile: React.FC = () => {
                         <input
                             type="text"
                             id="middleName"
-                            {...register('middleName')}
+                            {...register('middleInitial')}
                         />
                     </div>
                     <div className="mb-3">
@@ -149,10 +165,10 @@ const Profile: React.FC = () => {
                             inputMode='numeric'
                             // name='cellPhone'
                             replacement={{ _: /\d/ }}
-                            {...register('cellPhone', { required: 'Business Phone number is required' })}
+                            {...register('phone', { required: 'Business Phone number is required' })}
                         />
                         {/* <span className='error-msg'>Business phone number is required</span> */}
-                        {errors.cellPhone && <span className='error-msg'>{errors.cellPhone.message}</span>}
+                        {errors.phone && <span className='error-msg'>{errors.phone.message}</span>}
                     </div>
                     <div className="mb-3">
                         <label htmlFor="workPhone" className="mb-2">Work Phone</label>
@@ -175,10 +191,10 @@ const Profile: React.FC = () => {
                     {/* <input
                         type="text"
                         id="address" */}
-                         {/* name='address' */}
+                    {/* name='address' */}
 
                     <Controller
-                        name="address"
+                        name="addressId"
                         control={control}
                         rules={{ required: "Address is required" }}
                         render={({ field }) => (
@@ -188,14 +204,12 @@ const Profile: React.FC = () => {
                                 value={field.value?.[0] || ""}
                             />
                         )}
+
                     />
-                    {errors.address && (
-                        <span className="error-msg">{errors.address.message}</span>
+                    {errors.addressId && (
+                        <span className="error-msg">{errors.addressId.message}</span>
                     )}
-                                                                
-                    {/* /> */}
-                    {/* <span className='error-msg'>Address is required</span> */}
-                    {errors.address && <span className='error-msg'>{errors.address.message}</span>}
+
                 </div>
 
                 {/* suite number */}
@@ -205,7 +219,7 @@ const Profile: React.FC = () => {
                         type="text"
                         id="suiteNumber"
                         // name='suiteNumber'
-                        {...register('suiteNumber')}
+                        {...register('suiteNo')}
                     />
                 </div>
 
@@ -215,8 +229,7 @@ const Profile: React.FC = () => {
                     <input
                         type="email"
                         id="email1"
-                        name='email1'
-                        value={"abc@gmail.com"}
+                        {...register('email')}
                         disabled
                     />
                 </div>
@@ -227,8 +240,6 @@ const Profile: React.FC = () => {
                     <input
                         type="email"
                         id="email2"
-                        // name='email2'
-
                         {...register("email2", {
                             pattern: {
                                 value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
@@ -244,8 +255,7 @@ const Profile: React.FC = () => {
                     <input
                         type="text"
                         id="websiteUrl"
-                        // name='websiteUrl'
-                        {...register('websiteUrl')}
+                        {...register('webUrl')}
                     />
                 </div>
 
@@ -255,8 +265,7 @@ const Profile: React.FC = () => {
                     <input
                         type="text"
                         id="linkedInUrl"
-                        // name='linkedInUrl'
-                        {...register('linkedInUrl')}
+                        {...register('linkedinUrl')}
                     />
                 </div>
 

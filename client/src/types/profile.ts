@@ -1,3 +1,5 @@
+import { IAddress } from "./auth";
+
 export interface IProfileAddress {
     address1: string;
     address2?: string;
@@ -8,23 +10,57 @@ export interface IProfileAddress {
     suiteNo?: string;
 }
 
+// export interface IProfileFormInput {
+//     firstName: string;
+//     middleName?: string;
+//     lastName: string;
+//     cellPhone: string;
+//     workPhone?: string;
+//     email2?: string;
+//     websiteUrl?: string;
+//     linkedinUrl?: string;
+//     address: IProfileAddress;
+//     profileImage?: string;
+// }
+
 export interface IProfileFormInput {
     firstName: string;
-    middleName?: string;
+    middleInitial?: string;
     lastName: string;
-    cellPhone: string;
+    phone: string;
     workPhone?: string;
+    addressId: string;
+    suiteNo?: string;
+    email: string;
     email2?: string;
-    websiteUrl?: string;
+    webUrl?: string;
     linkedinUrl?: string;
-    address: IProfileAddress;
-    profileImage?: string;
+    profileImage: File | null;
+};
+export interface IGetProfileResponse {
+    success: boolean;
+    data: {
+        firstName: string;
+        middleInitial?: string;
+        lastName: string;
+        phone: string;
+        workPhone?: string;
+        addressId: string;
+        suiteNo?: string;
+        email: string;
+        email2?: string;
+        webUrl?: string;
+        linkedinUrl?: string;
+        profileImage: File | null;
+        fInsAddress: {
+            fulladdress: string
+        }
+    };
+    message: string;
 }
-
 export interface IProfileResponse {
     success: boolean;
     data: any;
     error: string | null;
     message: string;
 }
-  

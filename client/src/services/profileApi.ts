@@ -1,6 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQuery } from './commonServices/baseQueryWithErrorHandler';
-import { IProfileFormInput, IProfileResponse } from '../types/profile';
+import { IGetProfileResponse, IProfileFormInput, IProfileResponse } from '../types/profile';
 
 
 export const profileApi = createApi({
@@ -8,16 +8,22 @@ export const profileApi = createApi({
     baseQuery: baseQuery,
     endpoints: (builder) => ({
         myprofile: builder.mutation<IProfileResponse, { id: string; data: IProfileFormInput }>({
-            query: ({id, data}) => ({
+            query: ({ id, data }) => ({
                 url: `/api/profile/${id}`,
                 method: "PATCH",
                 body: data,
             }),
         }),
-
+        getProfileData: builder.query<IGetProfileResponse, string | undefined>({
+            query: (id: string | undefined) => ({
+                url: `/api/profile/${id}`,
+                method: 'GET',
+            }),
+        }),
     }),
 });
 
 export const {
     useMyprofileMutation,
+    useGetProfileDataQuery,
 } = profileApi;
