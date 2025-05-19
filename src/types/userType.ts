@@ -15,6 +15,7 @@ export interface CompanyInfo {
 export interface IUser {
   _id: Types.ObjectId;
   firstName: string;
+  middleInitial:string;
   lastName: string;
   phone: string;
   email: string;

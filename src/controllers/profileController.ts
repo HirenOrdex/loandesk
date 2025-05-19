@@ -1,12 +1,11 @@
 import { Request, Response } from "express";
-import { UserRepository } from "../repositories/userRepository";
-import { BankerRepossitory } from "../repositories/bankerRepository";
-import { BorrowerRepository } from "../repositories/borrowerRepository";
 import { logger } from "../configs/winstonConfig";
 import PersonModel from "../models/Person";
 import UserModel from "../models/User";
 import mongoose from "mongoose";
 import { profileUpdateSchema } from "../validators/profileValidator";
+import { ErrorResponse } from "../types/errorType";
+import { PersonData } from "../types/personType";
 
 export const getProfileById = async (
   req: Request,
@@ -94,7 +93,7 @@ export const getProfileById = async (
           phone: 1,
           workPhone: "$personData.workPhone",
           email2: "$personData.email2",
-          webURL: "$personData.webURL",
+          webUrl: "$personData.webUrl",
           linkedinURL: "$personData.linkedinURL",
           role: "$roleData.name",
           userAddress: "$personAddressData",
@@ -144,13 +143,33 @@ export const getProfileById = async (
 
 export const updateProfileById = async (req: Request, res: Response): Promise<void> => {
 
-  const { error } = profileUpdateSchema.validate(req.body, { abortEarly: false });
+ let dataToValidate: { personData?: PersonData;} = { ...req.body };
+
+  if (typeof req.body.personData === "string") {
+    try {
+      dataToValidate.personData = JSON.parse(req.body.personData);
+    } catch (e: any) {
+      const errorResponse: ErrorResponse = {
+        success: false,
+        message: "Invalid JSON format in personData",
+        statusCode: 400,
+        details: [e.message],
+      };
+      res.status(errorResponse.statusCode).json(errorResponse);
+      return;
+    }
+  }
+
+  // Validate the parsed data
+  const { error } = profileUpdateSchema.validate(dataToValidate, { abortEarly: false });
   if (error) {
-    res.status(400).json({
+    const errorResponse: ErrorResponse = {
       success: false,
       message: "Validation failed",
+      statusCode: 400,
       details: error.details.map((d) => d.message),
-    });
+    };
+    res.status(errorResponse.statusCode).json(errorResponse);
     return;
   }
 
@@ -160,24 +179,43 @@ export const updateProfileById = async (req: Request, res: Response): Promise<vo
   try {
     const userId = req.params.id;
     if (!userId) {
-      res.status(400).json({ success: false, message: "User ID is required." });
-      return;
-    }
+      const errorResponse: ErrorResponse = {
+      success: false,
+      message: "User ID is required.",
+      statusCode: 400,
+    };
+    res.status(errorResponse.statusCode).json(errorResponse);
+    return;
+  }
 
     const objectUserId = new mongoose.Types.ObjectId(userId);
 
     // Extract fields from request body
-    const {
-      firstName,
-      lastName,
-      email,
-      phone,
-      workPhone,
-      email2,
-      webURL,
-      linkedinUrl,
-      addressId,
-    } = req.body;
+const personData = typeof req.body.personData === 'string'
+  ? JSON.parse(req.body.personData)
+  : req.body;
+
+const {
+  firstName,
+  middleInitial,
+  lastName,
+  email,
+  phone,
+  workPhone,
+  email2,
+  linkedinUrl,
+  webUrl,
+  suiteNo,
+  addressId,
+} = personData;
+
+
+// handle profileImage
+let profileImage: string | null = null;
+    if (req.file) {
+      profileImage = ``;
+    }
+
 
     // === Update basic fields in UserModel ===
     const user = await UserModel.findById(objectUserId).session(session);
@@ -194,6 +232,12 @@ export const updateProfileById = async (req: Request, res: Response): Promise<vo
       user.firstName = firstName;
       userModified = true;
     }
+
+      if (middleInitial && middleInitial !== user.middleInitial) {
+      user.middleInitial = middleInitial;
+      userModified = true;
+    }
+
     if (lastName && lastName !== user.lastName) {
       user.lastName = lastName;
       userModified = true;
@@ -213,31 +257,32 @@ export const updateProfileById = async (req: Request, res: Response): Promise<vo
 
     // === Update or Create PersonModel entry for extended fields ===
     const personUpdate: Record<string, any> = {
-      updatedby: userId,
-    };
+  updatedby: userId,
+  ...(workPhone && { workPhone }),
+  ...(email2 && { email2 }),
+  ...(suiteNo && { suiteNo }),
+  ...(webUrl && { webUrl }),
+  ...(linkedinUrl && { linkedinUrl: linkedinUrl }),
+  ...(addressId && { addressId: new mongoose.Types.ObjectId(addressId) }),
+  profileImage: profileImage,
+};
 
-    if (typeof workPhone === "string") personUpdate.workPhone = workPhone;
-    if (typeof email2 === "string") personUpdate.email2 = email2;
-    if (typeof webURL === "string") personUpdate.webURL = webURL;
-    if (typeof linkedinUrl === "string") personUpdate.linkedinurl = linkedinUrl;
-    if (typeof addressId === "string") personUpdate.addressId = new mongoose.Types.ObjectId(addressId);
-
-    const existingPerson = await PersonModel.findOne({ userid: objectUserId }).session(session);
+    const existingPerson = await PersonModel.findOne({ userId: objectUserId }).session(session);
 
     if (!existingPerson) {
       await PersonModel.create(
         [
           {
-            userid: objectUserId,
-            createdby: userId,
-            updatedby: userId,
+            userId: objectUserId,
+            createdBy: userId,
+            updatedBy: userId,
             ...personUpdate,
           },
         ],
         { session }
       );
     } else {
-      await PersonModel.updateOne({ userid: objectUserId }, { $set: personUpdate }, { session });
+      await PersonModel.updateOne({ userId: objectUserId }, { $set: personUpdate }, { session });
     }
 
     // Commit the transaction before aggregation
@@ -250,7 +295,7 @@ export const updateProfileById = async (req: Request, res: Response): Promise<vo
       { $match: { _id: objectUserId } },
       {
         $lookup: {
-          from: "roles",
+          from: "role",
           localField: "roleId",
           foreignField: "_id",
           as: "roleData",
@@ -268,7 +313,7 @@ export const updateProfileById = async (req: Request, res: Response): Promise<vo
       { $unwind: { path: "$personData", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
-          from: "addresses",
+          from: "address",
           localField: "personData.addressId",
           foreignField: "_id",
           as: "personAddressData",
@@ -277,7 +322,7 @@ export const updateProfileById = async (req: Request, res: Response): Promise<vo
       { $unwind: { path: "$personAddressData", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
-          from: "bankers",
+          from: "banker",
           localField: "_id",
           foreignField: "userId",
           as: "bankerData",
@@ -286,7 +331,7 @@ export const updateProfileById = async (req: Request, res: Response): Promise<vo
       { $unwind: { path: "$bankerData", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
-          from: "addresses",
+          from: "address",
           localField: "bankerData.addressId",
           foreignField: "_id",
           as: "bankerAddressData",
@@ -295,7 +340,7 @@ export const updateProfileById = async (req: Request, res: Response): Promise<vo
       { $unwind: { path: "$bankerAddressData", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
-          from: "borrowers",
+          from: "borrower",
           localField: "_id",
           foreignField: "userId",
           as: "borrowerData",
@@ -312,8 +357,9 @@ export const updateProfileById = async (req: Request, res: Response): Promise<vo
           phone: 1,
           workPhone: "$personData.workPhone",
           email2: "$personData.email2",
-          webURL: "$personData.webURL",
-          linkedinURL: "$personData.linkedinURL",
+          suiteNo: "$personData.suiteNo",
+          webUrl: "$personData.webUrl",
+          linkedinUrl: "$personData.linkedinURL",
           role: "$roleData.name",
           userAddress: "$personAddressData",
           financialInstitutionName: "$bankerData.financialInstitutionName",
@@ -353,13 +399,15 @@ export const updateProfileById = async (req: Request, res: Response): Promise<vo
     await session.abortTransaction();
     session.endSession();
     logger.error(`Error updating profile by ID: ${error.message}`);
-    res.status(500).json({
+    const errorResponse: ErrorResponse = {
       success: false,
       message: "Internal Server Error",
+      statusCode: 500,
       error: error.message,
-    });
+    };
+    res.status(errorResponse.statusCode).json(errorResponse);
   }
-};
+}; 
 
 
 

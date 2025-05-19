@@ -1,12 +1,10 @@
 import express from "express";
 import {  getProfileById, updateProfileById } from "../controllers/profileController";
-import { protect } from "../middlewares/authMiddleware";
+import upload from "../middlewares/upload";
 
 const router = express.Router();
 
-// router.get("/profile", protect, getProfile); // Authenticated profile
-router.get("/profile/:id", getProfileById); // Public or admin usage
-router.patch("/profile/:id", updateProfileById);
-
+router.get("/profile/:id", getProfileById); 
+router.patch("/profile/:id",upload.single("profileImage"), updateProfileById);
 
 export default router;
