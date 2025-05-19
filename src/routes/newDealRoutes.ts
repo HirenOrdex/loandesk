@@ -8,5 +8,7 @@ const newDealController = new NewDealController();
 router.post("/borrower-company", BorrowerCompanyValidations, newDealController.createBorrowerCompany);
 router.post("/guarantors/:id", newDealController.createMultiple); 
 router.get("/guarantors/:dealDataReqId",guarantorCreateValidations, newDealController.getByDealDataReqId);
+router.patch("/borrower-company/:id", BorrowerCompanyValidations, newDealController.updateBorrowerCompany);
+router.get("/borrower-company/:id", newDealController.getBorrowerCompanyById);
 router.patch("/guarantors/:id",newDealController.updateGuarantor)
 export default router;

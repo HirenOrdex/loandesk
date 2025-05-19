@@ -6,11 +6,12 @@ import BorrowerCompanyModel, { IBorrowerCompany } from "../models/BorrowerCompan
 import { DealDataRequest } from "../models/DealDataRequestModel";
 import GuarantorModel from "../models/GuarantorModel";
 import { Person } from "../models/PersonModel";
+import { IBorrowerCompanyRequest } from "../types/newDeal.type";
 import { IError } from "../types/errorType";
 
 
 export class newDealRepository {
-  async createBorrowerCompany(data: any): Promise<IBorrowerCompany> {
+  async createBorrowerCompany(data: any): Promise<{ borrowerCompany: IBorrowerCompany; dealDataRequestId: string }> {
     try {
       // Step 1: Create Address (if provided)
       let newAddress = null;
@@ -54,7 +55,7 @@ export class newDealRepository {
       const referenceNo = `LH-S${newNumber}`;
 
       // Step 4: Create DealDataRequest
-      await DealDataRequest.create({
+      const newDeal = await DealDataRequest.create({
         referenceNo,
         borrowerCompanyId: newBorrowerCompany._id,
         currentStep: 1,
@@ -62,7 +63,10 @@ export class newDealRepository {
         active: true,
       });
 
-      return newBorrowerCompany;
+      return {
+        borrowerCompany: newBorrowerCompany,
+        dealDataRequestId: String(newDeal._id),
+      };
     } catch (error: unknown) {
       const err = error as Error;
       console.error(`Error creating borrower company: ${err.message}`);
@@ -70,6 +74,7 @@ export class newDealRepository {
       throw new Error(`Error creating borrower company: ${err.message}`);
     }
   }
+
   async findOrUpdatePerson(personData: any) {
     let person = await Person.findOne({ email1: personData.email1 });
 
@@ -317,4 +322,102 @@ async updateGuarantorsByDealDataReqId(
   }
 }
 
+  async updateBorrowerCompany(borrowerCompanyId: string,updateData: IBorrowerCompanyRequest): Promise<{ borrowerCompany: IBorrowerCompany | null; dealDataRequestId: string | null }> {
+
+    try {
+      // 1. Find the borrower company
+      const borrowerCompany = await BorrowerCompanyModel.findById(borrowerCompanyId);
+      if (!borrowerCompany) {
+        throw new Error("Borrower company not found");
+      }
+      console.log("borrowerCompany....", borrowerCompany);
+
+      if (updateData.address && updateData.address[0]) {
+        await AddressModel.findByIdAndUpdate(
+          borrowerCompany.addressId,
+          { $set: updateData.address[0] }, // ✅ pass actual address data
+          { new: true, runValidators: true }
+        );
+      }
+
+      // 3. Remove address from updateData
+      const { address, ...borrowerCompanyData } = updateData;
+
+      // 4. Update borrower company fields
+      const updatedCompany = await BorrowerCompanyModel.findByIdAndUpdate(
+        borrowerCompanyId,
+        { $set: borrowerCompanyData },
+        { new: true, runValidators: true }
+      );
+      const deal = await DealDataRequest.findOne({ borrowerCompanyId }).select("_id").lean();
+      
+      return {
+        borrowerCompany: updatedCompany,
+        dealDataRequestId: deal ? String(deal._id) : null
+      };
+    } catch (error: any) {
+      console.error("Error updating borrower company and address:", error.message);
+      throw new Error("Failed to update borrower company and address");
+    }
+  }
+  async getBorrowerCompanyById(id: string): Promise<IBorrowerCompany | null> {
+    try {
+
+      const result = await DealDataRequest.aggregate([
+        {
+          $match: { _id: new Types.ObjectId(id) }
+        },
+        {
+          $lookup: {
+            from: "borrowerCompany",
+            localField: "borrowerCompanyId",
+            foreignField: "_id",
+            as: "borrowerCompany"
+          }
+        },
+        {
+          $unwind: {
+            path: "$borrowerCompany",
+            preserveNullAndEmptyArrays: false
+          }
+        },
+        {
+          $lookup: {
+            from: "address",
+            localField: "borrowerCompany.addressId",
+            foreignField: "_id",
+            as: "borrowerCompany.address"
+          }
+        },
+        {
+          $unwind: {
+            path: "$borrowerCompany.address",
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $addFields: {
+            dealDataRequestId: "$_id",
+            "borrowerCompany.borrowerCompanyId": "$borrowerCompany._id",
+            "borrowerCompany.address.addressId": "$borrowerCompany.address._id"
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            "borrowerCompany._id": 0,
+            "borrowerCompany.address._id": 0
+          }
+        }
+      ]);
+      if (!result || result.length === 0) {
+        throw new Error("Borrower company not found");
+      }
+
+      return result[0]; // Return the enriched deal + company + address
+    } catch (error: any) {
+      console.error("Error in getBorrowerCompanyById:", error.message);
+      throw new Error("Failed to retrieve borrower company data");
+    }
+  }
 }

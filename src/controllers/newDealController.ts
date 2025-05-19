@@ -5,6 +5,7 @@ import { logger } from "../configs/winstonConfig";
 import { Types } from "mongoose";
 const controllerName: string = "newDealController";
 
+
 export class NewDealController {
   private NewDealRepository: newDealRepository;
 
@@ -13,14 +14,19 @@ export class NewDealController {
   }
 
   createBorrowerCompany: RequestHandler = async (req: Request, res: any) => {
+    const functionName = "createBorrowerCompany";
+    logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
     try {
       const data: IBorrowerCompany = req.body;
 
-      const newBorrowerCompany = await this.NewDealRepository.createBorrowerCompany(data);
-      logger.info(`BorrowerCompany created successfully with ID: ${newBorrowerCompany._id}`);
+      const { borrowerCompany, dealDataRequestId } = await this.NewDealRepository.createBorrowerCompany(data);
+      logger.info(`BorrowerCompany created successfully with ID: ${borrowerCompany._id}`);
       return res.status(200).json({
         success: true,
-        data: newBorrowerCompany,
+        data: {
+          borrowerCompany,
+          dealDataRequestId,
+        },
         message: "Borrower company created successfully",
         error: null,
       });
@@ -89,6 +95,85 @@ export class NewDealController {
       res.status(500).json({ message: "Failed to fetch guarantors", error: error.message });
     }
   }
+
+  updateBorrowerCompany: RequestHandler = async (req: Request, res: any) => {
+    const functionName = "updateBorrowerCompany";
+    logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
+
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+
+      if (!id) {
+        return res.status(400).json({
+          success: false,
+          data: null,
+          message: "Missing borrower company ID in request params",
+          error: "ID is required",
+        });
+      }
+
+      const { borrowerCompany, dealDataRequestId } = await this.NewDealRepository.updateBorrowerCompany(id, updateData);
+      if (!borrowerCompany) {
+        return res.status(404).json({
+          success: false,
+          data: null,
+          message: "Borrower company not found",
+          error: "Not Found",
+        });
+      }
+
+      logger.info(`BorrowerCompany updated successfully with ID: ${borrowerCompany._id}`);
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          borrowerCompany,
+          dealDataRequestId,
+        },
+        message: "Borrower company updated successfully",
+        error: null,
+      });
+    } catch (error: unknown) {
+      const err = error as Error;
+      logger.error(`Error in controller while updating borrower company: ${err.message}`);
+      return res.status(500).json({
+        success: false,
+        data: null,
+        message: "Internal server error",
+        error: err.message,
+      });
+    }
+  };
+  getBorrowerCompanyById: RequestHandler = async (req: Request, res: any) => {
+    const functionName = "getBorrowerCompanyById";
+    logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
+
+    try {
+      const borrowerCompanyId = req.params.id;
+
+      logger.info(`Entering ${controllerName} - ${functionName} with ID: ${borrowerCompanyId}`);
+
+      const borrowerCompany = await this.NewDealRepository.getBorrowerCompanyById(borrowerCompanyId);
+
+      return res.status(200).json({
+        success: true,
+        data: borrowerCompany,
+        message: "Borrower company fetched successfully",
+        error: null,
+      });
+    } catch (error: any) {
+      console.error(`Error in ${functionName}:`, error.message);
+      logger.error(`Error in ${functionName}: ${error.message}`);
+      return res.status(500).json({
+        success: false,
+        data: null,
+        message: "Failed to fetch borrower company",
+        error: error.message,
+      });
+    }
+  };
+
   updateGuarantor: RequestHandler = async (req: Request, res: Response): Promise<any> => {
     try {
       const dealDataReqId = req.params.id;
