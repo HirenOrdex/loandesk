@@ -52,7 +52,7 @@ const DealStructureStep: React.FC = () => {
             </>
           )}
 
-          <div className='title-wrapper mb-5 flex justify-between items-center'>
+          <div className='title-wrapper mb-5 flex justify-between items-center flex-wrap gap-3'>
             <span className='title'>Deals Structure Loan-{index + 1}</span>
             <div className='flex items-center gap-2'>
               {index === 0 ? (

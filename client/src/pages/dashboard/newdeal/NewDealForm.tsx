@@ -4,6 +4,7 @@ import CompanyDetailsStep from "./CompanyDetailsStep";
 import GuarantorDetailsStep from "./GuarantorDetailsStep";
 import DealStructureStep from "./DealStructureStep";
 import AdditionalPeopleStep from "./AdditionalPeopleStep";
+import '../../../assets/css/new-deal-form.css'
 
 const steps = [
     "Company Details",
@@ -74,7 +75,7 @@ const NewDealForm: React.FC = () => {
                         <Step />
 
                         <div
-                            className="flex justify-between mt-8 [&_button]:!py-[8px] [&_button]:!px-[10px] [&_button]:!text-sm [&_button]:!font-normal">
+                            className="flex flex-wrap gap-3 sm:justify-between mt-8 [&_button]:!py-[8px] [&_button]:!px-[10px] [&_button]:!text-sm [&_button]:!font-normal">
                             {currentStep > 0 && (
                                 <button
                                     type="button"
@@ -84,7 +85,7 @@ const NewDealForm: React.FC = () => {
                                     Previous
                                 </button>
                             )}
-                            <div className="ms-auto space-x-2">
+                            <div className="sm:ms-auto space-x-2">
                                 <button
                                     type="button"
                                     className="btn-main"
