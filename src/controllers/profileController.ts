@@ -13,18 +13,18 @@ import { AddressModel } from "../models/AddressModel";
 export const getProfileById = async (
   req: Request,
   res: Response
-): Promise<void> => {
+): Promise<any> => {
   try {
     const userId = req.params.id;
 
     if (!userId) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         data: null,
         message: "User ID is required.",
         error: "Missing user ID in request.",
       });
-      return;
+       
     }
 
     // Convert userId string to ObjectId
@@ -58,7 +58,12 @@ export const getProfileById = async (
           as: "personAddressData",
         },
       },
-      { $unwind: { path: "$personAddressData", preserveNullAndEmptyArrays: true } },
+      {
+        $unwind: {
+          path: "$personAddressData",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
       {
         $lookup: {
           from: "banker",
@@ -76,7 +81,12 @@ export const getProfileById = async (
           as: "bankerAddressData",
         },
       },
-      { $unwind: { path: "$bankerAddressData", preserveNullAndEmptyArrays: true } },
+      {
+        $unwind: {
+          path: "$bankerAddressData",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
       {
         $lookup: {
           from: "borrower",
@@ -118,13 +128,12 @@ export const getProfileById = async (
     const [profileData] = await UserModel.aggregate(pipeline);
 
     if (!profileData) {
-      res.status(404).json({
+     return res.status(404).json({
         success: false,
         data: null,
         message: "User profile not found.",
         error: "No user with that ID",
       });
-      return;
     }
 
     res.status(200).json({
@@ -134,7 +143,9 @@ export const getProfileById = async (
       error: null,
     });
   } catch (error: any) {
-    logger.error(`Error retrieving profile by ID with pipeline: ${error.message}`);
+    logger.error(
+      `Error retrieving profile by ID with pipeline: ${error.message}`
+    );
     res.status(500).json({
       success: false,
       data: null,
@@ -144,10 +155,11 @@ export const getProfileById = async (
   }
 };
 
-
-export const updateProfileById = async (req: Request, res: Response): Promise<void> => {
-
- let dataToValidate: { personData?: PersonData;} = { ...req.body };
+export const updateProfileById = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  let dataToValidate: { personData?: PersonData } = { ...req.body };
 
   if (typeof req.body.personData === "string") {
     try {
@@ -159,13 +171,16 @@ export const updateProfileById = async (req: Request, res: Response): Promise<vo
         statusCode: 400,
         details: [e.message],
       };
-      res.status(errorResponse.statusCode).json(errorResponse);
-      return;
+      logger.warn("Failed to parse personData JSON: " + e.message);
+     return res.status(errorResponse.statusCode).json(errorResponse);
+
     }
   }
 
   // Validate the parsed data
-  const { error } = profileUpdateSchema.validate(dataToValidate, { abortEarly: false });
+  const { error } = profileUpdateSchema.validate(dataToValidate, {
+    abortEarly: false,
+  });
   if (error) {
     const errorResponse: ErrorResponse = {
       success: false,
@@ -173,8 +188,11 @@ export const updateProfileById = async (req: Request, res: Response): Promise<vo
       statusCode: 400,
       details: error.details.map((d) => d.message),
     };
-    res.status(errorResponse.statusCode).json(errorResponse);
-    return;
+    logger.warn("Validation failed for profile update", {
+      details: errorResponse.details,
+    });
+
+    return res.status(errorResponse.statusCode).json(errorResponse);
   }
 
   const session = await mongoose.startSession();
@@ -184,105 +202,98 @@ export const updateProfileById = async (req: Request, res: Response): Promise<vo
     const userId = req.params.id;
     if (!userId) {
       const errorResponse: ErrorResponse = {
-      success: false,
-      message: "User ID is required.",
-      statusCode: 400,
-    };
-    res.status(errorResponse.statusCode).json(errorResponse);
-    return;
-  }
+        success: false,
+        message: "User ID is required.",
+        statusCode: 400,
+      };
+      logger.warn("User ID is missing in request");
+
+      return res.status(errorResponse.statusCode).json(errorResponse);
+    
+    }
 
     const objectUserId = new mongoose.Types.ObjectId(userId);
 
     // Extract fields from request body
-const personData = typeof req.body.personData === 'string'
-  ? JSON.parse(req.body.personData)
-  : req.body;
+    const personData =
+      typeof req.body.personData === "string"
+        ? JSON.parse(req.body.personData)
+        : req.body;
 
-let {
-  firstName,
-  middleInitial,
-  lastName,
-  email,
-  phone,
-  workPhone,
-  email2,
-  linkedinUrl,
-  webUrl,
-  suiteNo,
-  address,
-} = personData;
+    let {
+      firstName,
+      middleInitial,
+      lastName,
+      email,
+      phone,
+      workPhone,
+      email2,
+      linkedinUrl,
+      webUrl,
+      suiteNo,
+      address,
+    } = personData;
 
-let addressId
-
+    let addressId;
 
     // handle profileImage
     let profileImage: string | null = null;
     if (req.file) {
       const file = req.file;
-      const result = await uploadFileToS3(file?.originalname, file?.buffer, AWS_S3_AVATAR_FOLDER);
+      const result = await uploadFileToS3(
+        file?.originalname,
+        file?.buffer,
+        AWS_S3_AVATAR_FOLDER
+      );
       profileImage = result.Location;
+      logger.info(`userId: ${userId} Profile image uploaded: ${profileImage}`);
     }
 
+    const profile = await PersonModel.findOne({ userId });
 
-     const profile = await PersonModel.findOne({ userId });
+    if (!profile) {
+      throw new Error("Profile not found");
+    }
 
+    console.log("aaaa", address[0]?.fullAddress);
 
+    const currentAddress = await AddressModel.findOne({
+      _id: profile.addressId,
+    });
 
-if (!profile) {
+    console.log("aaaa", currentAddress?.fullAddress);
 
-  throw new Error("Profile not found");
+    if (
+      !currentAddress ||
+      currentAddress.fullAddress !== address[0]?.fullAddress
+    ) {
+      logger.info("Address has changed or not found. Creating new address.");
 
-}
+      const addressInput = Array.isArray(personData.address)
+        ? personData.address[0]
+        : personData.address;
 
-console.log("aaaa",address[0]?.fullAddress)
+      if (addressInput) {
+        const addressWithCreator = {
+          ...addressInput,
+        };
 
-const currentAddress = await AddressModel.findOne({_id:profile.addressId});
-
-console.log("aaaa",currentAddress?.fullAddress)
-
-if (!currentAddress || currentAddress.fullAddress !== address[0]?.fullAddress) {
-
-  console.log("hhdkhsdksdkh")
-
-  const addressInput = Array.isArray(personData.address)
-
-    ? personData.address[0]
-
-    : personData.address;
-
-
-
-  if (addressInput) {
-
-    const addressWithCreator = {
-
-      ...addressInput,
-
-    };
-
-    const newAddress = await AddressModel.create(addressWithCreator);
-
-
-
-    console.log("New address created:", newAddress.fullAddress);
-
-    console.log("New address ID:", newAddress._id);
-
-
-
-    addressId = newAddress._id;
-
-  }
-
-}
+        const newAddress = await AddressModel.create(addressWithCreator);
+        addressId = newAddress._id;
+        logger.info(
+          `userId: ${userId} New address created with ID: ${newAddress._id}`
+        );
+      }
+    }
     // === Update basic fields in UserModel ===
     const user = await UserModel.findById(objectUserId).session(session);
     if (!user) {
       await session.abortTransaction();
       session.endSession();
-      res.status(404).json({ success: false, message: "User not found" });
-      return;
+      logger.warn("User not found during profile update");
+
+     return res.status(404).json({ success: false, message: "User not found" });
+      
     }
 
     let userModified = false;
@@ -290,9 +301,10 @@ if (!currentAddress || currentAddress.fullAddress !== address[0]?.fullAddress) {
     if (firstName && firstName !== user.firstName) {
       user.firstName = firstName;
       userModified = true;
+      logger.info(`userId: ${userId} User basic info updated for`);
     }
 
-      if (middleInitial && middleInitial !== user.middleInitial) {
+    if (middleInitial && middleInitial !== user.middleInitial) {
       user.middleInitial = middleInitial;
       userModified = true;
     }
@@ -301,12 +313,12 @@ if (!currentAddress || currentAddress.fullAddress !== address[0]?.fullAddress) {
       user.lastName = lastName;
       userModified = true;
     }
-    if(email && email !== user.email){
-         user.email = email;
+    if (email && email !== user.email) {
+      user.email = email;
       userModified = true;
     }
-    if(phone && phone !== user.phone){
-         user.phone = phone;
+    if (phone && phone !== user.phone) {
+      user.phone = phone;
       userModified = true;
     }
 
@@ -316,17 +328,19 @@ if (!currentAddress || currentAddress.fullAddress !== address[0]?.fullAddress) {
 
     // === Update or Create PersonModel entry for extended fields ===
     const personUpdate: Record<string, any> = {
-  updatedby: userId,
-  ...(workPhone && { workPhone }),
-  ...(email2 && { email2 }),
-  ...(suiteNo && { suiteNo }),
-  ...(webUrl && { webUrl }),
-  ...(linkedinUrl && { linkedinUrl: linkedinUrl }),
-  ...(addressId ? {addressId} : {}),
-  profileImage: profileImage,
-};
+      updatedby: userId,
+      ...(workPhone && { workPhone }),
+      ...(email2 && { email2 }),
+      ...(suiteNo && { suiteNo }),
+      ...(webUrl && { webUrl }),
+      ...(linkedinUrl && { linkedinUrl: linkedinUrl }),
+      ...(addressId ? { addressId } : {}),
+      profileImage: profileImage,
+    };
 
-    const existingPerson = await PersonModel.findOne({ userId: objectUserId }).session(session);
+    const existingPerson = await PersonModel.findOne({
+      userId: objectUserId,
+    }).session(session);
 
     if (!existingPerson) {
       await PersonModel.create(
@@ -340,14 +354,19 @@ if (!currentAddress || currentAddress.fullAddress !== address[0]?.fullAddress) {
         ],
         { session }
       );
+      logger.info(` userId: ${userId} Created new person entry `);
     } else {
-      await PersonModel.updateOne({ userId: objectUserId }, { $set: personUpdate }, { session });
+      await PersonModel.updateOne(
+        { userId: objectUserId },
+        { $set: personUpdate },
+        { session }
+      );
+      logger.info(` userId: ${userId} Updated person entry`);
     }
 
     // Commit the transaction before aggregation
     await session.commitTransaction();
     session.endSession();
-
 
     //pipeline
     const pipeline = [
@@ -378,7 +397,12 @@ if (!currentAddress || currentAddress.fullAddress !== address[0]?.fullAddress) {
           as: "personAddressData",
         },
       },
-      { $unwind: { path: "$personAddressData", preserveNullAndEmptyArrays: true } },
+      {
+        $unwind: {
+          path: "$personAddressData",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
       {
         $lookup: {
           from: "banker",
@@ -396,7 +420,12 @@ if (!currentAddress || currentAddress.fullAddress !== address[0]?.fullAddress) {
           as: "bankerAddressData",
         },
       },
-      { $unwind: { path: "$bankerAddressData", preserveNullAndEmptyArrays: true } },
+      {
+        $unwind: {
+          path: "$bankerAddressData",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
       {
         $lookup: {
           from: "borrower",
@@ -418,6 +447,7 @@ if (!currentAddress || currentAddress.fullAddress !== address[0]?.fullAddress) {
           email2: "$personData.email2",
           suiteNo: "$personData.suiteNo",
           webUrl: "$personData.webUrl",
+          profileImage: "$personData.profileImage",
           linkedinUrl: "$personData.linkedinURL",
           role: "$roleData.name",
           userAddress: "$personAddressData",
@@ -437,27 +467,34 @@ if (!currentAddress || currentAddress.fullAddress !== address[0]?.fullAddress) {
     const [updatedProfile] = await UserModel.aggregate(pipeline);
 
     if (!updatedProfile) {
-      res.status(404).json({
+      logger.warn(
+        `UserId: ${userId} No updated profile found after update for `
+      );
+
+     return res.status(404).json({
         success: false,
         data: null,
         message: "Updated profile not found.",
         error: "No user profile found after update",
       });
-      return;
     }
+
+    logger.info(`UserId: ${userId}: Profile updated successfully`);
 
     res.status(200).json({
       success: true,
       message: "Profile updated successfully.",
-       data: {
-    user,
-    person: personUpdate,
-  },
+      data: {
+        user,
+        person: personUpdate,
+      },
     });
   } catch (error: any) {
     await session.abortTransaction();
     session.endSession();
-    logger.error(`Error updating profile by ID: ${error.message}`);
+    logger.error(
+      `UserId: ${req.params.id}: Error updating profile by ID: ${error.message}`
+    );
     const errorResponse: ErrorResponse = {
       success: false,
       message: "Internal Server Error",
@@ -466,9 +503,4 @@ if (!currentAddress || currentAddress.fullAddress !== address[0]?.fullAddress) {
     };
     res.status(errorResponse.statusCode).json(errorResponse);
   }
-}; 
-
-
-
-
-
+};
