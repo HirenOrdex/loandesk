@@ -27,6 +27,7 @@ export interface IUser extends Document {
   correctPassword(candidatePassword: string): Promise<boolean>;
   isPhoneVerified?: boolean;
   isEmailVerified?: boolean;
+  otp?:string
   // emailVerificationExpires?:Date | null;
 }
 
@@ -58,6 +59,10 @@ const userSchema = new Schema(
       default: true,
     },
     refreshToken: {
+      type: String,
+      select: false,
+    },
+    otp: {
       type: String,
       select: false,
     },

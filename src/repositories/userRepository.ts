@@ -22,7 +22,7 @@ export class UserRepository {
       return await this.model
         .findOne({ email })
         .select(
-          "+password +refreshToken +passwordResetToken +passwordResetExpires +loginAttempts"
+          "+password +refreshToken +passwordResetToken +passwordResetExpires +loginAttempts +otp"
         );
     } catch (error) {
       logger.error(`findUserByEmail error: ${error}`);
