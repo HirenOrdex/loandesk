@@ -384,10 +384,8 @@ export class AuthController {
           success: true,
           message: `A text message with a 6-digit verification code was just sent to ${maskPhoneNumber(phone)}`,
           data: {
-            requestId,
-            expiresIn: 300,
-            // For development only, remove in production
-            otp: NODE_ENV === "development" ? otp : undefined,
+            requestId: user?.email,
+            userId: user?._id
           },
           error: null,
         });
@@ -1250,10 +1248,8 @@ export class AuthController {
           success: true,
           message: `on-Demand Code re-sent successfully`,
           data: {
-            requestId,
-            expiresIn: 300,
-            // For development only, remove in production
-            otp: NODE_ENV === "development" ? otp : undefined,
+            requestId:user?.email,
+            userId:user?._id
           },
           error: null,
         });
