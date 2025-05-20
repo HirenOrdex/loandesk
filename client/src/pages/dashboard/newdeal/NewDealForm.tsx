@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { INewDealStep1Form, INewDealStep2Form, NewDealFormStepData, newDealStepComponents, newDealStepFields, newDealStepFormMap, newDealSteps } from "../../../types/newDeal";
 import '../../../assets/css/new-deal-form.css'
+import SaveEmailModal from "../../../models/SaveEmailModel";
 
 const NewDealForm: React.FC = () => {
     const form = useForm({
@@ -10,6 +11,7 @@ const NewDealForm: React.FC = () => {
     });
     const [currentStep, setCurrentStep] = useState(0);
     const Step = newDealStepComponents[currentStep];
+    const [showModal, setShowModal] = useState(false);
 
     console.log("Address field value:", form.watch("address"));
 
@@ -123,6 +125,7 @@ const NewDealForm: React.FC = () => {
                                     <button
                                         type="submit"
                                         className="btn-main"
+                                        onClick={() => setShowModal(true)}
                                     >
                                         Save & Email
                                     </button>
@@ -157,6 +160,14 @@ const NewDealForm: React.FC = () => {
                     </div>
                 </div>
             </section>
+
+            {/* Show Save Email Modal */}
+            {showModal && (
+                <SaveEmailModal
+                    onClose={() => setShowModal(false)}
+                    onConfirm={() => { }}
+                />
+            )}
         </>
     );
 };

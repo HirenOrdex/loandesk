@@ -218,7 +218,9 @@ const Header: React.FC = () => {
                     style={{ backgroundImage: `url(${dashboardBg})` }}
                 >
                     <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-center">
-                        <h2 className="text-center text-white text-3xl font-semibold"> {/* Add text if needed */}</h2>
+                        <h2 className="text-center text-[#ffffff] text-2xl sm:text-4xl font-extrabold">
+                            {/* Add text if needed */}
+                        </h2>
                     </div>
                 </div>
             </section>

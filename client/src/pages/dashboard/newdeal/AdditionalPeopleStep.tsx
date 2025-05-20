@@ -83,17 +83,18 @@ const AdditionalPeopleStep: React.FC = () => {
 
       <div className='mt-8'>
         <AlertMessage type='error' message='Enter all fields' className='mb-5' />
-        <div className='flex items-center gap-1 mb-5'>
+        <label className='!mb-5 checkbox-wrapper'>
           <input
             type='checkbox'
             value='skipCOI'
             id='skipCOI'
             checked={skipCOI}
             onChange={(e) => setSkipCOI(e.target.checked)} />
+          <span className="checkmark"></span>
           <label className='!mb-0 select-none' htmlFor='skipCOI'>
             Skip COI
           </label>
-        </div>
+        </label>
       </div>
 
       {
