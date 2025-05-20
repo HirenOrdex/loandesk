@@ -24,7 +24,7 @@ export const getProfileById = async (
         message: "User ID is required.",
         error: "Missing user ID in request.",
       });
-       
+
     }
 
     // Convert userId string to ObjectId
@@ -107,8 +107,8 @@ export const getProfileById = async (
           workPhone: { $ifNull: ["$personData.workPhone", ""] },
           email2: { $ifNull: ["$personData.email2", ""] },
           webUrl: { $ifNull: ["$personData.webUrl", ""] },
-          linkedinURL: { $ifNull:["$personData.linkedinURL",""]},
-          profileImage: {$ifNull:["$personData.profileImage",""]},
+          linkedinURL: { $ifNull: ["$personData.linkedinURL", ""] },
+          profileImage: { $ifNull: ["$personData.profileImage", ""] },
           role: "$roleData.name",
           userAddress: "$personAddressData",
           financialInstitutionName: "$bankerData.financialInstitutionName",
@@ -128,7 +128,7 @@ export const getProfileById = async (
     const [profileData] = await UserModel.aggregate(pipeline);
 
     if (!profileData) {
-     return res.status(404).json({
+      return res.status(404).json({
         success: false,
         data: null,
         message: "User profile not found.",
@@ -172,7 +172,7 @@ export const updateProfileById = async (
         details: [e.message],
       };
       logger.warn("Failed to parse personData JSON: " + e.message);
-     return res.status(errorResponse.statusCode).json(errorResponse);
+      return res.status(errorResponse.statusCode).json(errorResponse);
 
     }
   }
@@ -190,7 +190,7 @@ export const updateProfileById = async (
       logger.warn("User ID is missing in request");
 
       return res.status(errorResponse.statusCode).json(errorResponse);
-    
+
     }
 
     const objectUserId = new mongoose.Types.ObjectId(userId);
@@ -270,7 +270,7 @@ export const updateProfileById = async (
     const user = await UserModel.findById(objectUserId);
     if (!user) {
       logger.warn("User not found during profile update");
-     return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(404).json({ success: false, message: "User not found" });
     }
 
     let userModified = false;
@@ -329,19 +329,19 @@ export const updateProfileById = async (
             ...personUpdate,
           },
         ],
-        
+
       );
       logger.info(` userId: ${userId} Created new person entry `);
     } else {
       await PersonModel.updateOne(
         { userId: objectUserId },
         { $set: personUpdate },
-   
+
       );
       logger.info(` userId: ${userId} Updated person entry`);
     }
 
-   
+
 
     //pipeline
     const pipeline = [
@@ -446,7 +446,7 @@ export const updateProfileById = async (
         `UserId: ${userId} No updated profile found after update for `
       );
 
-     return res.status(404).json({
+      return res.status(404).json({
         success: false,
         data: null,
         error: "No user profile found after update",

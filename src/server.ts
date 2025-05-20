@@ -63,7 +63,7 @@ app.get("/", (req, res) => {
 });
 app.use("/auth", authRoutes);
 app.use("/", bankerRoutes);
-app.use('/api', profileRoutes);
+app.use('/user', profileRoutes);
 
 const startServer = async () => {
   try {

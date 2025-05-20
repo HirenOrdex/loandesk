@@ -4,7 +4,7 @@ export interface IPerson extends Document {
   userId: Types.ObjectId;
   workPhone?: string;
   email2?: string;
-  suiteNo?:string;
+  suiteNo?: string;
   webUrl?: string;
   linkedinUrl?: string;
   addressId: Types.ObjectId;
@@ -28,7 +28,7 @@ const personSchema = new Schema<IPerson>(
   },
   {
     timestamps: true,
-    collection:"person"
+    collection: "person"
   }
 );
 
