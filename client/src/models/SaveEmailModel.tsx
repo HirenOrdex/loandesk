@@ -45,19 +45,19 @@ const SaveEmailModal: React.FC<SaveEmailModalProps> = ({ onClose, onConfirm }) =
           <table className="w-full mb-4 border save-email-table-border text-sm text-center">
             <thead>
               <tr className="text-center">
-                <th className="px-3 py-2">No</th>
-                <th className="px-3 py-2">Requested Dollar Amount</th>
-                <th className="px-3 py-2">Loan Type</th>
-                <th className="px-3 py-2">Desired Loan Term</th>
+                <th className="px-1 xs:px-3 py-2">No</th>
+                <th className="px-1 xs:px-3 py-2">Requested Dollar Amount</th>
+                <th className="px-1 xs:px-3 py-2">Loan Type</th>
+                <th className="px-1 xs:px-3 py-2">Desired Loan Term</th>
               </tr>
             </thead>
             <tbody>
               {loans.map((loan, index) => (
                 <tr key={index}>
-                  <td className="px-3 py-2">{index + 1}</td>
-                  <td className="px-3 py-2">{loan.amount}</td>
-                  <td className="px-3 py-2">{loan.loanType}</td>
-                  <td className="px-3 py-2">{loan.term}</td>
+                  <td className="px-1 xs:px-3 py-2">{index + 1}</td>
+                  <td className="px-1 xs:px-3 py-2">{loan.amount}</td>
+                  <td className="px-1 xs:px-3 py-2">{loan.loanType}</td>
+                  <td className="px-1 xs:px-3 py-2">{loan.term}</td>
                 </tr>
               ))}
             </tbody>
@@ -67,17 +67,17 @@ const SaveEmailModal: React.FC<SaveEmailModalProps> = ({ onClose, onConfirm }) =
           <table className="w-full mb-4 border save-email-table-border text-sm text-center">
             <thead>
               <tr className="text-center">
-                <th className="px-3 py-2">Name</th>
-                <th className="px-3 py-2">Ownership%</th>
-                <th className="px-3 py-2">US Citizen</th>
+                <th className="px-1 xs:px-3 py-2">Name</th>
+                <th className="px-1 xs:px-3 py-2">Ownership%</th>
+                <th className="px-1 xs:px-3 py-2">US Citizen</th>
               </tr>
             </thead>
             <tbody>
               {ownershipPeople.map((person, index) => (
                 <tr key={index}>
-                  <td className="px-3 py-2">{person.name}</td>
-                  <td className="px-3 py-2">{person.ownership}</td>
-                  <td className="px-3 py-2">{person.isCitizen}</td>
+                  <td className="px-1 xs:px-3 py-2">{person.name}</td>
+                  <td className="px-1 xs:px-3 py-2">{person.ownership}</td>
+                  <td className="px-1 xs:px-3 py-2">{person.isCitizen}</td>
                 </tr>
               ))}
             </tbody>
@@ -89,15 +89,15 @@ const SaveEmailModal: React.FC<SaveEmailModalProps> = ({ onClose, onConfirm }) =
             the loan request process.
           </p>
 
-          <label className="!mb-2 checkbox-wrapper">
+          <label className="!mb-2 checkbox-wrapper !items-start sm:items-center">
             <input
               type="checkbox"
               id="acknowledge"
               checked={acknowledged}
               onChange={() => setAcknowledged(!acknowledged)}
-              className="mt-0 cursor-pointer"
+              className="cursor-pointer"
             />
-            <span className="checkmark"></span>
+            <span className="checkmark mt-0.5 sm:mt-0"></span>
             <label htmlFor="acknowledge" className="save-email-lable cursor-pointer">
               I acknowledge that the aforementioned information is correct.
             </label>

@@ -156,8 +156,8 @@ header.header-container {
 }
 
 .checkbox-wrapper .checkmark {
-  height: 17px;
-  width: 17px;
+  min-height: 17px;
+  min-width: 17px;
   border: 2px solid var(--darkgray);
   display: inline-block;
   position: relative;

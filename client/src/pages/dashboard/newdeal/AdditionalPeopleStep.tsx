@@ -83,7 +83,7 @@ const AdditionalPeopleStep: React.FC = () => {
 
       <div className='mt-8'>
         <AlertMessage type='error' message='Enter all fields' className='mb-5' />
-        <label className='!mb-5 checkbox-wrapper'>
+        <label className='checkbox-wrapper'>
           <input
             type='checkbox'
             value='skipCOI'
@@ -101,7 +101,7 @@ const AdditionalPeopleStep: React.FC = () => {
         !skipCOI ?
 
           fields.map((field, index) => (
-            <div key={field.id} className='mt-8 new-deal-form'>
+            <div key={field.id} className='mt-5 new-deal-form'>
               <div className='title-wrapper mb-5 flex justify-between items-center flex-wrap gap-3'>
                 <span className='title'>Additional Point People-{index + 1}</span>
                 <div className='flex items-center gap-2'>
@@ -296,7 +296,7 @@ const AdditionalPeopleStep: React.FC = () => {
           ))
 
           : (
-            <div className='border border-(--primary-color) py-14 px-5 text-(--primary-color)'>
+            <div className='border border-(--primary-color) py-14 px-5 text-(--primary-color) mt-5'>
               <p className='text-center'>Additional People Details Skipped</p>
             </div>
           )
