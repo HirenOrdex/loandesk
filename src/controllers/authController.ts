@@ -221,8 +221,8 @@ export class AuthController {
             return res.status(409).json({
               success: false,
               data: null,
-              message:"The email address entered is already registered. Please try again with new email or contact the support team.",
-              error:"The email address entered is already registered. Please try again with new email or contact the support team.",
+              message: "The email address entered is already registered. Please try again with new email or contact the support team.",
+              error: "The email address entered is already registered. Please try again with new email or contact the support team.",
             });
           }
           const roleId = await userRepository.findRoleIdByName("Borrower");
@@ -319,8 +319,8 @@ export class AuthController {
         return res.status(400).json({
           success: false,
           data: null,
-          error:"Account is not verified. Please check your email & complete verification process.",
-          message:"Account is not verified. Please check your email & complete verification process.",
+          error: "Account is not verified. Please check your email & complete verification process.",
+          message: "Account is not verified. Please check your email & complete verification process.",
         });
       }
       // Check if account is locked
@@ -331,8 +331,8 @@ export class AuthController {
         return res.status(401).json({
           success: false,
           data: null,
-          error:"Account locked. Please try again later or reset your password.",
-          message:"Account locked. Please try again later or reset your password.",
+          error: "Account locked. Please try again later or reset your password.",
+          message: "Account locked. Please try again later or reset your password.",
         });
       }
 
@@ -357,12 +357,10 @@ export class AuthController {
       // Check if user already exists by phone or email
       if (phone) {
         const otp = await generateOTP(phone);
-        const requestId = await otpRepository.storeOTP(
+        const requestId = await otpRepository.storeLoginOTP(
           phone,
-          otp,
-          user.id,
           email,
-          "login"
+          otp,
         );
 
         // In production, send the OTP via SMS
@@ -386,10 +384,8 @@ export class AuthController {
           success: true,
           message: `A text message with a 6-digit verification code was just sent to ${maskPhoneNumber(phone)}`,
           data: {
-            requestId,
-            expiresIn: 300,
-            // For development only, remove in production
-            otp: NODE_ENV === "development" ? otp : undefined,
+            requestId: user?.email,
+            userId: user?._id
           },
           error: null,
         });
@@ -632,7 +628,7 @@ export class AuthController {
         success: true,
         data: null,
         error: null,
-        message:"Email has been sent to your registered email Id. Please follow the steps to reset your password",
+        message: "Email has been sent to your registered email Id. Please follow the steps to reset your password",
         resetToken, // In production, don't send this in the response
       });
     } catch (err: unknown) {
@@ -770,8 +766,8 @@ export class AuthController {
         return res.status(400).json({
           success: false,
           data: null,
-          error:"User is already active. Please login to continue. Or use forgot password if you forgot the password. Else please contact support",
-          message:"User is already active. Please login to continue. Or use forgot password if you forgot the password. Else please contact support",
+          error: "User is already active. Please login to continue. Or use forgot password if you forgot the password. Else please contact support",
+          message: "User is already active. Please login to continue. Or use forgot password if you forgot the password. Else please contact support",
         });
       }
 
@@ -793,7 +789,7 @@ export class AuthController {
         success: true,
         data: null,
         error: null,
-        message:"Done! We have resent an email with instructions on how to activate your account. Please check your inbox. If you still did not receive an email, please contact us at support@loandesk.com.",
+        message: "Done! We have resent an email with instructions on how to activate your account. Please check your inbox. If you still did not receive an email, please contact us at support@loandesk.com.",
       });
     } catch (err: unknown) {
       const error = err as IError;
@@ -905,7 +901,7 @@ export class AuthController {
         return res.status(500).json({
           success: false,
           data: null,
-          message:"An error occurred during  continue with google. Please try again later.",
+          message: "An error occurred during  continue with google. Please try again later.",
           error: `Error during continue with google: ${err.message}`,
         });
       }
@@ -1097,20 +1093,8 @@ export class AuthController {
         });
       }
 
-      const otpData = await otpRepository.getOTP(email.toLowerCase(), "login");
-      console.log("otp ", otpData);
-
-      if (!otpData || otpData.type !== "login") {
-        return res.status(400).json({
-          success: false,
-          data: null,
-          message: "Invalid or expired On-Demand Code",
-          error: "Invalid or expired On-Demand Code",
-        });
-      }
-
-      const isValid = verifyOTP(otp, otpData.otp);
-      if (!isValid) {
+  
+      if (user.otp !== otp && !(NODE_ENV === "development" && otp === "123456")) {
         return res.status(400).json({
           success: false,
           data: null,
@@ -1119,14 +1103,7 @@ export class AuthController {
         });
       }
 
-      if (!otpData.userId) {
-        return res.status(400).json({
-          success: false,
-          data: null,
-          message: "Reset request expired",
-          error: "Reset request expired",
-        });
-      }
+
       console.log("roleId");
       if (user?.roleId) {
         const role = await userRepository.findRoleIdById(user?.roleId);
@@ -1212,8 +1189,8 @@ export class AuthController {
         return res.status(400).json({
           success: false,
           data: null,
-          error:"Account is not verified. Please check your email & complete verification process.",
-          message:"Account is not verified. Please check your email & complete verification process.",
+          error: "Account is not verified. Please check your email & complete verification process.",
+          message: "Account is not verified. Please check your email & complete verification process.",
         });
       }
       // Check if account is locked
@@ -1244,12 +1221,10 @@ export class AuthController {
       // Check if user already exists by phone or email
       if (phone) {
         const otp = await generateOTP(phone);
-        const requestId = await otpRepository.storeOTP(
+        const requestId = await otpRepository.storeLoginOTP(
           phone,
-          otp,
-          user.id,
           email,
-          "login"
+          otp
         );
 
         // In production, send the OTP via SMS
@@ -1273,10 +1248,8 @@ export class AuthController {
           success: true,
           message: `on-Demand Code re-sent successfully`,
           data: {
-            requestId,
-            expiresIn: 300,
-            // For development only, remove in production
-            otp: NODE_ENV === "development" ? otp : undefined,
+            requestId:user?.email,
+            userId:user?._id
           },
           error: null,
         });

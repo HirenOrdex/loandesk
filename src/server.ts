@@ -12,6 +12,7 @@ import { configurePassport } from "./configs/passportConfig";
 import authRoutes from "./routes/authRoutes";
 import bankerRoutes from "./routes/bankerRoutes";
 import cookieParser from 'cookie-parser';
+import profileRoutes from "./routes/profileRoutes";
 const port = PORT || 3000;
 
 const app = express();
@@ -62,6 +63,7 @@ app.get("/", (req, res) => {
 });
 app.use("/auth", authRoutes);
 app.use("/", bankerRoutes);
+app.use('/user', profileRoutes);
 
 const startServer = async () => {
   try {

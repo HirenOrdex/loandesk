@@ -8,18 +8,26 @@ import { sendOtpViaSms } from "../services/twilioService";
  * Generates a 6-digit OTP
  * @returns A 6-digit OTP as string
  */
+
+const cleanPhoneNumber = (phone: string) =>  {
+  let cleaned = phone.replace(/[^0-9]/g, "");
+  return `+91${cleaned}`;
+}
+
 export const generateOTP = async (phoneNumber: string): Promise<string> => {
   try {
     // For development purposes, use a static OTP (1234)
-    if (NODE_ENV === "development" && USE_STATIC_OTP === "true") {
-      return "1234";
-    }
+    // if (NODE_ENV === "development" && USE_STATIC_OTP === "true") {
+    //   return "1234";
+    // }
 
     // Generate a random 6-digit number
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Send OTP via SMS using Twilio
-    await sendOtpViaSms(phoneNumber, otp);
+    if (NODE_ENV !== "development" && USE_STATIC_OTP === "false") {
+      // Send OTP via SMS using Twilio
+      await sendOtpViaSms(cleanPhoneNumber(phoneNumber), otp);
+    }
 
     return otp;
   } catch (err: unknown) {
