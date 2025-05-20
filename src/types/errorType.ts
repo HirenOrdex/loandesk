@@ -4,3 +4,12 @@ export interface IError extends Error {
   message: string;
   stack?: string;
 }
+
+
+export interface ErrorResponse {
+  statusCode: number;
+  success: false;
+  message: string;
+  details?: string[];
+  error?: string;
+}
