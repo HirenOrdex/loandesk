@@ -78,7 +78,7 @@ const TwoFactorCode: React.FC = () => {
                                             {
                                                 required: 'Please enter Code that you get on your register mobile number.'
                                             })}
-                                        maxLength={4}
+                                        maxLength={6}
                                     />
                                     {/* <span className='error-msg'>Please enter Code that you get on your register mobile number.</span> */}
                                     {errors.otp && <span className='error-msg'>{errors.otp.message}</span>}

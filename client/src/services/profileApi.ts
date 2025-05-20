@@ -9,14 +9,14 @@ export const profileApi = createApi({
     endpoints: (builder) => ({
         myprofile: builder.mutation<IProfileResponse, { id: string | undefined; data: IProfileFormInput }>({
             query: ({ id, data }) => ({
-                url: `/api/profile/${id}`,
+                url: `/user/profile/${id}`,
                 method: "PATCH",
                 body: data,
             }),
         }),
         getProfileData: builder.query<IGetProfileResponse, string | undefined>({
             query: (id: string | undefined) => ({
-                url: `/api/profile/${id}`,
+                url: `/user/profile/${id}`,
                 method: 'GET',
             }),
         }),

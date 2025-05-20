@@ -8,6 +8,7 @@ export interface IProfileAddress {
     zip?: string;
     country: string;
     suiteNo?: string;
+    fulladdress: string;
 }
 
 // export interface IProfileFormInput {
@@ -29,7 +30,7 @@ export interface IProfileFormInput {
     lastName: string;
     phone: string;
     workPhone?: string;
-    addressId: IProfileAddress;
+    address: IAddress[];
     suiteNo?: string;
     email: string;
     email2?: string;
@@ -52,7 +53,7 @@ export interface IGetProfileResponse {
         webUrl?: string;
         linkedinUrl?: string;
         profileImage: File | null;
-        addressId: IProfileAddress;
+        userAddress: IAddress[];
     };
     message: string;
 }
