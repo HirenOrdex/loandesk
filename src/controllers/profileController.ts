@@ -108,6 +108,7 @@ export const getProfileById = async (
           webUrl: { $ifNull: ["$personData.webUrl", ""] },
           linkedinUrl: { $ifNull: ["$personData.linkedinUrl", ""] },
           profileImage: { $ifNull: ["$personData.profileImage", ""] },
+          suiteNo: { $ifNull: ["$personData.suiteNo", ""] },
           role: "$roleData.name",
           userAddress: ["$personAddressData"],
           financialInstitutionName: "$bankerData.financialInstitutionName",
@@ -228,7 +229,7 @@ export const updateProfileById = async (req: Request, res: Response): Promise<an
 
     // Handle address logic
     let addressId = null;
-    const addressInput = Array.isArray(address) ? address[0] : address;
+    let addressInput = Array.isArray(address) ? address[0] : address;
 
     if (addressInput) {
       const existingPerson = await PersonModel.findOne({ userId: objectUserId });
