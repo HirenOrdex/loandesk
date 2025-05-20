@@ -24,7 +24,6 @@ export const getProfileById = async (
         message: "User ID is required.",
         error: "Missing user ID in request.",
       });
-
     }
 
     // Convert userId string to ObjectId
@@ -136,7 +135,7 @@ export const getProfileById = async (
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: profileData,
       message: "Profile retrieved successfully.",
@@ -146,7 +145,7 @@ export const getProfileById = async (
     logger.error(
       `Error retrieving profile by ID with pipeline: ${error.message}`
     );
-    res.status(500).json({
+   return res.status(500).json({
       success: false,
       data: null,
       message: "Internal Server Error",
@@ -165,32 +164,25 @@ export const updateProfileById = async (
     try {
       dataToValidate.personData = JSON.parse(req.body.personData);
     } catch (e: any) {
-      const errorResponse: ErrorResponse = {
-        success: false,
-        message: "Invalid JSON format in personData",
-        statusCode: 400,
-        details: [e.message],
-      };
       logger.warn("Failed to parse personData JSON: " + e.message);
-      return res.status(errorResponse.statusCode).json(errorResponse);
-
+      return res.status(400).json({
+        success: false,
+        data: null,
+        message: "Invalid JSON format in personData",
+        error: `error ${e.message}`,
+      });
     }
   }
-
-
 
   try {
     const userId = req.params.id;
     if (!userId) {
-      const errorResponse: ErrorResponse = {
-        success: false,
-        message: "User ID is required.",
-        statusCode: 400,
-      };
       logger.warn("User ID is missing in request");
-
-      return res.status(errorResponse.statusCode).json(errorResponse);
-
+      return res.status(400).json({
+        success: false,
+        data: null,
+        message: "Invalid JSON format in personData",
+      });
     }
 
     const objectUserId = new mongoose.Types.ObjectId(userId);
@@ -270,7 +262,11 @@ export const updateProfileById = async (
     const user = await UserModel.findById(objectUserId);
     if (!user) {
       logger.warn("User not found during profile update");
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        data: null,
+        message: "User not found",
+      });
     }
 
     let userModified = false;
@@ -320,28 +316,22 @@ export const updateProfileById = async (
     });
 
     if (!existingPerson) {
-      await PersonModel.create(
-        [
-          {
-            userId: objectUserId,
-            createdBy: userId,
-            updatedBy: userId,
-            ...personUpdate,
-          },
-        ],
-
-      );
+      await PersonModel.create([
+        {
+          userId: objectUserId,
+          createdBy: userId,
+          updatedBy: userId,
+          ...personUpdate,
+        },
+      ]);
       logger.info(` userId: ${userId} Created new person entry `);
     } else {
       await PersonModel.updateOne(
         { userId: objectUserId },
-        { $set: personUpdate },
-
+        { $set: personUpdate }
       );
       logger.info(` userId: ${userId} Updated person entry`);
     }
-
-
 
     //pipeline
     const pipeline = [
@@ -449,14 +439,14 @@ export const updateProfileById = async (
       return res.status(404).json({
         success: false,
         data: null,
-        error: "No user profile found after update",
         message: "Updated profile not found.",
+        error: "No user profile found after update",
       });
     }
 
     logger.info(`UserId: ${userId}: Profile updated successfully`);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Profile updated successfully.",
       data: {
@@ -465,16 +455,14 @@ export const updateProfileById = async (
       },
     });
   } catch (error: any) {
-
     logger.error(
       `UserId: ${req.params.id}: Error updating profile by ID: ${error.message}`
     );
-    const errorResponse: ErrorResponse = {
-      success: false,
-      message: "Internal Server Error",
-      statusCode: 500,
-      error: error.message,
-    };
-    res.status(errorResponse.statusCode).json(errorResponse);
+    return res.status(500).json({
+        success:false,
+        data:null,
+        message: "Internal Server Error",
+        error: `error ${error.message}`
+      })
   }
 };
