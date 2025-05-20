@@ -1,6 +1,9 @@
 import crypto from "crypto";
 import  { nodeCacheClient } from "../utils/nodeCacheClient";
 import { logger } from "../configs/winstonConfig";
+import UserModel from "../models/User";
+import { use } from "passport";
+import { IUser } from "../types/userType";
 
 interface OTPData {
   phone: string;
@@ -98,6 +101,22 @@ class OTPRepository {
       return otpData.otp === inputOtp;
     } catch (error) {
       logger.error(`Error in validateOTP: ${error}`);
+      throw error;
+    }
+  }
+    async storeLoginOTP(
+    phone: string,
+    email:string,
+    otp: string): Promise<any> {
+    try {
+      const user = await UserModel.findOneAndUpdate(
+        { email },
+        {  otp },
+        { upsert: true }
+      );
+      console.log(user)
+    } catch (error) {
+      logger.error(`Error in storeOTP: ${error}`);
       throw error;
     }
   }
