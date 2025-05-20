@@ -144,4 +144,26 @@ export class BankerRepossitory {
       throw new Error(`Error fetching banker by ID: ${err.message}`);
     }
   }
+
+  async findBankerByUserId(userId: string) {
+  try {
+    const banker = await BankerRegistrationModel.findOne({ userId }).populate('userId').populate('addressId');
+    return banker;
+  } catch (error) {
+    const err = error as Error;
+    console.error(`Error fetching banker by user ID: ${err.message}`);
+    throw new Error(`Error fetching banker by user ID: ${err.message}`);
+  }
 }
+
+async updateBankerByUserId(userId: string, updateData: any) {
+  return await BankerRegistrationModel.findOneAndUpdate( { userId },
+  { $set: updateData },
+  { new: true });
+}
+
+
+
+}
+
+

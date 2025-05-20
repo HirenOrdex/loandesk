@@ -15,6 +15,7 @@ export interface CompanyInfo {
 export interface IUser {
   _id: Types.ObjectId;
   firstName: string;
+  middleInitial:string;
   lastName: string;
   phone: string;
   email: string;
@@ -32,6 +33,7 @@ export interface IUser {
   updatedAt: Date;
   createdBy: Types.ObjectId;
   updatedby: Types.ObjectId;
+  otp:string
 }
 
 // This is what Mongoose returns

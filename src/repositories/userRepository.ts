@@ -50,6 +50,7 @@ export class UserRepository {
 
   async findUserById(id: string): Promise<IUser | null> {
     try {
+      
       return await this.model.findById(id).select("+refreshToken");
     } catch (error) {
       logger.error(`findUserById error: ${error}`);
@@ -347,6 +348,7 @@ export class UserRepository {
   };
   findRoleIdById = async (roleId: string | Types.ObjectId): Promise<any> => {
     try {
+      console.log("role",roleId)
       const role = await RoleModel.findById(roleId).lean();
       if (role) {
         return role.roleName;
