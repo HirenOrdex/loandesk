@@ -11,4 +11,7 @@ router.get("/guarantors/:dealDataReqId",guarantorCreateValidations, newDealContr
 router.patch("/borrower-company/:id", BorrowerCompanyValidations, newDealController.updateBorrowerCompany);
 router.get("/borrower-company/:id", newDealController.getBorrowerCompanyById);
 router.patch("/guarantors/:id",newDealController.updateGuarantor)
+router.post('/loan-detail/:id',newDealController.createMultipleLoanDetails)
+router.get('/loan-detail/:id',newDealController.createMultipleLoanDetails)
+
 export default router;

@@ -8,6 +8,7 @@ import GuarantorModel from "../models/GuarantorModel";
 import { Person } from "../models/PersonModel";
 import { IBorrowerCompanyRequest } from "../types/newDeal.type";
 import { IError } from "../types/errorType";
+import { DealDataStructure, IDealDataStructure } from "../models/DealDataStructureModel";
 
 
 export class newDealRepository {
@@ -164,7 +165,20 @@ export class newDealRepository {
         },
       },
       { $unwind: { path: "$person", preserveNullAndEmptyArrays: true } },
-
+      {
+        $lookup: {
+          from: "dealDataRequest",
+          localField: "dealDataReqId",
+          foreignField: "_id",
+          as: "dealDataRequest",
+        },
+      },
+      {
+        $unwind: {
+          path: "$dealDataRequest",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
       {
         $lookup: {
           from: "users",
@@ -193,7 +207,9 @@ export class newDealRepository {
           as: "borrowerCompany",
         },
       },
-      { $unwind: { path: "$borrowerCompany", preserveNullAndEmptyArrays: true } },
+      {
+        $unwind: { path: "$borrowerCompany", preserveNullAndEmptyArrays: true },
+      },
 
       {
         $project: {
@@ -203,6 +219,7 @@ export class newDealRepository {
           active: 1,
           createdAt: 1,
           updatedAt: 1,
+          currentStep: "$dealDataRequest.currentStep" ,
           person: {
             firstname: 1,
             email1: 1,
@@ -235,7 +252,7 @@ export class newDealRepository {
   }
 }
 
- async findCompanyById(dealDataReqId: any) {
+ async findDealReqById(dealDataReqId: any) {
   try {
     const deal = await DealDataRequest.findById(dealDataReqId);
 
@@ -321,8 +338,72 @@ async updateGuarantorsByDealDataReqId(
     throw error;
   }
 }
+  async createMultiple(details: any[], dealDataReqId: string) {
+    try {
+      const results = [];
 
-  async updateBorrowerCompany(borrowerCompanyId: string,updateData: IBorrowerCompanyRequest): Promise<{ borrowerCompany: IBorrowerCompany | null; dealDataRequestId: string | null }> {
+      for (const d of details) {
+        const payload: IDealDataStructure = {
+          ...d,
+          dealDataReqId,
+        };
+
+        const loanDetail = await DealDataStructure.create(payload);
+        results.push(loanDetail);
+      }
+      const crruentStep = await DealDataRequest.findByIdAndUpdate(dealDataReqId, { currentStep: 3 })
+
+      logger.info("✅ Successfully created multiple loan details");
+      console.log("✅ LoanDetails inserted successfully");
+      return results;
+    } catch (err: unknown) {
+      const error = err as IError;
+      logger.error("❌ Error in createMultiple:", { message: error.message });
+      console.error("❌ Error in createMultiple:", error.message);
+      throw error;
+    }
+  }
+
+  async findById(id: string) {
+    try {
+      return await DealDataStructure.aggregate([
+        {
+          $lookup: {
+            from: "dealDataRequest",
+            localField: "dealDataReqId",
+            foreignField: "_id",
+            as: "dealDataRequest",
+          },
+        },
+        {
+          $unwind: {
+            path: "$dealDataRequest",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $project: {
+            loanType: 1,
+            loanAmount: 1,
+            rate: 1,
+            amortization: 1,
+            paymentType: 1,
+            sba: 1,
+            term: 1,
+            active: 1,
+            dealDataReqId: 1,
+            currentStep: "$dealDataRequest.currentStep",
+          },
+        },
+      ]);
+    } catch (err: unknown) {
+      const error = err as IError;
+      logger.error("❌ Error in findById:", { message: error.message });
+      throw error;
+    }
+  }
+
+  async updateBorrowerCompany(borrowerCompanyId: string, updateData: IBorrowerCompanyRequest): Promise<{ borrowerCompany: IBorrowerCompany | null; dealDataRequestId: string | null }> {
 
     try {
       // 1. Find the borrower company
@@ -350,7 +431,7 @@ async updateGuarantorsByDealDataReqId(
         { new: true, runValidators: true }
       );
       const deal = await DealDataRequest.findOne({ borrowerCompanyId }).select("_id").lean();
-      
+
       return {
         borrowerCompany: updatedCompany,
         dealDataRequestId: deal ? String(deal._id) : null

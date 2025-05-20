@@ -3,6 +3,8 @@ import { newDealRepository } from "../repositories/newDealRepository";
 import { IBorrowerCompany } from "../models/BorrowerCompanyModel";
 import { logger } from "../configs/winstonConfig";
 import { Types } from "mongoose";
+import { IError } from "../types/errorType";
+import { error } from "winston";
 const controllerName: string = "newDealController";
 
 
@@ -56,7 +58,7 @@ export class NewDealController {
         return res.status(400).json({ message: "Invalid guarantor data" });
       }
 
-      const dealData = await this.NewDealRepository.findCompanyById(
+      const dealData = await this.NewDealRepository.findDealReqById(
         dealReqId.toString()
       );
       const borrowerCompanyId = dealData.borrowerCompanyId; // extract just the ID
@@ -77,7 +79,6 @@ export class NewDealController {
       console.error("Error in GuarantorController.createMultiple:", error);
       return res.status(500).json({
         success: false,
-
         data: null,
         message: "Failed to process guarantors",
         error: error.message,
@@ -192,15 +193,98 @@ export class NewDealController {
         guarantors
       );
       return res.status(200).json({
-        message: "Guarantors updated successfully",
+        success: true,
         data: updated,
+        message: "Guarantors updated successfully",
+        error: null,
       });
     } catch (err) {
       logger.error("Error in patchGuarantorsByDeal", err);
       return res.status(500).json({
+        success: false,
+        data: null,
         message: "Internal Server Error",
         error: (err as Error).message,
       });
     }
   };
+   createMultipleLoanDetails:RequestHandler =  async (req: Request, res: Response): Promise<any> =>{
+  const functionName = "createMultipleLoanDetails";
+
+  try {
+    const { loanDetails } = req.body;
+    const dealDataReqId = req.params.id;
+
+    logger.info(`[${controllerName}] → ${functionName} → Start`);
+    logger.debug(`DealDataRequest ID: ${dealDataReqId}`);
+    console.debug("Request Body:", loanDetails);
+
+    if (!Array.isArray(loanDetails) || loanDetails.length === 0) {
+      return res.status(400).json({ message: "Invalid loan details array" });
+    }
+
+    const result = await this.NewDealRepository.createMultiple(loanDetails, dealDataReqId);
+
+    return res.status(201).json({
+      success: true,
+      data: result,
+      message: "Loan details created successfully",
+      error:null
+    });
+  } catch (err: unknown) {
+    const error = err as IError;
+    logger.error(`[${controllerName}] → ${functionName} → Failed`, { error });
+    console.error(`[${controllerName}] Error:`, error.message);
+
+    return res.status(500).json({
+      success: false,
+      data:null,
+      message: "Failed to create loan details",
+      error: error.message,
+    });
+  }
+};
+
+ getLoanDetailById = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const functionName = "getLoanDetailById";
+
+  try {
+    const result = await this.NewDealRepository.findById(id);
+
+    if (!result) {
+      return res.status(404).json({ message: "Loan detail not found" });
+    }
+
+    return res.status(200).json(result);
+  } catch (err: unknown) {
+    const error = err as IError;
+    logger.error(`[${controllerName}] → ${functionName} → Failed`, { error });
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+//  updateLoanDetailById = async (req: Request, res: Response) => {
+//   const { id } = req.params;
+//   const updateData = req.body;
+//   const functionName = "updateLoanDetailById";
+
+//   try {
+//     const result = await this.NewDealRepository.updateById(id, updateData);
+
+//     if (!result) {
+//       return res.status(404).json({ message: "Loan detail not found" });
+//     }
+
+//     return res.status(200).json({
+//       success: true,
+//       data: result,
+//       message: "Loan detail updated successfully",
+//     });
+//   } catch (err: unknown) {
+//     const error = err as IError;
+//     logger.error(`[${controllerName}] → ${functionName} → Failed`, { error });
+//     return res.status(500).json({ message: error.message });
+//   }
+// };
 }
