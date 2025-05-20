@@ -6,24 +6,32 @@ import interviewcalendar from "../../assets/imgs/calendar-icon.png";
 import matchpreference from "../../assets/imgs/match-preference.png";
 import crawler from "../../assets/imgs/crawler.png"
 import '../../assets/css/banker-dashboard.css';  // For component-specific CSS
+import { useNavigate } from 'react-router-dom';
 
 const BankerDashboard = () => {
     const cardData = [
-        { title: 'New Deal', image: useriumg, extraImage: pluse },
+        { title: 'New Deal', image: useriumg, extraImage: pluse, route: '/new-deal' },
         { title: 'Find A Match', image: findmatch },
         { title: 'Pipeline', image: pipeline },
         { title: 'Interview Calendar', image: interviewcalendar },
         { title: 'Match Preference', image: matchpreference },
         { title: 'Crawler', image: crawler },
     ];
-
+    const navigate = useNavigate();
     return (
         <>
             {/* Cards Section */}
             <div className="max-w-7xl mx-auto mt-10 px-4 sm:px-14 md:px-18 pb-10">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 ">
-                    {cardData.map((card, index) => (
-                        <div key={index} className="w-full">
+                    {cardData?.map((card, index) => (
+                        <div key={index} className="w-full"
+                            onClick={() => {
+                                // navigate(card?.route)
+                                if (card?.route) {
+                                    navigate(card?.route);
+                                }
+                            }}
+                        >
                             <div className="dashbordcard my-2">
                                 <div className="p-3">
                                     <a>

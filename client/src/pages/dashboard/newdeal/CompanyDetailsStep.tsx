@@ -1,18 +1,11 @@
 import React from 'react'
-import AlertMessage from '../../../components/AlertMessage'
-import '../../assets/css/new-deal-form.css'
+import '../../../assets/css/new-deal-form.css'
 import { InputMask } from '@react-input/mask'
 import { Controller, useFormContext } from 'react-hook-form'
 import AddressAutocomplete from '../../../components/AddressAutocomplete'
+import { INewDealStep1Form } from '../../../types/newDeal'
 
-type FormValues = {
-  companyName: string;
-  legalEntity: string;
-  businessPhone: string;
-  address: string;
-  website?: string;
-  suite?: string;
-};
+
 
 const CompanyDetailsStep: React.FC = () => {
 
@@ -20,11 +13,11 @@ const CompanyDetailsStep: React.FC = () => {
     register,
     control,
     formState: { errors }
-  } = useFormContext<FormValues>();
+  } = useFormContext<INewDealStep1Form>();
 
   return (
     <div className='mt-8 new-deal-form'>
-      <AlertMessage type='error' message='Enter all fields' className='mb-5' />
+      {/* <AlertMessage type='error' message='Enter all fields' className='mb-5' /> */}
       <h4 className='text-2xl text-[#313131] mb-5'>Borrower(s)</h4>
 
       <div className='title-wrapper mb-5'>
@@ -39,6 +32,7 @@ const CompanyDetailsStep: React.FC = () => {
           <input
             type="text"
             id="companyName"
+            placeholder='Enter Company Name'
             {...register('companyName', { required: 'Company Name is required' })}
           />
           {errors.companyName && <span className='error-msg'>{errors.companyName.message}</span>}
@@ -96,6 +90,7 @@ const CompanyDetailsStep: React.FC = () => {
           <input
             type="text"
             id="website"
+            placeholder='Enter Website'
             {...register("website")}
           />
         </div>
@@ -109,7 +104,11 @@ const CompanyDetailsStep: React.FC = () => {
               <AddressAutocomplete
                 id="address"
                 {...field}
-                value={field.value?.[0]?.fulladdress || ""}
+                value={field.value?.[0]?.fullAddress || ""}
+                onChange={(val) => {
+                  // val is of type IAddress[]
+                  field.onChange(val); // <-- Pass it as-is
+                }}
               />
             )}
           />
@@ -125,6 +124,8 @@ const CompanyDetailsStep: React.FC = () => {
           <input
             type="text"
             id="suite"
+            placeholder='Enter Suite'
+            {...register("suite")}
           />
         </div>
       </div>
