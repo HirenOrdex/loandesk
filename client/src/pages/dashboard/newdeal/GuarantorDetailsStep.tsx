@@ -27,7 +27,7 @@ type FormValues = {
 
 const GuarantorDetailsStep: React.FC = () => {
   const {
-    register,
+    // register,
     control,
     formState: { errors },
   } = useFormContext<FormValues>();
