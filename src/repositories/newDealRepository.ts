@@ -9,9 +9,12 @@ import { Person } from "../models/PersonModel";
 import { IBorrowerCompanyRequest } from "../types/newDeal.type";
 import { IError } from "../types/errorType";
 import { DealDataStructure, IDealDataStructure } from "../models/DealDataStructureModel";
-
+import User from "../models/User";
+import { UserRepository } from "./userRepository";
+const userRepository = new UserRepository();
 
 export class newDealRepository {
+
   async createBorrowerCompany(data: any): Promise<{ borrowerCompany: IBorrowerCompany; dealDataRequestId: string }> {
     try {
       // Step 1: Create Address (if provided)
@@ -76,16 +79,45 @@ export class newDealRepository {
     }
   }
 
-  async findOrUpdatePerson(personData: any) {
-    let person = await Person.findOne({ email1: personData.email1 });
+  async findOrUpdateUser(personData: any) {
+    let user = await User.findOne({ email: personData.email });
+    const roleId = await userRepository.findRoleIdByName("Guarantor");
 
-    if (person) {
-      await Person.updateOne({ _id: person._id }, personData);
+    const userDataWithRole = {
+      firstName: personData.firstName,
+      email:personData.email,
+      middleInitial: personData.middleInitial,
+      lastName: personData.lastName,
+      roleId,
+    };
+
+    const person_Data = {
+      email2: personData.email,
+      workPhone: personData.workPhone,
+    };
+
+    if (user) {
+      let person = await Person.findOne({ userId: user._id });
+
+      if (person) {
+        await User.updateOne({ _id: user._id }, userDataWithRole);
+        await Person.updateOne({ _id: person._id }, person_Data);
+      } else {
+        await Person.create({
+          ...person_Data,
+          userId: user._id,
+        });
+      }
     } else {
-      person = await Person.create(personData);
+      user = await User.create(userDataWithRole);
+
+      await Person.create({
+        ...person_Data,
+        userId: user._id,
+      });
     }
 
-    return person;
+    return user; // ✅ Return the full user object
   }
 
   async createGuarantor(data: any) {
@@ -112,7 +144,7 @@ export class newDealRepository {
 
     for (const g of guarantors) {
       // Handle person
-      const person = await this.findOrUpdatePerson(g.person);
+      const user = await this.findOrUpdateUser(g.person);
 
       // Handle address
       let address = null;
@@ -122,7 +154,7 @@ export class newDealRepository {
 
       const guarantorPayload = {
         borrowerCompanyId,
-        personId: person._id,
+        userId: user._id,
         isGuarantor: g.isGuarantor,
         percentageOfOwnership: g.percentageOfOwnership,
         numberOfCOI: g.numberOfCOI,
@@ -158,13 +190,13 @@ export class newDealRepository {
 
       {
         $lookup: {
-          from: "persons",
-          localField: "personId",
+          from: "user",
+          localField: "userId",
           foreignField: "_id",
-          as: "person",
+          as: "user",
         },
       },
-      { $unwind: { path: "$person", preserveNullAndEmptyArrays: true } },
+      { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: "dealDataRequest",
@@ -179,15 +211,15 @@ export class newDealRepository {
           preserveNullAndEmptyArrays: true,
         },
       },
-      {
-        $lookup: {
-          from: "users",
-          localField: "person.userId",
-          foreignField: "_id",
-          as: "user",
-        },
-      },
-      { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+      // {
+      //   $lookup: {
+      //     from: "users",
+      //     localField: "person.userId",
+      //     foreignField: "_id",
+      //     as: "user",
+      //   },
+      // },
+      // { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
 
       {
         $lookup: {
@@ -220,10 +252,12 @@ export class newDealRepository {
           createdAt: 1,
           updatedAt: 1,
           currentStep: "$dealDataRequest.currentStep" ,
-          person: {
+          user: {
             firstname: 1,
+            middleInitial:1,
+            lastName:1,
             email1: 1,
-            contact1: 1,
+            phone: 1,
           },
           address: {
             city: 1,
@@ -303,7 +337,7 @@ async updateGuarantorsByDealDataReqId(
 
       // Update person
       if (g.person) {
-        await Person.findOneAndUpdate(existing.personId, g.person);
+        await Person.findOneAndUpdate(existing.userId, g.person);
       }
 
       // Update address
@@ -367,7 +401,8 @@ async updateGuarantorsByDealDataReqId(
   async findById(id: string) {
     try {
       return await DealDataStructure.aggregate([
-        {
+        {   $match: { id } ,
+
           $lookup: {
             from: "dealDataRequest",
             localField: "dealDataReqId",

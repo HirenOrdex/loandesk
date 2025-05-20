@@ -245,7 +245,7 @@ export class NewDealController {
   }
 };
 
- getLoanDetailById = async (req: Request, res: Response) => {
+ getLoanDetailById = async (req: Request, res: Response): Promise<any> => {
   const { id } = req.params;
   const functionName = "getLoanDetailById";
 
