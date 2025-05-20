@@ -106,7 +106,7 @@ export const getProfileById = async (
           workPhone: { $ifNull: ["$personData.workPhone", ""] },
           email2: { $ifNull: ["$personData.email2", ""] },
           webUrl: { $ifNull: ["$personData.webUrl", ""] },
-          linkedinURL: { $ifNull: ["$personData.linkedinURL", ""] },
+          linkedinUrl: { $ifNull: ["$personData.linkedinUrl", ""] },
           profileImage: { $ifNull: ["$personData.profileImage", ""] },
           role: "$roleData.name",
           userAddress: ["$personAddressData"],
@@ -154,168 +154,113 @@ export const getProfileById = async (
   }
 };
 
-export const updateProfileById = async (
-  req: Request,
-  res: Response
-): Promise<any> => {
-  let dataToValidate: { personData?: PersonData } = { ...req.body };
+export const updateProfileById = async (req: Request, res: Response): Promise<any> => {
+  const userId = req.params.id;
 
-  if (typeof req.body.personData === "string") {
-    try {
-      dataToValidate.personData = JSON.parse(req.body.personData);
-    } catch (e: any) {
-      logger.warn("Failed to parse personData JSON: " + e.message);
-      return res.status(400).json({
-        success: false,
-        data: null,
-        message: "Invalid JSON format in personData",
-        error: `error ${e.message}`,
-      });
-    }
+  if (!userId) {
+    logger.warn("User ID is missing in request");
+    return res.status(400).json({
+      success: false,
+      data: null,
+      message: "User ID is required",
+    });
   }
 
+  const objectUserId = new mongoose.Types.ObjectId(userId);
+  let personData: PersonData;
+
   try {
-    const userId = req.params.id;
-    if (!userId) {
-      logger.warn("User ID is missing in request");
-      return res.status(400).json({
-        success: false,
-        data: null,
-        message: "Invalid JSON format in personData",
-      });
-    }
-
-    const objectUserId = new mongoose.Types.ObjectId(userId);
-
-    // Extract fields from request body
-    const personData =
+    personData =
       typeof req.body.personData === "string"
         ? JSON.parse(req.body.personData)
         : req.body;
+  } catch (e: any) {
+    logger.warn("Failed to parse personData JSON: " + e.message);
+    return res.status(400).json({
+      success: false,
+      data: null,
+      message: "Invalid JSON format in personData",
+      error: e.message,
+    });
+  }
 
-    let {
-      firstName,
-      middleInitial,
-      lastName,
-      email,
-      phone,
-      workPhone,
-      email2,
-      linkedinUrl,
-      webUrl,
-      suiteNo,
-      address,
-    } = personData;
+  const {
+    firstName,
+    middleInitial,
+    lastName,
+    email,
+    phone,
+    workPhone,
+    email2,
+    linkedinUrl,
+    webUrl,
+    suiteNo,
+    address,
+  } = personData;
 
-    let addressId;
-
-    // handle profileImage
+  try {
+    // Upload profile image if provided
     let profileImage: string | null = null;
     if (req.file) {
-      const file = req.file;
-      const result = await uploadFileToS3(
-        file?.originalname,
-        file?.buffer,
-        AWS_S3_AVATAR_FOLDER
-      );
+      const result = await uploadFileToS3(req.file.originalname, req.file.buffer, AWS_S3_AVATAR_FOLDER);
       profileImage = result.Location;
       logger.info(`userId: ${userId} Profile image uploaded: ${profileImage}`);
     }
 
-    const profile = await PersonModel.findOne({ userId });
-
-    if (!profile) {
-      throw new Error("Profile not found");
-    }
-
-    console.log("aaaa", address[0]?.fullAddress);
-
-    const currentAddress = await AddressModel.findOne({
-      _id: profile.addressId,
-    });
-
-    console.log("aaaa", currentAddress?.fullAddress);
-
-    if (
-      !currentAddress ||
-      currentAddress.fullAddress !== address[0]?.fullAddress
-    ) {
-      logger.info("Address has changed or not found. Creating new address.");
-
-      const addressInput = Array.isArray(personData.address)
-        ? personData.address[0]
-        : personData.address;
-
-      if (addressInput) {
-        const addressWithCreator = {
-          ...addressInput,
-        };
-
-        const newAddress = await AddressModel.create(addressWithCreator);
-        addressId = newAddress._id;
-        logger.info(
-          `userId: ${userId} New address created with ID: ${newAddress._id}`
-        );
-      }
-    }
-    // === Update basic fields in UserModel ===
     const user = await UserModel.findById(objectUserId);
     if (!user) {
       logger.warn("User not found during profile update");
-      return res.status(404).json({
-        success: false,
-        data: null,
-        message: "User not found",
-      });
+      return res.status(404).json({ success: false, data: null, message: "User not found" });
     }
 
+    // Update user basic fields if changed
     let userModified = false;
+    const userFields: Partial<typeof user> = { firstName, middleInitial, lastName, email, phone };
 
-    if (firstName && firstName !== user.firstName) {
-      user.firstName = firstName;
-      userModified = true;
-      logger.info(`userId: ${userId} User basic info updated for`);
-    }
-
-    if (middleInitial && middleInitial !== user.middleInitial) {
-      user.middleInitial = middleInitial;
-      userModified = true;
+    for (const [key, value] of Object.entries(userFields)) {
+      if (value && value !== (user as any)[key]) {
+        (user as any)[key] = value;
+        userModified = true;
+      }
     }
 
-    if (lastName && lastName !== user.lastName) {
-      user.lastName = lastName;
-      userModified = true;
-    }
-    if (email && email !== user.email) {
-      user.email = email;
-      userModified = true;
-    }
-    if (phone && phone !== user.phone) {
-      user.phone = phone;
-      userModified = true;
+    if (userModified) await user.save();
+
+    // Handle address logic
+    let addressId = null;
+    const addressInput = Array.isArray(address) ? address[0] : address;
+
+    if (addressInput) {
+      const existingPerson = await PersonModel.findOne({ userId: objectUserId });
+      const existingAddress = existingPerson?.addressId
+        ? await AddressModel.findById(existingPerson.addressId)
+        : null;
+
+      if (!existingAddress || existingAddress.fullAddress !== addressInput.fullAddress) {
+        const newAddress = await AddressModel.create({ ...addressInput });
+        addressId = newAddress._id;
+        logger.info(`userId: ${userId} New address created with ID: ${newAddress._id}`);
+      } else {
+        addressId = existingAddress._id;
+      }
     }
 
-    if (userModified) {
-      await user.save();
-    }
-
-    // === Update or Create PersonModel entry for extended fields ===
+    // Prepare update payload
     const personUpdate: Record<string, any> = {
-      updatedby: userId,
+      updatedBy: userId,
       ...(workPhone && { workPhone }),
       ...(email2 && { email2 }),
       ...(suiteNo && { suiteNo }),
       ...(webUrl && { webUrl }),
-      ...(linkedinUrl && { linkedinUrl: linkedinUrl }),
+      ...(linkedinUrl && { linkedinUrl }),
       ...(addressId ? { addressId } : {}),
-      profileImage: profileImage,
+      ...(profileImage && { profileImage }),
     };
 
-    const existingPerson = await PersonModel.findOne({
-      userId: objectUserId,
-    });
+    // Create or update person entry
+    const person = await PersonModel.findOne({ userId: objectUserId });
 
-    if (!existingPerson) {
+    if (!person) {
       await PersonModel.create([
         {
           userId: objectUserId,
@@ -324,13 +269,10 @@ export const updateProfileById = async (
           ...personUpdate,
         },
       ]);
-      logger.info(` userId: ${userId} Created new person entry `);
+      logger.info(`userId: ${userId} Created new person entry`);
     } else {
-      await PersonModel.updateOne(
-        { userId: objectUserId },
-        { $set: personUpdate }
-      );
-      logger.info(` userId: ${userId} Updated person entry`);
+      await PersonModel.updateOne({ userId: objectUserId }, { $set: personUpdate });
+      logger.info(`userId: ${userId} Updated person entry`);
     }
 
     //pipeline
@@ -413,7 +355,7 @@ export const updateProfileById = async (
           suiteNo: "$personData.suiteNo",
           webUrl: "$personData.webUrl",
           profileImage: "$personData.profileImage",
-          linkedinUrl: "$personData.linkedinURL",
+          linkedinUrl: "$personData.linkedinUrl",
           role: "$roleData.name",
           userAddress: "$personAddressData",
           financialInstitutionName: "$bankerData.financialInstitutionName",

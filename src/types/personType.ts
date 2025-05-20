@@ -1,4 +1,12 @@
-import { Document, Types } from "mongoose";
+export interface AddressData {
+  address1: string;
+  address2?: string;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
+  suiteNo?: string;
+}
 
 export interface PersonData {
   firstName?: string;
@@ -12,5 +20,6 @@ export interface PersonData {
   suiteNo?: string | null;
   linkedinUrl?: string | null;
   addressId?: string | null;
-  profileImage: string |null;
+  address?: AddressData | null;  // <- updated to reflect structure correctly
+  profileImage?: string | null
 }

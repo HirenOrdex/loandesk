@@ -33,6 +33,7 @@ export interface IUser {
   updatedAt: Date;
   createdBy: Types.ObjectId;
   updatedby: Types.ObjectId;
+  otp:string
 }
 
 // This is what Mongoose returns
