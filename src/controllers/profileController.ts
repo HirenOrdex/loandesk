@@ -101,20 +101,20 @@ export const getProfileById = async (
           _id: 1,
           email: 1,
           firstName: 1,
-          middleName: 1,
+          middleInitial: 1,
           lastName: 1,
           phone: 1,
-          workPhone: "$personData.workPhone",
-          email2: "$personData.email2",
-          webUrl: "$personData.webUrl",
-          linkedinURL: "$personData.linkedinURL",
-          profileImage: "$personData.profileImage",
+          workPhone: { $ifNull: ["$personData.workPhone", ""] },
+          email2: { $ifNull: ["$personData.email2", ""] },
+          webUrl: { $ifNull: ["$personData.webUrl", ""] },
+          linkedinURL: { $ifNull:["$personData.linkedinURL",""]},
+          profileImage: {$ifNull:["$personData.profileImage",""]},
           role: "$roleData.name",
           userAddress: "$personAddressData",
           financialInstitutionName: "$bankerData.financialInstitutionName",
           title: "$bankerData.title",
           areaOfSpecialty: "$bankerData.areaOfSpecialty",
-          fInsAddress: "$bankerAddressData",
+          addressId: ["$bankerAddressData"],
           bankType: "$bankerData.bankType",
           assetSize: "$bankerData.assetSize",
           coname: "$borrowerData.coname",
@@ -175,24 +175,6 @@ export const updateProfileById = async (
      return res.status(errorResponse.statusCode).json(errorResponse);
 
     }
-  }
-
-  // Validate the parsed data
-  const { error } = profileUpdateSchema.validate(dataToValidate, {
-    abortEarly: false,
-  });
-  if (error) {
-    const errorResponse: ErrorResponse = {
-      success: false,
-      message: "Validation failed",
-      statusCode: 400,
-      details: error.details.map((d) => d.message),
-    };
-    logger.warn("Validation failed for profile update", {
-      details: errorResponse.details,
-    });
-
-    return res.status(errorResponse.statusCode).json(errorResponse);
   }
 
 
