@@ -7,7 +7,7 @@ export const profileApi = createApi({
     reducerPath: 'profileApi',
     baseQuery: baseQuery,
     endpoints: (builder) => ({
-        myprofile: builder.mutation<IProfileResponse, { id: string; data: IProfileFormInput }>({
+        myprofile: builder.mutation<IProfileResponse, { id: string | undefined; data: IProfileFormInput }>({
             query: ({ id, data }) => ({
                 url: `/api/profile/${id}`,
                 method: "PATCH",

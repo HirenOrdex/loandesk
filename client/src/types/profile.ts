@@ -29,7 +29,7 @@ export interface IProfileFormInput {
     lastName: string;
     phone: string;
     workPhone?: string;
-    addressId: string;
+    addressId: IProfileAddress;
     suiteNo?: string;
     email: string;
     email2?: string;
@@ -45,16 +45,14 @@ export interface IGetProfileResponse {
         lastName: string;
         phone: string;
         workPhone?: string;
-        addressId: string;
+        // addressId: string;
         suiteNo?: string;
         email: string;
         email2?: string;
         webUrl?: string;
         linkedinUrl?: string;
         profileImage: File | null;
-        fInsAddress: {
-            fulladdress: string
-        }
+        addressId: IProfileAddress;
     };
     message: string;
 }

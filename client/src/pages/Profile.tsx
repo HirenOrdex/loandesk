@@ -12,6 +12,7 @@ import { useDispatch } from 'react-redux'
 import useSetProfileData from '../hooks/profile/useSetProfileData'
 import { IAddress } from '../types/auth'
 import { useUpdateProfile } from '../hooks/profile/useMyProfile'
+import Loader from '../components/Loader'
 
 
 
@@ -30,7 +31,7 @@ const Profile: React.FC = () => {
         formState: { errors },
     } = useForm<IProfileFormInput>();
     const {
-        handleProfileUpdate,
+        handleProfileUpdate, alert, loader
     } = useUpdateProfile();
     const setProfileDetails = useSetProfileData(setValue); // Initialize custom hook
     console.log("getProfileData", getProfileData);
@@ -83,13 +84,18 @@ const Profile: React.FC = () => {
     };
 
     return (
+        <>
+            {loader ? <Loader /> : null}
         <div className='max-w-[90%] md:max-w-[60%] lg:max-w-[40%] mx-auto my-6'>
             {/* <AlertMessage type='error' className='mb-5' /> */}
-            <AlertMessage
-                type='success'
-                message='Profile Updated Successfully'
-                className='mb-5'
-            />
+            {
+                (Object.keys(errors).length !== 0 || alert) && (
+                    <AlertMessage
+                        type={alert?.type || "error"}
+                        message={alert?.message || "Please fill out all the mandatory fields."}
+                    />
+                )
+            }
             <form>
                 {/* profile picture */}
                 <div className="relative w-32 h-32 mx-auto mb-10">
@@ -201,7 +207,7 @@ const Profile: React.FC = () => {
                             <AddressAutocomplete
                                 id="address"
                                 {...field}
-                                value={field.value?.[0] || ""}
+                                value={field.value}
                             />
                         )}
 
@@ -276,6 +282,7 @@ const Profile: React.FC = () => {
                 </div>
             </form>
         </div>
+        </>
     )
 }
 

@@ -7,7 +7,7 @@ const useSetProfileData = (setValue: UseFormSetValue<IProfileFormInput>) => {
 
         // Ensure 'data' is an array or an object that contains an array
         const result = data?.data
-        console.log(result);
+        console.log("....",result?.addressId);
 
         if (result) {
             setValue("firstName", result?.firstName ?? null);
@@ -20,7 +20,7 @@ const useSetProfileData = (setValue: UseFormSetValue<IProfileFormInput>) => {
             setValue("email2", result?.email2 ?? "");
             setValue("webUrl", result?.webUrl ?? "");
             setValue("linkedinUrl", result?.linkedinUrl ?? "");
-            setValue("addressId", result?.fInsAddress?.fulladdress || "");
+            setValue("addressId", result?.addressId);
 
         }
     }, [setValue]);
