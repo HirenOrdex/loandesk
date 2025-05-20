@@ -16,6 +16,19 @@ type DealStructureFormValues = {
   loans: Loan[];
 };
 
+const loanType = [
+    { label: 'Line of Credit', value: 'line-of-credit' },
+    { label: 'Term Loan', value: 'term-loan' },
+    { label: 'Equipment', value: 'equipment' },
+    { label: 'Real Estate - Owner User', value: 'Real Estate - Owner User' },
+    { label: 'SBA 504 - Real Estate Purchase', value: 'SBA 504 - Real Estate Purchase' },
+    { label: 'SBA 7a - Real Estate Purchase', value: 'SBA 7a - Real Estate Purchase' },
+    { label: 'SBA 7a - Working Capital/Expansion/ Debt Restructure/Equipment Purchase', value: 'SBA 7a - Working Capital/Expansion/ Debt Restructure/Equipment Purchase' },
+    { label: 'SBA 7a - CapLine', value: 'SBA 7a - CapLine' },
+    { label: 'SBA 7a - SLA', value: 'SBA 7a - SLA' },
+    { label: 'SBA 7a - Business Acquisition/Partner Buyout', value: 'SBA 7a - Business Acquisition/Partner Buyout' },
+];
+
 const DealStructureStep: React.FC = () => {
   const {
     register,
@@ -99,8 +112,12 @@ const DealStructureStep: React.FC = () => {
                 id={`loan-type-${field.id}`}
                 {...register(`loans.${index}.loanType`, { required: 'Please select one option' })}
               >
-                <option value="">Select at least one option</option>
-                <option value="line-of-credit">Line of Credit</option>
+                <option value="">Select Loan Type</option>
+                {
+                  loanType.map((loan, index) => (
+                    <option key={index} value={loan.value}>{loan.label}</option>
+                  ))
+                }
               </select>
               {errors.loans?.[index]?.loanType && (
                 <span className='error-msg'>{errors.loans[index].loanType?.message}</span>
@@ -167,7 +184,6 @@ const DealStructureStep: React.FC = () => {
                 id={`payment-type-${field.id}`}
                 {...register(`loans.${index}.paymentType`, { required: 'Please select one option' })}
               >
-                <option value="">Select Payment Type</option>
                 <option value="interest-only">Interest Only</option>
                 <option value="interest-principle">Interest and Principle Only</option>
               </select>

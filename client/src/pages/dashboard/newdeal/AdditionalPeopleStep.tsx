@@ -139,12 +139,17 @@ const AdditionalPeopleStep: React.FC = () => {
                   />
                 </div>
                 <div className='mb-3 col-span-2 flex items-end justify-start md:justify-center'>
-                  <div className='flex items-center gap-1 mb-1'>
-                    <input id={`COIForCompany_${index}`} type='checkbox' value='COIForCompany' />
+                  <label className='checkbox-wrapper'>
+                    <input
+                      type='checkbox'
+                      value='COIForCompany'
+                      id={`COIForCompany_${index}`}
+                    />
+                    <span className="checkmark"></span>
                     <label className='!mb-0 select-none' htmlFor={`COIForCompany_${index}`}>
                       COI For Company
                     </label>
-                  </div>
+                  </label>
                 </div>
               </div>
 

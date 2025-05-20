@@ -122,7 +122,10 @@ header.header-container {
   overflow: hidden;
   width: 90%;
   max-width: 900px;
-  max-height: 90vh;
+}
+
+.save-email-popup .popup-body{
+  max-height: 80vh;
   overflow-y: auto;
 }
 
@@ -135,7 +138,6 @@ header.header-container {
 .save-email-lable{
   margin: 0;
   line-height: 1.10;
-  font-size: 1rem;
   font-family: 'Times New Roman', Times, serif;
   font-weight:500;
   user-select: none;

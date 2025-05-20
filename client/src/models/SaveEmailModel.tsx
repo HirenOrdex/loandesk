@@ -37,7 +37,7 @@ const SaveEmailModal: React.FC<SaveEmailModalProps> = ({ onClose, onConfirm }) =
         </div>
 
         <div className="popup-body px-6 py-4 text-sm">
-          <p className="mb-4 text-center px-4">
+          <p className="mb-4 text-center px-4 text-lg text-(--label)">
             To ensure the accuracy of your request, we ask that you review the information below and make
             and required edits prior to completing the next steps.
           </p>
@@ -83,7 +83,7 @@ const SaveEmailModal: React.FC<SaveEmailModalProps> = ({ onClose, onConfirm }) =
             </tbody>
           </table>
 
-          <p className="mb-4">
+          <p className="mb-4 text-lg text-(--label) text-left">
             Please verify the information above is accurate. This information will help us determine the financial
             documentation needed to accurately calculate the information required by our leaders to complete
             the loan request process.
@@ -98,26 +98,25 @@ const SaveEmailModal: React.FC<SaveEmailModalProps> = ({ onClose, onConfirm }) =
               className="cursor-pointer"
             />
             <span className="checkmark mt-0.5 sm:mt-0"></span>
-            <label htmlFor="acknowledge" className="save-email-lable cursor-pointer">
+            <label htmlFor="acknowledge" className="save-email-lable cursor-pointer text-left text-lg">
               I acknowledge that the aforementioned information is correct.
             </label>
           </label>
-        </div>
 
-        <div className="px-6 py-2 pb-6 flex justify-center space-x-2">
-          <button
-            onClick={onConfirm}
-            className="bg-(--primary-color) text-(--white) px-3 py-2 rounded-sm cursor-pointer"
-          >
-            Ok
-          </button>
-          <button
-            onClick={onClose}
-            className="bg-(--primary-color) text-(--white) px-3 py-2 rounded-sm cursor-pointer"
-          >
-            Cancel
-          </button>
-
+          <div className="px-6 py-3 flex justify-center space-x-2">
+            <button
+              onClick={onConfirm}
+              className="bg-(--primary-color) text-(--white) px-3 py-2 rounded-sm cursor-pointer"
+            >
+              Ok
+            </button>
+            <button
+              onClick={onClose}
+              className="bg-(--primary-color) text-(--white) px-3 py-2 rounded-sm cursor-pointer"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       </div>
     </div>
