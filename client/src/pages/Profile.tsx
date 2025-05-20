@@ -88,7 +88,7 @@ const Profile: React.FC = () => {
                     {/* profile picture */}
                     <div className="relative w-32 h-32 mx-auto mb-10">
                         <img
-                            src={getImageSrc()}
+                            src={ getImageSrc() || defaultAvatar }
                             alt="Profile"
                             className="w-full h-full rounded-full object-cover borde"
                         />
