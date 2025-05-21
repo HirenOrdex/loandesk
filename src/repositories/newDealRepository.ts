@@ -9,8 +9,10 @@ import { Person } from "../models/PersonModel";
 import { IBorrowerCompanyRequest } from "../types/newDeal.type";
 import { IError } from "../types/errorType";
 import { DealDataStructure, IDealDataStructure } from "../models/DealDataStructureModel";
-import User from "../models/User";
+import User, { IUser } from "../models/User";
 import { UserRepository } from "./userRepository";
+import { AdditionalPeopleDetailModel, IAdditionalPeopleDetail } from "../models/AdditionalPeopleDetail.model";
+import { RoleModel } from "../models/RoleModel";
 import { title } from "process";
 const userRepository = new UserRepository();
 
@@ -299,7 +301,7 @@ export class newDealRepository {
     const deal = await DealDataRequest.findById(dealDataReqId);
 
     if (!deal) {
-      logger.warn(`No DealDataRequest found for borrowerCompanyId: ${dealDataReqId}`);
+      logger.warn(`No DealDataRequest found for dealId: ${dealDataReqId}`);
       throw new Error("DealDataRequest not found");
     }
 
@@ -548,6 +550,84 @@ async updateGuarantorsByDealDataReqId(
       throw new Error("Failed to retrieve borrower company data");
     }
   }
+    async createAdditionalPeople(data: any,  dealDataReqId: any): Promise<IAdditionalPeopleDetail> {
+    try {
+    if (data.appSkip === true) {
+      const additionalPeople = await AdditionalPeopleDetailModel.create({
+        appSkip: true,
+        dealDataReqId: dealDataReqId,          
+        active: true,
+      });
+
+      await DealDataRequest.findByIdAndUpdate(dealDataReqId, { currentStep: 4, appSkip: data.appSkip });
+
+      return additionalPeople;
+    }
+       let newAddress = null;
+      if (data.address) {
+        const addressInput = Array.isArray(data.address)
+          ? data.address[0]
+          : data.address;
+
+        if (addressInput) {
+          const addressWithCreator = {
+            ...addressInput,
+            // createdBy: data.createdBy, // passed from request body or middleware
+          };
+          newAddress = await AddressModel.create(addressWithCreator);
+        }
+      }
+      // 1. Create user
+     const newUser = await User.create({
+      email: data.email1,
+      firstName: data.firstName,
+      middleInitial: data.middleInitial,
+      roleId: data.roleId,
+      lastName: data.lastName,
+      cellPhone: data.cellPhone,
+      title: data.titleRelationship
+    });
+
+    // 2. Create Person with userId as foreign key and additional fields
+    const newPerson = await Person.create({
+      userId: newUser._id,
+      email2: data.email2,
+      addressId:  newAddress?._id ?? null, // This should be an ObjectId of Address
+      workPhone: data.workPhone,
+    });
+
+      // 2. Use user ID in AdditionalPeopleDetail
+      const additionalPeople = await AdditionalPeopleDetailModel.create({
+      dealDataReqId: dealDataReqId,
+      guarantorIds: data.guarantorIds ?? [],
+      coiForCompany: data.coiForCompany ?? null,
+      borrowerCompanyId: data.borrowerCompanyId ?? null,
+      personId: newPerson._id,
+      active: true,
+      suiteNo: data.suiteNo
+      });
+      const currentStep = await DealDataRequest.findByIdAndUpdate(dealDataReqId,{currentStep:4})
+      return additionalPeople;
+    } catch (error: any) {
+      console.error("Error creating additional people detail:", error.message);
+      throw new Error("Failed to create additional people detail");
+    }
+  }
+  findRoleIdByName = async (roleName: string): Promise<any> => {
+    try {
+      const role = await RoleModel.findOne({ roleName: roleName }).lean();
+      if (role?._id) {
+        return role?._id;
+      } else {
+        return `Error finding role by name`;
+      }
+    } catch (error) {
+      console.error(`Error finding role by name: ${roleName}`, error);
+      return `Error finding role by name in db`;
+    }
+  };
+
+
   async updateMultipleLoan(details: any[]) {
     try {
       const results = [];

@@ -356,4 +356,58 @@ export class NewDealController {
     res.status(500).json({ message: "Failed to send reminder email.", error });
   }
 };
+
+  createAdditionalPeople: RequestHandler = async (req: Request, res: any) => {
+    try {
+      const dealReqId = req.params.id;
+      const appSkip: Number = req.body.appSkip ?? 0;
+      const coiForCompanyFlag: Number = req.body.coiForCompany ?? 1;
+
+      let data;
+      const dealData = await this.NewDealRepository.findDealReqById(dealReqId.toString());
+
+      const borrowerCompanyId = dealData.borrowerCompanyId;
+      const roleId = await this.NewDealRepository.findRoleIdByName("COI");
+      console.log("borrowerCompanyId", borrowerCompanyId);
+
+      if (appSkip === 1) {
+        const result = await this.NewDealRepository.createAdditionalPeople(
+          { appSkip: true, dealdataReqId: dealReqId },
+          dealReqId
+        );
+
+        return res.status(200).json({
+          success: true,
+          data: result,
+          message: "Additional Point Person created successfully",
+          error: null,
+        });
+      } else {
+        data = {
+          ...req.body,
+          appSkip: false,
+          roleId,
+          coiForCompany: coiForCompanyFlag,
+          borrowerCompanyId: coiForCompanyFlag ? borrowerCompanyId : null,
+        };
+      }
+
+
+      const result = await this.NewDealRepository.createAdditionalPeople(data, dealReqId);
+
+      return res.status(200).json({
+        success: true,
+        data: result,
+        message: "Additional Point Person created successfully",
+        error: null,
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        success: false,
+        data: null,
+        message: "Internal server error",
+        error: error.message,
+      });
+    }
+  };
 }

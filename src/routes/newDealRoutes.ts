@@ -13,6 +13,7 @@ router.get("/borrower-company/:id", newDealController.getBorrowerCompanyById);
 router.patch("/guarantors/:id",newDealController.updateGuarantor)
 router.post('/loan-detail/:id',newDealController.createMultipleLoanDetails)
 router.get('/loan-detail/:id',newDealController.getLoanDetailById)
+router.post("/additional-people/:id",newDealController.createAdditionalPeople);
 router.patch('/loan-detail/',newDealController.updateLoanDetailById)
 router.get('/final-data/:id', newDealController.getFinalLoanData);
 
