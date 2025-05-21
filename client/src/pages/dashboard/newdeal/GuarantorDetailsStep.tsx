@@ -5,32 +5,15 @@ import { InputMask } from '@react-input/mask';
 import AlertMessage from '../../../components/AlertMessage';
 import { IAddress } from '../../../types/auth';
 import { IoCloseSharp } from 'react-icons/io5';
+import { INewDealStep2Form } from '../../../types/newDeal';
 
-type Member = {
-  email: string;
-  firstName: string;
-  middleName?: string;
-  lastName: string;
-  address: IAddress[];
-  suite?: string;
-  cellPhone: string;
-  workPhone: string;
-  title: string;
-  permanentResident: string;
-  guarantor: string;
-  ownership: string;
-};
-
-type FormValues = {
-  members: Member[];
-};
 
 const GuarantorDetailsStep: React.FC = () => {
   const {
     // register,
     control,
     formState: { errors },
-  } = useFormContext<FormValues>();
+  } = useFormContext<INewDealStep2Form>();
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -122,9 +105,18 @@ const GuarantorDetailsStep: React.FC = () => {
               </label>
               <input
                 type='email'
-                id={`email_${index}`}
+                id={`members.${index}.email`}
+                {...register(`members.${index}.email`, {
+                  required: "Email is required",
+                  pattern: {
+                    value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                    message: "Please enter a valid email address",
+                  },
+                })}
               />
-              <span className='error-msg'>Email is required</span>
+              {errors.members?.[index]?.email && (
+                <span className='error-msg'>{errors.members[index].email.message}</span>
+              )}
             </div>
           </div>
 
@@ -136,15 +128,19 @@ const GuarantorDetailsStep: React.FC = () => {
               </label>
               <input
                 type='text'
-                id={`firstName_${index}`}
+                id={`members.${index}.firstName`}
+                {...register(`members.${index}.firstName`, { required: "First Name is required" })}
               />
-              <span className='error-msg'>First Name is required</span>
+              {errors.members?.[index]?.firstName && (
+                <span className="error-msg">{errors.members[index].firstName.message}</span>
+              )}
             </div>
             <div className='mb-3'>
               <label className='new-form-label' htmlFor={`middleName_${index}`}>Middle Name</label>
               <input
                 type='text'
-                id={`middleName_${index}`} />
+                id={`members.${index}.middleName`}
+                {...register(`members.${index}.middleName`)} />
             </div>
             <div className='mb-3'>
               <label className='new-form-label' htmlFor={`lastName_${index}`}>
@@ -152,9 +148,14 @@ const GuarantorDetailsStep: React.FC = () => {
               </label>
               <input
                 type='text'
-                id={`lastName_${index}`}
+                id={`members.${index}.lastName`}
+                {...register(`members.${index}.lastName`, {
+                  required: "Last Name is required",
+                })}
               />
-              <span className='error-msg'>Last Name is required</span>
+              {errors.members?.[index]?.lastName && (
+                <span className="error-msg">{errors.members[index].lastName.message}</span>
+              )}
             </div>
           </div>
 
@@ -184,7 +185,8 @@ const GuarantorDetailsStep: React.FC = () => {
             </div>
             <div className='mb-3'>
               <label className='new-form-label' htmlFor={`suite_${index}`}>Suite (Optional)</label>
-              <input type='text' id={`suite_${index}`} />
+              <input type='text' id={`members.${index}.suite`}
+                {...register(`members.${index}.suite`)} />
             </div>
           </div>
 
@@ -194,14 +196,43 @@ const GuarantorDetailsStep: React.FC = () => {
               <label className='new-form-label' htmlFor={`cell_${index}`}>
                 Cell Phone <span className='error-star'>*</span>
               </label>
-              <InputMask
+              <Controller
+                name={`members.${index}.cellPhone`}
+                control={control}
+                rules={{
+                  required: "Cell phone is required",
+                  validate: value => {
+                    const digitsOnly = value.replace(/\D/g, "");
+                    if (digitsOnly.length !== 10) {
+                      return "Please enter a valid 10-digit Cell phone number";
+                    }
+                    return true;
+                  }
+                }}
+                render={({ field }) => (
+                  <InputMask
+                    {...field}
+                    id={`members.${index}.cellPhone`}
+                    mask="(___) ___-____"
+                    showMask={true}
+                    inputMode='numeric'
+                    replacement={{ _: /\d/ }}
+                  />
+                )}
+              />
+              {/* <InputMask
                 mask='(___) ___-____'
                 showMask={true}
                 inputMode='numeric'
                 id={`cell_${index}`}
                 replacement={{ _: /\d/ }}
-              />
-              <span className='error-msg'>Cell phone is required</span>
+                {...register(`members.${index}.cellPhone`, { required: 'Cell phone is required' })}
+              /> */}
+              {errors.members?.[index]?.cellPhone && (
+                <span className='error-msg'>
+                  {errors.members[index].cellPhone?.message}
+                </span>
+              )}
             </div>
             <div className='mb-3'>
               <label className='new-form-label' htmlFor={`work_${index}`}>
