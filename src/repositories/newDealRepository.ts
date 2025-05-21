@@ -18,7 +18,7 @@ const userRepository = new UserRepository();
 
 export class newDealRepository {
 
-  async createBorrowerCompany(data: any): Promise<{ borrowerCompany: IBorrowerCompany; dealDataRequestId: string }> {
+  async createBorrowerCompany(data: any,  userId: string,role: string): Promise<{ borrowerCompany: IBorrowerCompany; dealDataRequestId: string }> {
     try {
       // Step 1: Create Address (if provided)
       let newAddress = null;
@@ -62,13 +62,21 @@ export class newDealRepository {
       const referenceNo = `LH-S${newNumber}`;
 
       // Step 4: Create DealDataRequest
-      const newDeal = await DealDataRequest.create({
-        referenceNo,
-        borrowerCompanyId: newBorrowerCompany._id,
-        currentStep: 1,
-        requestedDate: new Date(),
-        active: true,
-      });
+       const dealRequestPayload: any = {
+      referenceNo,
+      borrowerCompanyId: newBorrowerCompany._id,
+      currentStep: 1,
+      requestedDate: new Date(),
+      active: true,
+    };
+
+    if (role === "Banker") {
+      dealRequestPayload.bankerId = userId;
+    } else if (role === "Borrower") {
+      dealRequestPayload.borrowerId = userId;
+    }
+
+    const newDeal = await DealDataRequest.create(dealRequestPayload);
 
       return {
         borrowerCompany: newBorrowerCompany,

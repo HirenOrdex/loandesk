@@ -6,6 +6,7 @@ import { Types } from "mongoose";
 import { IError } from "../types/errorType";
 import { error } from "winston";
 import { sendUploadReminderEmail } from "../services/emailService";
+import { verifyAccessToken } from "../utils/jwtUtils";
 const controllerName: string = "newDealController";
 
 
@@ -21,8 +22,44 @@ export class NewDealController {
     logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
     try {
       const data: IBorrowerCompany = req.body;
-
-      const { borrowerCompany, dealDataRequestId } = await this.NewDealRepository.createBorrowerCompany(data);
+const authHeader = req.header("authorization");
+      if (!authHeader?.startsWith("Bearer ")) {
+        logger.warn("Authorization header missing or invalid.");
+        return res
+          .status(401)
+          .json({
+            success: false,
+            message: "Unauthorized: Invalid token format.",
+          });
+      }
+      const refreshToken = authHeader.split(" ")[1];
+      if (!refreshToken) {
+        logger.error("changePassword:-Refresh token missing in cookies.");
+        console.error("changePassword:-Refresh token missing in cookies.");
+        return res.status(401).json({
+          success: false,
+          data: null,
+          error: "Unauthorized: Refresh token missing.",
+          message: "Unauthorized: Refresh token missing.",
+        });
+      }
+      // Verify token and extract userId
+      let decoded: any;
+      try {
+        decoded = verifyAccessToken(refreshToken);
+      } catch (err) {
+        logger.error("changePassword:-Invalid refresh token.");
+        console.error("changePassword:-Invalid refresh token.");
+        return res.status(401).json({
+          success: false,
+          data: null,
+          error: "Invalid or expired refresh token.",
+          message: "Invalid or expired refresh token.",
+        });
+      }
+      const role: string = decoded?.role;
+      const userId: string = decoded?.id;
+      const { borrowerCompany, dealDataRequestId } = await this.NewDealRepository.createBorrowerCompany(data, userId, role);
       logger.info(`BorrowerCompany created successfully with ID: ${borrowerCompany._id}`);
       return res.status(200).json({
         success: true,
