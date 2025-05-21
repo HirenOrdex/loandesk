@@ -206,8 +206,8 @@ const BankerRegister: React.FC = () => {
                                                     onChange={(values) =>
                                                         field.onChange(values.map(v => v.value).join(', '))
                                                     }
-                                                // onSelect={() => { }}
-                                                // onDeselect={() => { }}
+                                                onSelect={() => { }}
+                                                onDeselect={() => { }}
                                                 />
                                             )}
                                         />
