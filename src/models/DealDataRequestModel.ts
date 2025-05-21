@@ -30,7 +30,7 @@ const DealDataRequestSchema = new Schema<IDealDataRequest>(
     referenceNo: { type: String, required: false },
     borrowerId: { type: Schema.Types.ObjectId, ref: "Person", required: false },
     borrowerType: { type: String, required: false },
-    borrowerCompanyId: { type: Schema.Types.ObjectId, ref: "borrowerCompany" },
+    borrowerCompanyId: { type: Schema.Types.ObjectId, ref: "BorrowerCompany" },
     bankerId: { type: Schema.Types.ObjectId, ref: "Person", required: false },
     noOfLoans: { type: Number, required: false },
     appSkip: { type: Number, required: false },

@@ -30,5 +30,5 @@ const borrowerCompanySchema = new Schema<IBorrowerCompany>(
   }
 );
 
-const BorrowerCompanyModel = model<IBorrowerCompany>("borrowerCompany", borrowerCompanySchema);
+const BorrowerCompanyModel = model<IBorrowerCompany>("BorrowerCompany", borrowerCompanySchema);
 export default BorrowerCompanyModel;

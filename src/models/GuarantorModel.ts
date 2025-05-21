@@ -17,7 +17,7 @@ export interface IGuarantor extends Document {
 
 const guarantorSchema = new Schema<IGuarantor>(
   {
-    borrowerCompanyId: { type: Schema.Types.ObjectId, ref:"borrowerCompany" },
+    borrowerCompanyId: { type: Schema.Types.ObjectId, ref:"BorrowerCompany" },
     isGuarantor: { type: Number, required: true },
     dealDataReqId: {
       type: Schema.Types.ObjectId,

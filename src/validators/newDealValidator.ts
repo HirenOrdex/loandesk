@@ -15,7 +15,7 @@ export const borrowerCompanySchema = Joi.object({
     "any.required": `"businessPhone" is required`,
     "string.empty": `"businessPhone" cannot be empty`,
   }),
-  website: Joi.string().uri().optional().allow(null, ""),
+  website: Joi.string().optional().allow(null, ""),
   suite: Joi.string().optional().allow(null, ""),
   address: Joi.array()
     .items(
