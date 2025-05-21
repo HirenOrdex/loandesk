@@ -13,6 +13,7 @@ import authRoutes from "./routes/authRoutes";
 import bankerRoutes from "./routes/bankerRoutes";
 import newDealRoutes from "./routes/newDealRoutes";
 import cookieParser from 'cookie-parser';
+import profileRoutes from "./routes/profileRoutes";
 const port = PORT || 3000;
 
 const app = express();
@@ -22,7 +23,7 @@ const corsOptions: cors.CorsOptions = {
   origin: true,
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
-  exposedHeaders: ["accesstoken", "X-accesstoken"],
+  // exposedHeaders: ["accesstoken", "X-accesstoken"],
 };
 app.use(cookieParser());
 app.use(cors(corsOptions));
@@ -64,6 +65,7 @@ app.get("/", (req, res) => {
 app.use("/auth", authRoutes);
 app.use("/", bankerRoutes);
 app.use("/new-deal", newDealRoutes);
+app.use('/user', profileRoutes);
 
 const startServer = async () => {
   try {

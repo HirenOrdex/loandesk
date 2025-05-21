@@ -73,10 +73,10 @@ export const sendVerificationEmail = async (
       text: `Please verify your email by clicking the following link: ${verificationUrl}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2>Email Verification</h2>
-          <p>Thank you for registering! Click below to verify your email:</p>
+          <h3>Email Verification</h3>
+          <p>Thank you for signing up! Please click the button below to verify your email address:</p>
           <a href="${verificationUrl}" style="background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px;">Verify Email</a>
-          <p>If that doesn’t work, use this link:</p>
+          <p>If the button doesn’t work, copy and paste the following link into your browser:</p>
           <p><a href="${verificationUrl}">${verificationUrl}</a></p>
         </div>
       `,
@@ -103,10 +103,10 @@ export const sendPasswordResetEmail = async (
       text: `Please reset your password by clicking the following link: ${resetUrl}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2>Password Reset</h2>
-          <p>You requested a password reset. Click below:</p>
+          <h3>Password Reset</h3>
+          <p>You requested to reset your password. Please click the button below to proceed:</p>
           <a href="${resetUrl}" style="background-color: #2196F3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px;">Reset Password</a>
-          <p>If that doesn’t work, use this link:</p>
+          <p>If the button doesn’t work, copy and paste this link into your browser:</p>
           <p><a href="${resetUrl}">${resetUrl}</a></p>
         </div>
       `,
@@ -131,9 +131,9 @@ export const sendWelcomeEmail = async (
       text: `Hi ${name}, thank you for verifying your email. Your account is now fully active.`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2>Welcome!</h2>
+          <h3>Welcome!</h3>
           <p>Hi ${name},</p>
-          <p>Your email is verified and your account is active. Welcome aboard!</p>
+          <p>Your email has been successfully verified, and your account is now active. Welcome aboard!</p><br/>
           <a href="${APP_URL}/sign-in" style="background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px;">Go to Login</a>
         </div>
       `,
