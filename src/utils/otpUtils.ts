@@ -24,7 +24,7 @@ export const generateOTP = async (phoneNumber: string): Promise<string> => {
     // Generate a random 6-digit number
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    if (NODE_ENV !== "development" && USE_STATIC_OTP === "false") {
+    if (USE_STATIC_OTP === "false") {
       // Send OTP via SMS using Twilio
       await sendOtpViaSms(cleanPhoneNumber(phoneNumber), otp);
     }
