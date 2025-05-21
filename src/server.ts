@@ -22,7 +22,7 @@ const corsOptions: cors.CorsOptions = {
   origin: true,
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
-  exposedHeaders: ["accesstoken", "X-accesstoken"],
+  // exposedHeaders: ["accesstoken", "X-accesstoken"],
 };
 app.use(cookieParser());
 app.use(cors(corsOptions));
