@@ -566,30 +566,30 @@ export class newDealRepository {
             from: "address",
             localField: "borrowerCompany.addressId",
             foreignField: "_id",
-            as: "borrowerCompany.address"
-          }
-        },
-        {
-          $unwind: {
-            path: "$borrowerCompany.address",
-            preserveNullAndEmptyArrays: true
+            as: "borrowerCompany.address"  // use 'address' inside borrowerCompany
           }
         },
         {
           $addFields: {
             dealDataRequestId: "$_id",
             "borrowerCompany.borrowerCompanyId": "$borrowerCompany._id",
-            "borrowerCompany.address.addressId": "$borrowerCompany.address._id"
+            "borrowerCompany.address": {
+              $cond: {
+                if: { $gt: [{ $size: "$borrowerCompany.address" }, 0] },
+                then: "$borrowerCompany.address",
+                else: []
+              }
+            }
           }
         },
         {
           $project: {
             _id: 0,
-            "borrowerCompany._id": 0,
-            "borrowerCompany.address._id": 0
+            "borrowerCompany._id": 0
           }
         }
       ]);
+
       if (!result || result.length === 0) {
         throw new Error("Borrower company not found");
       }
