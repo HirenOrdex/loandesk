@@ -113,7 +113,7 @@ const userSchema = new Schema(
 /**
  * Method to compare candidate password with user's hashed password
  */
-userSchema.index({ email: 1 });
+// userSchema.index({ email: 1 });
 userSchema.methods.correctPassword = async function (
   candidatePassword: string
 ): Promise<boolean> {

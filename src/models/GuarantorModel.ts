@@ -12,6 +12,7 @@ export interface IGuarantor extends Document {
   updatedBy: Types.ObjectId;
   dealDataReqId: Types.ObjectId;
   addressId: Types.ObjectId
+  isDelete:boolean
 
 }
 
@@ -35,6 +36,7 @@ const guarantorSchema = new Schema<IGuarantor>(
     userId: { type: Schema.Types.ObjectId, ref: "User" },
     createdBy: { type: Schema.Types.ObjectId, ref: "User" },
     updatedBy: { type: Schema.Types.ObjectId, ref: "User" },
+    isDelete: { type: Boolean, default: false },
   },
   {
     collection: "guarantor",

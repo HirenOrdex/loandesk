@@ -16,5 +16,5 @@ router.get('/loan-detail/:id',newDealController.getLoanDetailById)
 router.post("/additional-people/:id",newDealController.createAdditionalPeople);
 router.patch('/loan-detail/',newDealController.updateLoanDetailById)
 router.get('/final-data/:id', newDealController.getFinalLoanData);
-
+router.get('/current-step/:id', newDealController.getDealDataStepRequestById);
 export default router;

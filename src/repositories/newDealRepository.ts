@@ -199,7 +199,7 @@ export class newDealRepository {
  async getByDealDataReqId(dealDataReqId: Types.ObjectId) {
   try {
     const result = await GuarantorModel.aggregate([
-      { $match: { dealDataReqId } },
+      { $match: { dealDataReqId,   isDelete: false } },
 
       {
         $lookup: {
@@ -318,78 +318,119 @@ export class newDealRepository {
       const error = err as IError;
           console.error(`Error in findCompanyById: ${error.message}`, { error });
 
-    logger.error(`Error in findCompanyById: ${error.message}`, { error });
-    throw error;
-  }
-}
-async updateGuarantorsByDealDataReqId(
-  dealDataReqId: string,
-  guarantors: any[]
-) {
-  try {
-    const totalOwnership = guarantors.reduce(
-      (sum, g) => sum + g.percentageOfOwnership,
-      0
-    );
-
-    if (totalOwnership !== 100) {
-      logger.warn("Total percentageOfOwnership is not 100");
-      throw new Error("Total percentageOfOwnership must equal 100");
+      logger.error(`Error in findCompanyById: ${error.message}`, { error });
+      throw error;
     }
-
-    const updatedResults = [];
-
-    for (const g of guarantors) {
-      if (!g.guarantorId) {
-        throw new Error("guarantorId is required for update");
-      }
-
-      const existing = await GuarantorModel.findOne({
-        _id: g.guarantorId,
-        dealDataReqId,
-      });
-
-      if (!existing) {
-        throw new Error(`Guarantor not found with id ${g.guarantorId}`);
-      }
-
-      // Update person
-      if (g.person) {
-        await Person.findOneAndUpdate(existing.userId, g.person);
-      }
-
-      // Update address
-      if (g.person?.address && existing.addressId) {
-        await AddressModel.findByIdAndUpdate(existing.addressId, g.person.address, {
-          new: true,
-        });
-      }
-
-      // Update guarantor fields
-      await GuarantorModel.findByIdAndUpdate(
-        g.guarantorId,
-        {
-          isGuarantor: g.isGuarantor,
-          percentageOfOwnership: g.percentageOfOwnership,
-          numberOfCOI: g.numberOfCOI,
-          active: g.active,
-          updatedBy: g.updatedBy,
-        },
-        { new: true }
+  }
+  async updateGuarantorsByDealDataReqId(dealDataReqId: string, guarantors: any[]) {
+    try {
+      const totalOwnership = guarantors.reduce(
+        (sum, g) => sum + g.percentageOfOwnership,
+        0
       );
 
-      updatedResults.push({ guarantorId: g.guarantorId });
-    }
-    const crruentStep = await DealDataRequest.findByIdAndUpdate(dealDataReqId,{currentStep:2})
+      if (totalOwnership !== 100) {
+        logger.warn("Total percentageOfOwnership is not 100");
+        throw new Error("Total percentageOfOwnership must equal 100");
+      }
 
-    logger.info("Guarantors updated successfully", { dealDataReqId });
-    return updatedResults;
-  } catch (err) {
-    const error = err as IError;
-    logger.error(`Error updating guarantors: ${error.message}`, { error });
-    throw error;
+      const existingGuarantors = await GuarantorModel.find({
+        dealDataReqId,
+        isDelete: false,
+      });
+
+      const existingIds: string[] = existingGuarantors.map(g => (g._id as Types.ObjectId).toString());
+      const payloadIds = guarantors
+        .filter(g => g.guarantorId)
+        .map(g => g.guarantorId.toString());
+
+      // ✅ Mark missing IDs as deleted
+      const toBeDeleted = existingIds.filter(id => !payloadIds.includes(id));
+      if (toBeDeleted.length > 0) {
+        await GuarantorModel.updateMany(
+          { _id: { $in: toBeDeleted } },
+          { isDelete: true }
+        );
+        logger.info(`Marked guarantors as deleted: ${toBeDeleted}`);
+        console.log("❌ Guarantors marked as deleted:", toBeDeleted);
+      }
+
+      const updatedResults = [];
+
+      for (const g of guarantors) {
+        // ✅ Update existing guarantor
+        if (g.guarantorId) {
+          const existing = await GuarantorModel.findOne({
+            _id: g.guarantorId,
+            dealDataReqId,
+          });
+
+          if (!existing) {
+            logger.warn(`Guarantor not found: ${g.guarantorId}`);
+            throw new Error(`Guarantor not found with id ${g.guarantorId}`);
+          }
+
+          // Update Person
+          if (g.person && existing.userId) {
+            await Person.findByIdAndUpdate(existing.userId, g.person);
+          }
+
+          // Update Address
+          if (g.person?.address && existing.addressId) {
+            await AddressModel.findByIdAndUpdate(existing.addressId, g.person.address);
+          }
+
+          // Update Guarantor
+          await GuarantorModel.findByIdAndUpdate(
+            g.guarantorId,
+            {
+              isGuarantor: g.isGuarantor,
+              percentageOfOwnership: g.percentageOfOwnership,
+              numberOfCOI: g.numberOfCOI,
+              active: g.active,
+              updatedBy: g.updatedBy,
+              isDelete: false,
+            },
+            { new: true }
+          );
+
+          updatedResults.push({ guarantorId: g.guarantorId });
+        }
+        // ✅ Create new guarantor
+        else {
+          const guarantorsToCreate = guarantors.filter(g => !g.guarantorId);
+
+          if (guarantorsToCreate.length > 0) {
+            const createdGuarantors = await this.createMultipleGuarantors(
+              guarantorsToCreate,
+              guarantorsToCreate[0].borrowerCompanyId, // assuming all have the same
+              dealDataReqId
+            );
+
+            createdGuarantors.forEach(g => {
+              updatedResults.push({ guarantorId: g._id });
+            });
+
+            logger.info(`✅ Created ${createdGuarantors.length} new guarantors`);
+            console.log(`✅ Created ${createdGuarantors.length} new guarantors`);
+          }
+        }
+
+      }
+
+      // ✅ Step update
+      await DealDataRequest.findByIdAndUpdate(dealDataReqId, { currentStep: 2 });
+
+      logger.info("Guarantors processed successfully", { dealDataReqId });
+      return updatedResults;
+
+    } catch (err) {
+      const error = err as IError;
+      logger.error(`❌ Error updating guarantors: ${error.message}`, { error });
+      throw error;
+    }
   }
-}
+
   async createMultipleLoan(details: any[], dealDataReqId: string) {
     try {
       const results = [];
@@ -422,7 +463,8 @@ async updateGuarantorsByDealDataReqId(
       return await DealDataStructure.aggregate([
         {
           $match: {
-            dealDataReqId: new Types.ObjectId(dealDataReqId) // Ensure it's ObjectId
+            dealDataReqId: new Types.ObjectId(dealDataReqId),
+            isDelete: false
           }
         }, {
           $lookup: {
@@ -636,50 +678,78 @@ async updateGuarantorsByDealDataReqId(
   };
 
 
-  async updateMultipleLoan(details: any[]) {
-    try {
-      const results = [];
+async updateMultipleLoan(details: any[], dealDataReqId: string) {
+  try {
+    const results = [];
 
-      for (const d of details) {
-        const { _id, ...updates } = d;
+    // Step 1: Get existing _ids
+    const existingLoans = await DealDataStructure.find({
+      dealDataReqId,
+      isDelete: false,
+    });
 
-        if (!_id) {
-          throw new Error("Each object must include an _id for update.");
-        }
-        console.log("id", _id)
-        // Step 1: Find the document to get dealDataReqId
+    const existingIds = existingLoans.map((doc) => (doc._id as Types.ObjectId).toString());
+    const payloadIds = details.filter(d => d._id).map(d => d._id.toString());
+
+    // Step 2: Mark missing IDs as deleted
+    const toBeDeleted = existingIds.filter(id => !payloadIds.includes(id));
+    if (toBeDeleted.length > 0) {
+      await DealDataStructure.updateMany(
+        { _id: { $in: toBeDeleted } },
+        { $set: { isDelete: true } }
+      );
+      logger.info(`🗑️ Marked loan records as deleted: ${toBeDeleted}`);
+      console.log("🗑️ Marked loan records as deleted:", toBeDeleted);
+    }
+
+    // Step 3: Process each item in payload
+    const newItems: any[] = [];
+    for (const d of details) {
+      const { _id, ...updates } = d;
+
+      if (_id) {
         const existing = await DealDataStructure.findById(_id);
         if (!existing) {
-          logger.warn(`⚠️ Loan detail not found: _id=${_id}`);
+          logger.warn(`⚠️ Loan detail not found for update: _id=${_id}`);
           continue;
         }
 
-        const Id = existing._id;
-
-        // Step 2: Update using _id + dealDataReqId
         const updated = await DealDataStructure.findOneAndUpdate(
           { _id },
           { $set: updates },
           { new: true }
         );
-        console.log("Id", Id)
+
         if (updated) {
           results.push(updated);
         } else {
           logger.warn(`⚠️ Failed to update loan detail: _id=${_id}`);
         }
+      } else {
+        newItems.push({ ...updates, dealDataReqId }); // prepare for creation
       }
-
-      logger.info("✅ Successfully updated multiple loan details");
-      console.log("✅ LoanDetails updated successfully");
-      return results;
-    } catch (err: unknown) {
-      const error = err as IError;
-      logger.error("❌ Error in updateMultipleLoan:", { message: error.message });
-      console.error("❌ Error in updateMultipleLoan:", error.message);
-      throw error;
     }
+
+    // Step 4: Create new loan entries if any
+    if (newItems.length > 0) {
+      console.log("➕ Creating new loan records:", newItems);
+      logger.info("➕ Creating new loan records");
+
+      const created = await this.createMultipleLoan(newItems, dealDataReqId);
+      results.push(...created);
+    }
+
+    logger.info("✅ Successfully updated and created loan details");
+    console.log("✅ LoanDetails processed successfully");
+    return results;
+  } catch (err: unknown) {
+    const error = err as IError;
+    logger.error("❌ Error in updateMultipleLoan:", { message: error.message });
+    console.error("❌ Error in updateMultipleLoan:", error.message);
+    throw error;
   }
+}
+
 
   async getFinalLoanData(dealDataReqId: string) {
     try {
@@ -762,6 +832,34 @@ async updateGuarantorsByDealDataReqId(
 
       logger.error(`Error in getFinalLoanData: ${error.message}`, { error });
       throw error;
+    }
+  }
+   async getDealDataStep(id: string): Promise<{
+  step2: boolean;
+  step3: boolean;
+  step4: boolean;
+  currentStep: number; } | null> {
+    try {
+
+      const deal = await DealDataRequest.findById(id).select("currentStep");
+
+      if (!deal) {
+        throw new Error("DealDataRequest not found");
+      }
+    const step = deal.currentStep;
+ 
+
+    return {
+      step2: step >= 1,
+      step3: step >= 2,
+      step4: step >= 3,
+      currentStep: step
+    };
+    } catch (error: any) {
+
+      console.error("Error in getDealDataStep:", error.message);
+      logger.error("Error in getDealDataStep:", error.message);
+      throw new Error("Failed to retrieve deal data crrentstep");
     }
   }
 }

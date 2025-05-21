@@ -335,12 +335,13 @@ const authHeader = req.header("authorization");
     // const { id } = req.params;
     const functionName = "updateLoanDetailById";
     const { loanDetails } = req.body;
+    const dealDataReqId = req.params.id
 
     if (!Array.isArray(loanDetails)) {
       return res.status(400).json({ message: "loanDetails must be an array" });
     }
     try {
-      const result = await this.NewDealRepository.updateMultipleLoan(loanDetails);
+      const result = await this.NewDealRepository.updateMultipleLoan(loanDetails,dealDataReqId);
 
       if (!result) {
         return res.status(404).json({ message: "Loan detail not found" });
@@ -447,4 +448,35 @@ const authHeader = req.header("authorization");
       });
     }
   };
+  getDealDataStepRequestById = async (req: Request, res: Response): Promise<any> => {
+    const { id } = req.params;
+    const functionName = "getDealDataStepRequestById";
+
+    try {
+      const result = await this.NewDealRepository.getDealDataStep(id);
+
+      if (!result) {
+        return res.status(404).json({ message: "Deal data step not found" });
+      }
+
+      // console.log("result Of current steps ================: ", result);
+      return res.status(200).json({
+        success: true,
+        data: result,
+        message: "Deal data step fetched successfully",
+        error: null
+      });
+    } catch (err: unknown) {
+      const error = err as IError;
+      logger.error(`[${controllerName}] → ${functionName} → Failed`, { error });
+      logger.error(`Error fetching crruent Step`)
+      console.error(`Error fetching crruent Step`)
+      return res.status(500).json({
+        success: false,
+        data: null,
+        message: `Error fetching crruent Step`,
+        error: error.message
+      });
+    }
+  }
 }
