@@ -19,7 +19,7 @@ import CoiDashboard from "../coi/CoiDashboard";
 import AdminDashboard from "../admin/AdminDashboard";
 import GuarantorDashboard from "../Guarantor/GuarantorDashboard";
 import NewDealForm from "../dashboard/newdeal/NewDealForm";
-import Crawler from "../dashboard/crawler/crawler";
+import Crawler from "../dashboard/crawler/Crawler";
 import MatchPreferences from "../dashboard/matchPreferences/MatchPreferences";
 import FindAMatch from "../dashboard/findAMatch/FindAMatch";
 const Routing = () => {
