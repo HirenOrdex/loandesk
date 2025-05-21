@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { INewDealStep1Form, INewDealStep2Form, NewDealFormStepData, newDealStepComponents, newDealStepFields, newDealStepFormMap, newDealSteps } from "../../../types/newDeal";
+import '../../../assets/css/new-deal-form.css'
+import SaveEmailModal from "../../../models/SaveEmailModel";
 
 const NewDealForm: React.FC = () => {
     const form = useForm({
@@ -9,6 +11,7 @@ const NewDealForm: React.FC = () => {
     });
     const [currentStep, setCurrentStep] = useState(0);
     const Step = newDealStepComponents[currentStep];
+    const [showModal, setShowModal] = useState(false);
 
     console.log("Address field value:", form.watch("address"));
 
@@ -95,7 +98,7 @@ const NewDealForm: React.FC = () => {
                         <Step />
 
                         <div
-                            className="flex justify-between mt-8 [&_button]:!py-[8px] [&_button]:!px-[10px] [&_button]:!text-sm [&_button]:!font-normal">
+                            className="flex flex-wrap gap-3 sm:justify-between mt-8 [&_button]:!py-[8px] [&_button]:!px-[10px] [&_button]:!text-sm [&_button]:!font-normal">
                             {currentStep > 0 && (
                                 <button
                                     type="button"
@@ -105,7 +108,7 @@ const NewDealForm: React.FC = () => {
                                     Previous
                                 </button>
                             )}
-                            <div className="ms-auto space-x-2">
+                            <div className="sm:ms-auto space-x-2">
                                 <button
                                     type="button"
                                     className="btn-main"
@@ -122,6 +125,7 @@ const NewDealForm: React.FC = () => {
                                     <button
                                         type="submit"
                                         className="btn-main"
+                                        onClick={() => setShowModal(true)}
                                     >
                                         Save & Email
                                     </button>
@@ -156,6 +160,14 @@ const NewDealForm: React.FC = () => {
                     </div>
                 </div>
             </section>
+
+            {/* Show Save Email Modal */}
+            {showModal && (
+                <SaveEmailModal
+                    onClose={() => setShowModal(false)}
+                    onConfirm={() => { }}
+                />
+            )}
         </>
     );
 };

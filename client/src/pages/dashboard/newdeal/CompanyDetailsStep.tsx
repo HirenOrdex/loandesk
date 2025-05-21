@@ -1,5 +1,6 @@
 import React from 'react'
 import '../../../assets/css/new-deal-form.css'
+import AlertMessage from '../../../components/AlertMessage'
 import { InputMask } from '@react-input/mask'
 import { Controller, useFormContext } from 'react-hook-form'
 import AddressAutocomplete from '../../../components/AddressAutocomplete'
