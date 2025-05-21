@@ -141,4 +141,47 @@ export const sendWelcomeEmail = async (
   } catch (error) {
     logger.error(`Error sending welcome email: ${error}`);
   }
+}
+export const sendUploadReminderEmail = async (
+  recipientEmail: string,
+  recipientName: string,
+  bankerName: string,
+  bankerCompany: string
+): Promise<void> => {
+  try {
+    const uploadLink = `${APP_URL}/uploadDashboard/`;
+
+    const emailHtml = `
+      <div style="margin-top: 20px;">
+        <p>Dear ${recipientName},</p>
+      </div>
+      <div>
+        <p style="text-align: justify;">
+          Your banker, <span style="text-transform: capitalize;">${bankerName}</span> with 
+          <span style="text-transform: capitalize;">${bankerCompany}</span> is using LoanHeads.com to facilitate your loan request.
+          Please upload your financial statements by 
+          <a href="${uploadLink}" style="color: #000;">clicking here</a> or copying and pasting the URL below into your browser to complete your request:
+        </p>
+        <a href="${uploadLink}" style="color: #000;">${uploadLink}</a>
+        <p>Your default username is your e-mail address.</p>
+        <p>Your Password is same which you have been using previously.</p>
+        <p>Please be sure to review your profile to ensure all information is correct.</p>
+        <p>Once logged in, you can click on each highlighted box to upload the missing document.</p>
+        <p>For technical support, please e-mail <a href="mailto:uploadsupport@loanheads.com">uploadsupport@loanheads.com</a>.</p>
+        <p>Thank You from LoanHeads.com.</p>
+      </div>
+    `;
+
+    await sendEmail({
+      from: process.env.SMTP_USER || '"Support" <support@loanheads.com>',
+      to: recipientEmail,
+      subject: "Reminder: Upload Your Financial Documents",
+      html: emailHtml,
+    });
+
+    logger.info(`✅ Upload reminder email sent to ${recipientEmail}`);
+  } catch (error) {
+    logger.error(`❌ Error sending upload reminder email: ${error}`);
+    throw error;
+  }
 };

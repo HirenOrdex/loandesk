@@ -5,6 +5,7 @@ import { logger } from "../configs/winstonConfig";
 import { Types } from "mongoose";
 import { IError } from "../types/errorType";
 import { error } from "winston";
+import { sendUploadReminderEmail } from "../services/emailService";
 const controllerName: string = "newDealController";
 
 
@@ -87,13 +88,24 @@ export class NewDealController {
   }
 
   getByDealDataReqId: RequestHandler = async (req: Request, res: Response) => {
+    const functionName = "getByDealDataReqId";
+    logger.info(`Coming into Controller ${controllerName} - ${functionName}`);
+
     try {
       const { dealDataReqId } = req.params;
       const objectId = new Types.ObjectId(dealDataReqId);
       const guarantors = await this.NewDealRepository.getByDealDataReqId(objectId);
       res.json({ data: guarantors });
-    } catch (error: any) {
-      res.status(500).json({ message: "Failed to fetch guarantors", error: error.message });
+    } catch (error: unknown) {
+      const err = error as Error;
+
+      console.error(`Error in ${functionName}:`, err.message);
+      logger.error(`Error in ${functionName}: ${err.message}`);
+      res.status(500).json({
+        success: false,
+        data: null,
+        message: "Failed to fetch guarantors", error: err.message
+      });
     }
   }
 
@@ -223,7 +235,7 @@ export class NewDealController {
       return res.status(400).json({ message: "Invalid loan details array" });
     }
 
-    const result = await this.NewDealRepository.createMultiple(loanDetails, dealDataReqId);
+    const result = await this.NewDealRepository.createMultipleLoan(loanDetails, dealDataReqId);
 
     return res.status(201).json({
       success: true,
@@ -245,46 +257,103 @@ export class NewDealController {
   }
 };
 
- getLoanDetailById = async (req: Request, res: Response): Promise<any> => {
-  const { id } = req.params;
-  const functionName = "getLoanDetailById";
+  getLoanDetailById = async (req: Request, res: Response): Promise<any> => {
+    const { id } = req.params;
+    const functionName = "getLoanDetailById";
+    logger.info(`[${controllerName}] → ${functionName} → Start`);
+    logger.debug(`DealDataRequest ID: ${id}`);
+    try {
+      const result = await this.NewDealRepository.findLoanBDealById(id);
 
+      if (!result) {
+        return res.status(404).json({
+          success: false,
+          data: null,
+          message: "Loan detail not found",
+          error: null
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: result,
+        message: "Loan details successfully fetch",
+        error: null
+      });
+    } catch (err: unknown) {
+      const error = err as IError;
+      logger.error(`[${controllerName}] → ${functionName} → Failed`, { error });
+      console.error(`[${controllerName}] → ${functionName} → Failed`, { error });
+
+      return res.status(500).json({
+        success: false,
+        data: null,
+        message: "Failed to fetch loan details",
+        error: error.message
+      });
+    }
+  };
+
+  updateLoanDetailById = async (req: Request, res: Response): Promise<any> => {
+    // const { id } = req.params;
+    const functionName = "updateLoanDetailById";
+    const { loanDetails } = req.body;
+
+    if (!Array.isArray(loanDetails)) {
+      return res.status(400).json({ message: "loanDetails must be an array" });
+    }
+    try {
+      const result = await this.NewDealRepository.updateMultipleLoan(loanDetails);
+
+      if (!result) {
+        return res.status(404).json({ message: "Loan detail not found" });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: result,
+        message: "Loan detail updated successfully",
+      });
+    } catch (err: unknown) {
+      const error = err as IError;
+      logger.error(`[${controllerName}] → ${functionName} → Failed`, { error });
+      return res.status(500).json({ message: error.message });
+    }
+  };
+  getFinalLoanData = async (req: Request, res: Response): Promise<any> => {
+    try {
+      const { id } = req.params;
+      const dealDataReqId=id
+      if (!dealDataReqId) {
+        return res.status(400).json({ error: "dealDataReqId param is required" });
+      }
+
+      const loanData = await this.NewDealRepository.getFinalLoanData(dealDataReqId);
+
+      if (!loanData || loanData.length === 0) {
+        return res.status(404).json({ message: "No loan data found" });
+      }
+
+      return res.status(200).json({ data: loanData });
+    } catch (error) {
+      console.error("Error fetching final loan data:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  }
+  sendReminderEmailController = async (req: Request, res: Response): Promise<void> => {
   try {
-    const result = await this.NewDealRepository.findById(id);
+    const { email, name, bankerName, bankerCompany } = req.body;
 
-    if (!result) {
-      return res.status(404).json({ message: "Loan detail not found" });
+    if (!email || !name || !bankerName || !bankerCompany) {
+      res.status(400).json({ message: "Missing required fields." });
+      return;
     }
 
-    return res.status(200).json(result);
-  } catch (err: unknown) {
-    const error = err as IError;
-    logger.error(`[${controllerName}] → ${functionName} → Failed`, { error });
-    return res.status(500).json({ message: error.message });
+    await sendUploadReminderEmail(email, name, bankerName, bankerCompany);
+
+    res.status(200).json({ message: "Reminder email sent successfully." });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to send reminder email.", error });
   }
 };
-
-//  updateLoanDetailById = async (req: Request, res: Response) => {
-//   const { id } = req.params;
-//   const updateData = req.body;
-//   const functionName = "updateLoanDetailById";
-
-//   try {
-//     const result = await this.NewDealRepository.updateById(id, updateData);
-
-//     if (!result) {
-//       return res.status(404).json({ message: "Loan detail not found" });
-//     }
-
-//     return res.status(200).json({
-//       success: true,
-//       data: result,
-//       message: "Loan detail updated successfully",
-//     });
-//   } catch (err: unknown) {
-//     const error = err as IError;
-//     logger.error(`[${controllerName}] → ${functionName} → Failed`, { error });
-//     return res.status(500).json({ message: error.message });
-//   }
-// };
 }

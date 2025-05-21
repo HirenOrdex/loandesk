@@ -11,7 +11,7 @@ export interface IPerson extends Document {
   companyName: string;
   title: string;
   ssn: string;
-  isUsCitizen: Boolean;
+  isUsCitizen: string;
   profileimagepath: string;
   webURL: string;
   linkedinUrl: string;
@@ -32,7 +32,11 @@ const PersonSchema = new Schema<IPerson>(
     companyName: { type: String },
     title: { type: String },
     ssn: { type: String },
-    isUsCitizen: { type: Boolean, required: false },
+    isUsCitizen: {
+      type: String,
+      enum: ["Yes", "No"],
+      required: false,
+    },
     profileimagepath: { type: String },
     webURL: { type: String },
     linkedinUrl: { type: String },

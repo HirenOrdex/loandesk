@@ -59,6 +59,7 @@ export const createGuarantorsSchema = Joi.object({
           lastName: Joi.string().required(),
           email2: Joi.string().email().required(),
           workPhone: Joi.string().optional().allow(null, ""),
+          isUsCitizen: Joi.string().valid("Yes", "No"),
           address: Joi.object({
             address1: Joi.string().allow(null, ""),
             address2: Joi.string().allow(null, ""),
@@ -72,9 +73,8 @@ export const createGuarantorsSchema = Joi.object({
             suiteNo: Joi.string().allow(null, ""),
           }).optional(),
         }).required(),
-        isGuarantor: Joi.boolean().required(),
+        isGuarantor: Joi.string().valid("Yes", "No").required(),
         percentageOfOwnership: Joi.number().min(0).max(100).required(),
-        numberOfCOI: Joi.number().integer().min(0).required(),
         active: Joi.boolean().required(),
       })
     )

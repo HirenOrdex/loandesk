@@ -11,6 +11,7 @@ import { IError } from "../types/errorType";
 import { DealDataStructure, IDealDataStructure } from "../models/DealDataStructureModel";
 import User from "../models/User";
 import { UserRepository } from "./userRepository";
+import { title } from "process";
 const userRepository = new UserRepository();
 
 export class newDealRepository {
@@ -92,8 +93,10 @@ export class newDealRepository {
     };
 
     const person_Data = {
-      email2: personData.email,
       workPhone: personData.workPhone,
+      isUsCitizen:personData.isUsCitizen,
+      suiteNo:personData.suiteNo,
+      title:personData.title
     };
 
     if (user) {
@@ -211,15 +214,15 @@ export class newDealRepository {
           preserveNullAndEmptyArrays: true,
         },
       },
-      // {
-      //   $lookup: {
-      //     from: "users",
-      //     localField: "person.userId",
-      //     foreignField: "_id",
-      //     as: "user",
-      //   },
-      // },
-      // { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: "person",
+          localField: "user._id",
+          foreignField: "userId",
+          as: "person",
+        },
+      },
+      { $unwind: { path: "$person", preserveNullAndEmptyArrays: true } },
 
       {
         $lookup: {
@@ -248,6 +251,7 @@ export class newDealRepository {
           isGuarantor: 1,
           percentageOfOwnership: 1,
           numberOfCOI: 1,
+          dealDataReqId:1,
           active: 1,
           createdAt: 1,
           updatedAt: 1,
@@ -259,6 +263,10 @@ export class newDealRepository {
             email1: 1,
             phone: 1,
           },
+          title:"$person.title",
+          suiteNo:"$person.suiteNo",
+          workPhone:"$person.workPhone",
+          isUsCitizen:"$person.isUsCitizen",
           address: {
             city: 1,
             state: 1,
@@ -372,7 +380,7 @@ async updateGuarantorsByDealDataReqId(
     throw error;
   }
 }
-  async createMultiple(details: any[], dealDataReqId: string) {
+  async createMultipleLoan(details: any[], dealDataReqId: string) {
     try {
       const results = [];
 
@@ -398,11 +406,15 @@ async updateGuarantorsByDealDataReqId(
     }
   }
 
-  async findById(id: string) {
+  async findLoanBDealById(dealDataReqId: string) {
     try {
+      console.log("", dealDataReqId)
       return await DealDataStructure.aggregate([
-        {   $match: { id } ,
-
+        {
+          $match: {
+            dealDataReqId: new Types.ObjectId(dealDataReqId) // Ensure it's ObjectId
+          }
+        }, {
           $lookup: {
             from: "dealDataRequest",
             localField: "dealDataReqId",
@@ -534,6 +546,134 @@ async updateGuarantorsByDealDataReqId(
     } catch (error: any) {
       console.error("Error in getBorrowerCompanyById:", error.message);
       throw new Error("Failed to retrieve borrower company data");
+    }
+  }
+  async updateMultipleLoan(details: any[]) {
+    try {
+      const results = [];
+
+      for (const d of details) {
+        const { _id, ...updates } = d;
+
+        if (!_id) {
+          throw new Error("Each object must include an _id for update.");
+        }
+        console.log("id", _id)
+        // Step 1: Find the document to get dealDataReqId
+        const existing = await DealDataStructure.findById(_id);
+        if (!existing) {
+          logger.warn(`⚠️ Loan detail not found: _id=${_id}`);
+          continue;
+        }
+
+        const Id = existing._id;
+
+        // Step 2: Update using _id + dealDataReqId
+        const updated = await DealDataStructure.findOneAndUpdate(
+          { _id },
+          { $set: updates },
+          { new: true }
+        );
+        console.log("Id", Id)
+        if (updated) {
+          results.push(updated);
+        } else {
+          logger.warn(`⚠️ Failed to update loan detail: _id=${_id}`);
+        }
+      }
+
+      logger.info("✅ Successfully updated multiple loan details");
+      console.log("✅ LoanDetails updated successfully");
+      return results;
+    } catch (err: unknown) {
+      const error = err as IError;
+      logger.error("❌ Error in updateMultipleLoan:", { message: error.message });
+      console.error("❌ Error in updateMultipleLoan:", error.message);
+      throw error;
+    }
+  }
+
+  async getFinalLoanData(dealDataReqId: string) {
+    try {
+      const result = await GuarantorModel.aggregate([
+        {
+          $match: {
+            dealDataReqId: new Types.ObjectId(dealDataReqId) // Ensure it's ObjectId 
+          }
+        },
+
+        {
+          $lookup: {
+            from: "user",
+            localField: "userId",
+            foreignField: "_id",
+            as: "user",
+          },
+        },
+        { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+        {
+          $lookup: {
+            from: "dealDataRequest",
+            localField: "dealDataReqId",
+            foreignField: "_id",
+            as: "dealDataRequest",
+          },
+        },
+        {
+          $unwind: {
+            path: "$dealDataRequest",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "person",
+            localField: "user._id",
+            foreignField: "userId",
+            as: "person",
+          },
+        },
+        { $unwind: { path: "$person", preserveNullAndEmptyArrays: true } },
+
+        {
+          $lookup: {
+            from: "dealDataStructure",
+            localField: "dealDataReqId",
+            foreignField: "dealDataReqId",
+            as: "dealDataStructure",
+          },
+        },
+        { $unwind: { path: "$address", preserveNullAndEmptyArrays: true } },
+
+
+        {
+          $project: {
+            percentageOfOwnership: 1,
+            dealDataReqId: 1,
+            firstName: "$user.firstName",
+            email: "$user.email",
+            isUsCitizen: "$person.isUsCitizen",
+            active: 1,
+            currentStep: "$dealDataRequest.currentStep",
+            dealDataStructure: {
+              loanAmount: 1,
+              loanType: 1,
+              _id: 1,
+              term: 1
+            },
+          },
+        },
+      ])
+      console.log(`Fetched final LoanDeatils for dealDataReqId: ${dealDataReqId}`);
+
+      logger.info(`Fetched final LoanDeatils for dealDataReqId: ${dealDataReqId}`);
+      return result;
+    } catch (err: unknown) {
+      const error = err as IError;
+      console.error(`Error in getFinalLoanData: ${error.message}`, { error });
+
+      logger.error(`Error in getFinalLoanData: ${error.message}`, { error });
+      throw error;
     }
   }
 }

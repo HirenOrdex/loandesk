@@ -4,7 +4,7 @@ import { Schema, model, Document, Types } from "mongoose";
 export interface IGuarantor extends Document {
   borrowerCompanyId: Types.ObjectId;
   userId:Types.ObjectId;
-  isGuarantor: number;
+  isGuarantor: string;
   percentageOfOwnership: number;
   numberOfCOI: number;
   active: string;
@@ -17,8 +17,12 @@ export interface IGuarantor extends Document {
 
 const guarantorSchema = new Schema<IGuarantor>(
   {
-    borrowerCompanyId: { type: Schema.Types.ObjectId, ref:"BorrowerCompany" },
-    isGuarantor: { type: Number, required: true },
+    borrowerCompanyId: { type: Schema.Types.ObjectId, ref:"borrowerCompany" },
+    isGuarantor: {
+      type: String,
+      enum: ["Yes", "No"],
+      required: false,
+    },
     dealDataReqId: {
       type: Schema.Types.ObjectId,
       ref: "DealDataRequest",
@@ -26,7 +30,7 @@ const guarantorSchema = new Schema<IGuarantor>(
     },
     addressId: { type: Schema.Types.ObjectId, ref: "Address" },
     percentageOfOwnership: { type: Number, required: true },
-    numberOfCOI: { type: Number, required: true },
+    numberOfCOI: { type: Number, required: false },
     active: { type: String, required: true },
     userId: { type: Schema.Types.ObjectId, ref: "User" },
     createdBy: { type: Schema.Types.ObjectId, ref: "User" },
