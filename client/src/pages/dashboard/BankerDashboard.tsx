@@ -11,11 +11,11 @@ import { useNavigate } from 'react-router-dom';
 const BankerDashboard = () => {
     const cardData = [
         { title: 'New Deal', image: useriumg, extraImage: pluse, route: '/new-deal' },
-        { title: 'Find A Match', image: findmatch },
+        { title: 'Find A Match', image: findmatch, route: '/find-a-match' },
         { title: 'Pipeline', image: pipeline },
         { title: 'Interview Calendar', image: interviewcalendar },
-        { title: 'Match Preference', image: matchpreference },
-        { title: 'Crawler', image: crawler },
+        { title: 'Match Preference', image: matchpreference, route: '/match-preference' },
+        { title: 'Crawler', image: crawler, route: '/crawler' },
     ];
     const navigate = useNavigate();
     return (

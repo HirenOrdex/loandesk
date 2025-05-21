@@ -19,6 +19,9 @@ import CoiDashboard from "../coi/CoiDashboard";
 import AdminDashboard from "../admin/AdminDashboard";
 import GuarantorDashboard from "../Guarantor/GuarantorDashboard";
 import NewDealForm from "../dashboard/newdeal/NewDealForm";
+import Crawler from "../dashboard/crawler/crawler";
+import MatchPreferences from "../dashboard/matchPreferences/MatchPreferences";
+import FindAMatch from "../dashboard/findAMatch/FindAMatch";
 const Routing = () => {
     return (
         <>
@@ -47,6 +50,9 @@ const Routing = () => {
                         <Route path="/guarantor" element={<GuarantorDashboard />} />
 
                         <Route path="/new-deal" element={<NewDealForm />} />
+                        <Route path="/find-a-match" element={<FindAMatch />} />
+                        <Route path="/match-preference" element={<MatchPreferences/>} />
+                        <Route path="/crawler" element={<Crawler/>} />
                     </Route>
                 </Route>
 
