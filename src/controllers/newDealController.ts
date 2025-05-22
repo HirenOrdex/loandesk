@@ -479,4 +479,33 @@ const authHeader = req.header("authorization");
       });
     }
   }
+  getAdditionalPeopleById: RequestHandler = async (req: Request, res: any) => {
+  try {
+    const dealDataReqId = req.params.id;
+    const data = await this.NewDealRepository.getAdditionalPeopleById(dealDataReqId);
+
+    if (!data) {
+      return res.status(404).json({
+        success: false,
+        data: null,
+        message: "No additional people found for the given ID",
+        error: null,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data,
+      message: "Additional People fetched successfully",
+      error: null,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      data: null,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
 }

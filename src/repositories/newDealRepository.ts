@@ -1,5 +1,5 @@
 
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { logger } from "../configs/winstonConfig";
 import { AddressModel } from "../models/AddressModel";
 import BorrowerCompanyModel, { IBorrowerCompany } from "../models/BorrowerCompanyModel";
@@ -862,4 +862,123 @@ async updateMultipleLoan(details: any[], dealDataReqId: string) {
       throw new Error("Failed to retrieve deal data crrentstep");
     }
   }
+  getAdditionalPeopleById = async (dealDataReqId: string): Promise<any> => {
+  try {
+       const result = await DealDataRequest.aggregate([
+      {
+        $match: { _id: new mongoose.Types.ObjectId(dealDataReqId) },
+      },
+      {
+        $lookup: {
+          from: "additionalpeopledetail",
+          localField: "_id",
+          foreignField: "dealDataReqId",
+          as: "additionalPeople",
+        },
+      },
+      {
+        $unwind: {
+          path: "$additionalPeople",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "person",
+          localField: "additionalPeople.personId",
+          foreignField: "_id",
+          as: "person",
+        },
+      },
+      {
+        $unwind: {
+          path: "$person",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "user",
+          localField: "person.userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      {
+        $unwind: {
+          path: "$user",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "address",
+          localField: "person.addressId",
+          foreignField: "_id",
+          as: "address",
+        },
+      },
+      {
+        $unwind: {
+          path: "$address",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "guarantor",
+          localField: "additionalPeople.guarantorIds",
+          foreignField: "_id",
+          as: "guarantors",
+        },
+      },
+      {
+        $project: {
+          _id: "$additionalPeople._id",
+          suiteNo: "$additionalPeople.suiteNo",
+          coiForCompany: "$additionalPeople.coiForCompany",
+          borrowerCompanyId: "$additionalPeople.borrowerCompanyId",
+          guarantorIds: "$additionalPeople.guarantorIds",
+          active: "$additionalPeople.active",
+          appSkip: "$additionalPeople.appSkip",
+          user: {
+            _id: { $ifNull: ["$user._id", null] },
+            firstName: { $ifNull: ["$user.firstName", null] },
+            lastName: { $ifNull: ["$user.lastName", null] },
+            middleInitial: { $ifNull: ["$user.middleInitial", null] },
+            email: { $ifNull: ["$user.email", null] },
+            cellPhone: { $ifNull: ["$user.cellPhone", null] },
+            title: { $ifNull: ["$user.title", null] },
+            roleId: { $ifNull: ["$user.roleId", null] }
+          },
+          person: {
+            _id: { $ifNull: ["$person._id", null] },
+            email2: { $ifNull: ["$person.email2", null] },
+            workPhone: { $ifNull: ["$person.workPhone", null] }
+          },
+          address: {
+            _id: { $ifNull: ["$address._id", null] },
+            street: { $ifNull: ["$address.street", null] },
+            city: { $ifNull: ["$address.city", null] },
+            state: { $ifNull: ["$address.state", null] },
+            zip: { $ifNull: ["$address.zip", null] },
+            country: { $ifNull: ["$address.country", null] }
+          },
+          dealDataReq: {
+            _id: "$_id",
+            date: "$date", // add any dealDataRequest fields you need
+            status: "$status"
+          },
+          guarantors: 1 // full guarantor details
+        },
+      },
+    ]);
+
+    return result[0] || null;
+  } catch (error: any) {
+    console.error("Error fetching additional person by dealDataReqId:", error.message);
+    throw new Error("Failed to fetch additional person data");
+  }
+};
+  
 }
