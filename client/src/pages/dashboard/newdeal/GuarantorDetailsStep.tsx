@@ -10,54 +10,58 @@ import { INewDealStep2Form } from '../../../types/newDeal';
 
 const GuarantorDetailsStep: React.FC = () => {
   const {
-    // register,
+    register,
     control,
     formState: { errors },
   } = useFormContext<INewDealStep2Form>();
 
   const { fields, append, remove } = useFieldArray({
     control,
-    name: 'members',
+    name: 'guarantors',
   });
 
   useEffect(() => {
     if (fields.length === 0) {
       append({
-        email: '',
-        firstName: '',
-        middleName: '',
-        lastName: '',
-        address: [],
-        suite: '',
-        cellPhone: '',
-        workPhone: '',
-        title: '',
-        permanentResident: '',
-        guarantor: '',
-        ownership: '',
+        person: {
+          email1: '',
+          firstName: '',
+          middleInitial: '',
+          lastName: '',
+          address: [],
+          suiteNo: '',
+          phone: '',
+          workPhone: '',
+          title: '',
+          isUsCitizen: '',
+        },
+        isGuarantor: '',
+        percentageOfOwnership: 0,
       });
     }
   }, [fields, append]);
 
   const addGuarantor = () =>
     append({
-      email: '',
-      firstName: '',
-      middleName: '',
-      lastName: '',
-      address: [],
-      suite: '',
-      cellPhone: '',
-      workPhone: '',
-      title: '',
-      permanentResident: '',
-      guarantor: '',
-      ownership: '',
-    })
+      person: {
+        email1: '',
+        firstName: '',
+        middleInitial: '',
+        lastName: '',
+        address: [],
+        suiteNo: '',
+        phone: '',
+        workPhone: '',
+        title: '',
+        isUsCitizen: '',
+      },
+      isGuarantor: '',
+      percentageOfOwnership: 0,
+    });
 
   return (
     <div className='mt-8 new-deal-form'>
-      <AlertMessage type='error' message='Enter all fields' className='mb-5' />
+      {/* <AlertMessage type='error' message='Enter all fields' className='mb-5' /> */}
       <h4 className='text-2xl text-[#313131] mb-5'>Guarantor(s)</h4>
 
       {fields.map((field, index) => (
@@ -105,8 +109,8 @@ const GuarantorDetailsStep: React.FC = () => {
               </label>
               <input
                 type='email'
-                id={`members.${index}.email`}
-                {...register(`members.${index}.email`, {
+                id={`guarantors.${index}.person.email1`}
+                {...register(`guarantors.${index}.person.email1`, {
                   required: "Email is required",
                   pattern: {
                     value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
@@ -114,8 +118,8 @@ const GuarantorDetailsStep: React.FC = () => {
                   },
                 })}
               />
-              {errors.members?.[index]?.email && (
-                <span className='error-msg'>{errors.members[index].email.message}</span>
+              {errors.guarantors?.[index]?.person?.email1 && (
+                <span className='error-msg'>{errors.guarantors[index].person?.email1.message}</span>
               )}
             </div>
           </div>
@@ -128,19 +132,19 @@ const GuarantorDetailsStep: React.FC = () => {
               </label>
               <input
                 type='text'
-                id={`members.${index}.firstName`}
-                {...register(`members.${index}.firstName`, { required: "First Name is required" })}
+                id={`guarantors.${index}.person.firstName`}
+                {...register(`guarantors.${index}.person.firstName`, { required: "First Name is required" })}
               />
-              {errors.members?.[index]?.firstName && (
-                <span className="error-msg">{errors.members[index].firstName.message}</span>
+              {errors.guarantors?.[index]?.person?.firstName && (
+                <span className="error-msg">{errors.guarantors[index]?.person?.firstName.message}</span>
               )}
             </div>
             <div className='mb-3'>
               <label className='new-form-label' htmlFor={`middleName_${index}`}>Middle Name</label>
               <input
                 type='text'
-                id={`members.${index}.middleName`}
-                {...register(`members.${index}.middleName`)} />
+                id={`guarantors.${index}.person.middleInitial`}
+                {...register(`guarantors.${index}.person.middleInitial`)} />
             </div>
             <div className='mb-3'>
               <label className='new-form-label' htmlFor={`lastName_${index}`}>
@@ -148,13 +152,13 @@ const GuarantorDetailsStep: React.FC = () => {
               </label>
               <input
                 type='text'
-                id={`members.${index}.lastName`}
-                {...register(`members.${index}.lastName`, {
+                id={`guarantors.${index}.person.lastName`}
+                {...register(`guarantors.${index}.person.lastName`, {
                   required: "Last Name is required",
                 })}
               />
-              {errors.members?.[index]?.lastName && (
-                <span className="error-msg">{errors.members[index].lastName.message}</span>
+              {errors.guarantors?.[index]?.person?.lastName && (
+                <span className="error-msg">{errors.guarantors[index]?.person?.lastName?.message}</span>
               )}
             </div>
           </div>
@@ -167,7 +171,7 @@ const GuarantorDetailsStep: React.FC = () => {
               </label>
               <Controller
                 control={control}
-                name={`members.${index}.address`}
+                name={`guarantors.${index}.person.address`}
                 rules={{ required: 'Address is required' }}
                 render={({ field }) => (
                   <AddressAutocomplete
@@ -177,16 +181,16 @@ const GuarantorDetailsStep: React.FC = () => {
                   />
                 )}
               />
-              {errors.members?.[index]?.address && (
+              {errors.guarantors?.[index]?.person?.address && (
                 <span className='error-msg'>
-                  {errors.members[index].address?.message}
+                  {errors.guarantors[index]?.person?.address.message}
                 </span>
               )}
             </div>
             <div className='mb-3'>
               <label className='new-form-label' htmlFor={`suite_${index}`}>Suite (Optional)</label>
               <input type='text' id={`members.${index}.suite`}
-                {...register(`members.${index}.suite`)} />
+                {...register(`guarantors.${index}.person.suiteNo`)} />
             </div>
           </div>
 
@@ -197,7 +201,7 @@ const GuarantorDetailsStep: React.FC = () => {
                 Cell Phone <span className='error-star'>*</span>
               </label>
               <Controller
-                name={`members.${index}.cellPhone`}
+                name={`guarantors.${index}.person.phone`}
                 control={control}
                 rules={{
                   required: "Cell phone is required",
@@ -212,7 +216,7 @@ const GuarantorDetailsStep: React.FC = () => {
                 render={({ field }) => (
                   <InputMask
                     {...field}
-                    id={`members.${index}.cellPhone`}
+                    id={`errors.guarantors?.[index]?.person?.cellPhone`}
                     mask="(___) ___-____"
                     showMask={true}
                     inputMode='numeric'
@@ -228,9 +232,9 @@ const GuarantorDetailsStep: React.FC = () => {
                 replacement={{ _: /\d/ }}
                 {...register(`members.${index}.cellPhone`, { required: 'Cell phone is required' })}
               /> */}
-              {errors.members?.[index]?.cellPhone && (
+              {errors.guarantors?.[index]?.person?.phone && (
                 <span className='error-msg'>
-                  {errors.members[index].cellPhone?.message}
+                  {errors.guarantors[index]?.person?.phone?.message}
                 </span>
               )}
             </div>
@@ -238,14 +242,35 @@ const GuarantorDetailsStep: React.FC = () => {
               <label className='new-form-label' htmlFor={`work_${index}`}>
                 Work Phone <span className='error-star'>*</span>
               </label>
-              <InputMask
-                mask='(___) ___-____'
-                showMask={true}
-                inputMode='numeric'
-                id={`work_${index}`}
-                replacement={{ _: /\d/ }}
+              <Controller
+                name={`guarantors.${index}.person.workPhone`}
+                control={control}
+                rules={{
+                  required: "work phone is required",
+                  validate: value => {
+                    const digitsOnly = value.replace(/\D/g, "");
+                    if (digitsOnly.length !== 10) {
+                      return "Please enter a valid 10-digit work phone number";
+                    }
+                    return true;
+                  }
+                }}
+                render={({ field }) => (
+                  <InputMask
+                    {...field}
+                    id={`errors.guarantors?.[index]?.person?.workPhone`}
+                    mask="(___) ___-____"
+                    showMask={true}
+                    inputMode='numeric'
+                    replacement={{ _: /\d/ }}
+                  />
+                )}
               />
-              <span className='error-msg'>Work phone is required</span>
+              {errors.guarantors?.[index]?.person?.workPhone && (
+                <span className='error-msg'>
+                  {errors.guarantors[index]?.person?.workPhone?.message}
+                </span>
+              )}
             </div>
             <div className='mb-3'>
               <label className='new-form-label' htmlFor={`title_${index}`}>
@@ -254,8 +279,14 @@ const GuarantorDetailsStep: React.FC = () => {
               <input
                 type='text'
                 id={`title_${index}`}
+                {...register(`guarantors.${index}.person.title`, {
+                  required: "Title is required",
+                })}
               />
-              <span className='error-msg'>Title is required</span>
+              {errors.guarantors?.[index]?.person?.title && (
+                <span className="error-msg">{errors.guarantors[index]?.person?.title?.message}</span>
+              )}
+              {/* <span className='error-msg'>Title is required</span> */}
             </div>
           </div>
 
@@ -266,23 +297,33 @@ const GuarantorDetailsStep: React.FC = () => {
                 US Citizen/Visa/Permanent Resident?
                 <span className='error-star'>*</span>
               </label>
-              <select id={`pr_${index}`}>
+              <select id={`pr_${index}`}
+                {...register(`guarantors.${index}.person.isUsCitizen`, { required: 'US Citizen/Visa/Permanent Resident is required' })}
+              >
                 <option value=''>Select</option>
                 <option value='yes'>Yes</option>
                 <option value='no'>No</option>
               </select>
-              <span className='error-msg'>Required</span>
+              {/* <span className='error-msg'>Required</span> */}
+              {errors.guarantors?.[index]?.person?.isUsCitizen && (
+                <span className='error-msg'>{errors.guarantors[index].person.isUsCitizen.message}</span>
+              )}
             </div>
             <div className='mb-3'>
               <label className='new-form-label' htmlFor={`guarantor_${index}`}>
                 Guarantor <span className='error-star'>*</span>
               </label>
-              <select id={`guarantor_${index}`}>
+              <select id={`guarantor_${index}`}
+                {...register(`guarantors.${index}.isGuarantor`, { required: 'Guarantor is required' })}
+              >
                 <option value=''>Select</option>
                 <option value='yes'>Yes</option>
                 <option value='no'>No</option>
               </select>
-              <span className='error-msg'>Required</span>
+              {/* <span className='error-msg'>Required</span> */}
+              {errors.guarantors?.[index]?.isGuarantor && (
+                <span className='error-msg'>{errors.guarantors[index]?.isGuarantor?.message}</span>
+              )}
             </div>
           </div>
 
@@ -297,10 +338,25 @@ const GuarantorDetailsStep: React.FC = () => {
                   type='number'
                   id={`ownership_${index}`}
                   className='text-center'
+                  {...register(`guarantors.${index}.percentageOfOwnership`, {
+                    required: 'Percentage of Ownership',
+                    valueAsNumber: true,
+                    min: {
+                      value: 0,
+                      message: 'Must be at least 0',
+                    },
+                    max: {
+                      value: 100,
+                      message: 'Cannot exceed 100',
+                    },
+                  })}
                 />
                 <span className='text-lg ms-2'>%</span>
               </div>
-              <span className='error-msg'>Percentage of Ownership is required</span>
+              {/* <span className='error-msg'>Percentage of Ownership is required</span> */}
+              {errors.guarantors?.[index]?.percentageOfOwnership && (
+                <span className='error-msg'>{errors.guarantors[index]?.percentageOfOwnership?.message}</span>
+              )}
             </div>
           </div>
         </div>

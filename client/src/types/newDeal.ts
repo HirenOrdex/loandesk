@@ -8,26 +8,28 @@ export interface INewDealStep1Form {
     companyName: string;
     legalEntity: string;
     businessPhone: string;
-    address: string;
+    address: IAddress[];
     website?: string;
     suite?: string;
 };
 export interface IMember {
-    email: string;
-    firstName: string;
-    middleName?: string;
-    lastName: string;
-    address: IAddress[];
-    suite?: string;
-    cellPhone: string;
-    workPhone: string;
-    title: string;
-    permanentResident: string;
-    guarantor: string;
-    ownership: string;
+    person: {
+        firstName: string;
+        middleInitial?: string;
+        lastName: string;
+        email1: string;
+        address: IAddress[];
+        suiteNo?: string;
+        phone: string;
+        workPhone: string;
+        title: string;
+        isUsCitizen: string;
+    }
+    isGuarantor: string;
+    percentageOfOwnership: number
 }
 export interface INewDealStep2Form {
-    members: IMember[];
+    guarantors: IMember[]
 }
 export const newDealSteps = [
     "Company Details",
@@ -45,6 +47,8 @@ export type NewDealFormStepData =
     | INewDealStep1Form
     | INewDealStep2Form
 
+export type newDealStepResponse = 
+    | IGetBorrowerCompanyResponse;
 export type newDealStepFormMap = {
     0: INewDealStep1Form;
     1: INewDealStep2Form;
@@ -53,5 +57,50 @@ export const newDealStepFields: {
     [K in keyof newDealStepFormMap]: (keyof newDealStepFormMap[K])[];
 } = {
     0: ["companyName", "legalEntity", "businessPhone", "address", "website", "suite"],
-    1: ["members"],
+    1: ["guarantors"],
 };
+
+export interface INewDealStep1Response {
+    success: boolean;
+    data: {
+        borrowerCompany: {
+            companyName: string;
+            _id: string;
+        };
+        dealDataRequestId: string;
+    };
+    message: string;
+    error: any;
+}
+
+export interface IGetBorrowerCompanyResponse {
+    success: boolean;
+    data: {
+        referenceNo: string;
+        borrowerCompanyId: string;
+        currentStep: number;
+        requestedDate: string;
+        saveStatus: string;
+        active: boolean;
+        createdAt: string;
+        updatedAt: string;
+        __v: number;
+        borrowerCompany: {
+            companyName: string;
+            legalEntity: string;
+            businessPhone: string;
+            website: string;
+            // addressId: string;
+            suite: string;
+            isDelete: boolean;
+            createdAt: string;
+            updatedAt: string;
+            __v: number;
+            borrowerCompanyId: string;
+            address: IAddress[];
+        };
+        dealDataRequestId: string;
+    };
+    message: string;
+    error: any;
+}

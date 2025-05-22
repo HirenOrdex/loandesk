@@ -20,6 +20,7 @@ interface AddressAutocompleteProps {
 
 const AddressAutocomplete = ({ name, value, onChange, id }: AddressAutocompleteProps) => {
     const inputRef = useRef<HTMLInputElement>(null);
+console.log("value",value);
 
     useEffect(() => {
         const getAddressComponent = (components: any[], type: string): string | null => {

@@ -1,19 +1,34 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
-import { INewDealStep1Form, INewDealStep2Form, NewDealFormStepData, newDealStepComponents, newDealStepFields, newDealStepFormMap, newDealSteps } from "../../../types/newDeal";
+import { INewDealStep1Form, INewDealStep1Response, INewDealStep2Form, NewDealFormStepData, newDealStepComponents, newDealStepFields, newDealStepFormMap, newDealSteps } from "../../../types/newDeal";
 import '../../../assets/css/new-deal-form.css'
 import SaveEmailModal from "../../../models/SaveEmailModel";
+import { useNewDealBorrowerCompanyMutation, useNewDealGuarantorsDetailsMutation } from "../../../services/newDealApi";
+import { AlertState } from "../../../types/auth";
+import { useDispatch } from "react-redux";
+import { NewDealServices } from "../../../redux/reducers/NewDealSlice";
+import Loader from "../../../components/Loader";
+import AlertMessage from "../../../components/AlertMessage";
+import { AppDispatch, useTypedSelector } from "../../../redux/store";
+import { useHandleStepApiAndSetData } from "../../../hooks/newDeal/useSetNewDealData";
 
 const NewDealForm: React.FC = () => {
-    const form = useForm({
+    const form = useForm<NewDealFormStepData>({
         mode: "onChange",
         shouldUnregister: false,
     });
-    const [currentStep, setCurrentStep] = useState(0);
+    const dispatch = useDispatch<AppDispatch>()
+    const { dealDataRequestId, newDealActiveTab } = useTypedSelector((state) => state?.newDeal);
+    const [loader, setLoader] = useState(false);
+    const [alert, setAlert] = useState<AlertState | null>(null);
+    const [currentStep, setCurrentStep] = useState(newDealActiveTab);
     const Step = newDealStepComponents[currentStep];
     const [showModal, setShowModal] = useState(false);
-
+    // const setNewDealData = useSetNewDealData(form.setValue);
+    const [newDealBorrowerCompany] = useNewDealBorrowerCompanyMutation();
+    const [newDealGuarantor] = useNewDealGuarantorsDetailsMutation()
     console.log("Address field value:", form.watch("address"));
+    console.log("dealDataRequestId", dealDataRequestId);
 
     const onNext = async () => {
         const stepIndex = currentStep as keyof newDealStepFormMap;
@@ -27,15 +42,35 @@ const NewDealForm: React.FC = () => {
         let currentStepData: newDealStepFormMap[typeof stepIndex];
 
         if (stepIndex === 0) {
+            setLoader(true);
             const fullDataTyped = fullData as INewDealStep1Form;
             const stepKeys = currentStepKeys as (keyof INewDealStep1Form)[];
             currentStepData = stepKeys.reduce((acc, key) => {
                 const value = fullDataTyped[key];
                 if (value !== undefined) {
-                    acc[key] = value;
+                    // acc[key] = value;
+                    (acc as any)[key] = value;
                 }
                 return acc;
             }, {} as INewDealStep1Form);
+            try {
+                const result: INewDealStep1Response = await newDealBorrowerCompany(currentStepData).unwrap();
+                console.log("result", result)
+                if ('data' in result) {
+                    setAlert({
+                        type: "success",
+                        message: result?.message
+                    });
+                    setLoader(false);
+                    dispatch(NewDealServices?.actions?.setDealDataRequestId(result?.data?.dealDataRequestId));
+                    dispatch(NewDealServices.actions.setNewDealActiveTab(stepIndex + 1))
+                    setCurrentStep((prev) => Math.min(prev + 1, newDealSteps.length - 1));
+                    window.scrollTo(0, 0);
+                }
+            } catch (error) {
+                console.error("Failed to submit step 1:", error);
+                setLoader(false);
+            }
         } else if (stepIndex === 1) {
             const fullDataTyped = fullData as INewDealStep2Form;
             const stepKeys = currentStepKeys as (keyof INewDealStep2Form)[];
@@ -43,33 +78,83 @@ const NewDealForm: React.FC = () => {
                 acc[key] = fullDataTyped[key];
                 return acc;
             }, {} as INewDealStep2Form);
+            try {
+                const result = await newDealGuarantor({ id: dealDataRequestId, data: currentStepData }).unwrap();
+                console.log("result", result)
+                if ('data' in result) {
+                    setAlert({
+                        type: "success",
+                        message: result?.message
+                    });
+                    setLoader(false);
+                    // dispatch(NewDealServices?.actions?.setDealDataRequestId(result?.data?.dealDataRequestId));
+                    setCurrentStep((prev) => Math.min(prev + 1, newDealSteps.length - 1));
+                    window.scrollTo(0, 0);
+                }
+            } catch (error) {
+                console.error("Failed to submit step 1:", error);
+                setLoader(false);
+                return;
+            }
         } else {
             console.error("Invalid step index:", stepIndex);
             return;
         }
 
+        // try {
+        //     await submitStepData(currentStep, currentStepData);
+        //     setCurrentStep((prev) => Math.min(prev + 1, newDealSteps.length - 1));
+        //     window.scrollTo(0, 0);
+        // } catch (err) {
+        //     console.error("Failed to submit step data", err);
+        // }
+    };
+    const handleStepApiAndSetData = useHandleStepApiAndSetData(form.setValue);
+    console.log("newDealActiveTab", newDealActiveTab)
+    // back button function
+
+    useEffect(() => {
+        if (dealDataRequestId !== "") {
+            handleStepApiAndSetData(newDealActiveTab, dealDataRequestId);
+        }
+    }, [newDealActiveTab, dealDataRequestId, handleStepApiAndSetData]);
+    // const onNext = async () => {
+    //     const isStepValid = await form.trigger();
+    //     if (true) {
+    //         setCurrentStep((prev) => Math.min(prev + 1, newDealSteps.length - 1));
+    //     }
+    // }
+    const onBack = async () => {
+        // setCurrentStep((prev) => Math.max(prev - 1, 0));
+        const previousStep = Math.max(currentStep - 1, 0);
+        setCurrentStep(previousStep);
+        window.scrollTo(0, 0);
+
         try {
-            await submitStepData(currentStep, currentStepData);
-            setCurrentStep((prev) => Math.min(prev + 1, newDealSteps.length - 1));
-            window.scrollTo(0, 0);
-        } catch (err) {
-            console.error("Failed to submit step data", err);
+            setLoader(true);
+            if (previousStep === 0) {
+                await handleStepApiAndSetData(previousStep, dealDataRequestId);
+                dispatch(NewDealServices.actions.setNewDealActiveTab(previousStep))
+            }
+
+        } catch (error) {
+            console.error("Failed to fetch previous step data:", error);
+        } finally {
+            setLoader(false);
         }
     };
 
-    // back button function
-    const onBack = () => {
-        setCurrentStep((prev) => Math.max(prev - 1, 0));
-        window.scrollTo(0, 0);
-    };
-
-    const submitStepData = async (stepIndex: number, data: NewDealFormStepData) => {
-        console.log(`Submitting Step ${stepIndex + 1} Data:`, data);
-    };
-
+    // const onSubmit = form.handleSubmit((data) => {
+    //     console.log("Final Submission:", data);
+    // });
+    // const submitStepData = async (stepIndex: number, data: NewDealFormStepData) => {
+    //     console.log(`Submitting Step ${stepIndex + 1} Data:`, data);
+    // };
+    console.log("form data", form.getValues());
 
     return (
         <>
+            {loader ? <Loader /> : null}
             <div className="max-w-[80%] sm:max-w-[70%] lg:max-w-4xl mx-auto pt-6 pb-12">
                 <div className="relative flex justify-between">
                     {/* Connecting lines */}
@@ -92,9 +177,18 @@ const NewDealForm: React.FC = () => {
                         </div>
                     ))}
                 </div>
-
+                {
+                    (Object.keys(form.formState.errors).length !== 0 || alert) && (
+                        <AlertMessage
+                            type={alert?.type || "error"}
+                            message={alert?.message || "Please fill out all the mandatory fields."}
+                        />
+                    )
+                }
                 <FormProvider {...form}>
-                    <form>
+                    <form
+                    // onSubmit={onSubmit}
+                    >
                         <Step />
 
                         <div

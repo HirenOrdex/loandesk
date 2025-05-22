@@ -101,17 +101,28 @@ const CompanyDetailsStep: React.FC = () => {
           <Controller
             name="address"
             rules={{ required: "Address is required" }}
-            render={({ field }) => (
+            // render={({ field }) => (
+            //   <AddressAutocomplete
+            //     id="address"
+            //     {...field}
+            //     value={field.value?.[0]?.fullAddress || ""}
+            //     onChange={(val) => {
+            //       // val is of type IAddress[]
+            //       field.onChange(val); // <-- Pass it as-is
+            //     }}
+            //   />
+            // )}
+          render={({ field }) => {
+            console.log("first",field?.value)
+            return (
               <AddressAutocomplete
                 id="address"
-                {...field}
-                value={field.value?.[0]?.fullAddress || ""}
-                onChange={(val) => {
-                  // val is of type IAddress[]
-                  field.onChange(val); // <-- Pass it as-is
-                }}
+                name={field?.name}
+                value={field?.value?.[0]?.fullAddress || ""}
+                onChange={field?.onChange}
               />
-            )}
+            );
+          }}
           />
           {errors.address && (
             <span className="error-msg">{errors.address.message}</span>
