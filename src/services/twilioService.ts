@@ -17,7 +17,7 @@ export const sendOtpViaSms = async (phoneNumber: string, otp: string): Promise<s
   try {
     // Send the OTP via Twilio
     const message = await client.messages.create({
-      body: `Your OTP is: ${otp}`,
+      body: `Your ALoanMatic OTP is ${otp}. Do not share it with anyone. Need help? Contact support`,
       from: TWILIO_PHONE_NUMBER,
       to: phoneNumber,
     });

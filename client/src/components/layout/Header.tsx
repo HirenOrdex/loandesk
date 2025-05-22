@@ -57,7 +57,7 @@ const Header: React.FC = () => {
 
                     {/* Sidebar Menu (on mobile) */}
                     <div
-                        className={`fixed top-0 left-0 w-fit px-16 bg-white shadow-lg flex flex-col align-end justify-center transform transition-transform duration-300 h-lvh overflow-auto ${isMenuOpen ? "translate-x-0" : "-translate-x-full"
+                        className={`fixed top-0 left-0 w-fit px-16 bg-white shadow-lg flex flex-col align-end pt-16 transform transition-transform duration-300 h-lvh overflow-auto ${isMenuOpen ? "translate-x-0" : "-translate-x-full"
                             } lg:hidden z-50`}
                     >
                         <div className="flex flex-col items-center gap-y-5">
@@ -218,7 +218,9 @@ const Header: React.FC = () => {
                     style={{ backgroundImage: `url(${dashboardBg})` }}
                 >
                     <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-center">
-                        <h2 className="text-center text-white text-3xl font-semibold"> {/* Add text if needed */}</h2>
+                        <h2 className="text-center text-[#ffffff] text-2xl sm:text-4xl font-extrabold">
+                            {/* Add text if needed */}
+                        </h2>
                     </div>
                 </div>
             </section>

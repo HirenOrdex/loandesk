@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@theme{
+  --breakpoint-xs: 25rem;
+}
+
 :root {
   --primary-color: #76bd23;
   --primary-color-hover: #68b113;
@@ -201,9 +205,9 @@ h1 {
 /* Multi select dropdown */
 
 .react-dropdown-select {
-  border: 1px solid var(--border);
+  border: 1px solid var(--border) !important;
   color: var(--label);
-  border-radius: 3px;
+  border-radius: 3px !important;
   box-shadow: none;
 }
 

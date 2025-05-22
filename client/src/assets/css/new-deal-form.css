@@ -46,10 +46,16 @@
 .new-deal-form input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
     -webkit-appearance: none;
-    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+    margin: 0;
 }
 
 .new-deal-form input[type=number] {
-    -moz-appearance:textfield; /* Firefox */
+    -moz-appearance:textfield;
     appearance: textfield;
+}
+
+.new-deal-form input:focus,
+.new-deal-form textarea:focus,
+.new-deal-form select:focus {
+  border-color: var(--primary-color);
 }
